@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  npx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenn
+    working_dir: /contents
+    volumes:
+      - ./:/contents
+    ports:
+      - "8000:8000"
+    command: npx zenn preview
