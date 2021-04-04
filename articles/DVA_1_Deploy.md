@@ -2,7 +2,7 @@
 title: "分野1 デプロイ"
 emoji: "⛴"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["AWS", "DVA"]
+topics: ["AWS","DVA"]
 published: false
 ---
 # コードサービス

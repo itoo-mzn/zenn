@@ -2,7 +2,7 @@
 title: "AWS DVA取得に向けて"
 emoji: "⏰"
 type: "idea" # tech: 技術記事 / idea: アイデア
-topics: ["AWS", "DVA"]
+topics: ["AWS","DVA"]
 published: false
 ---
 
@@ -25,7 +25,7 @@ published: false
 | ---- | ---- |
 |1. デプロイ（展開） |22%|
 |2. セキュリティ |26%|
-|3. AWS サービスを使用した開発 |30%|
+|3. AWSサービスを使用した開発 |30%|
 |4. リファクタリング |10%|
 |5. モニタリングとトラブルシューティング|12%|
 

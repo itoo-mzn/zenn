@@ -2,7 +2,7 @@
 title: "分野2 セキュリティ"
 emoji: "🔒"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["AWS", "DVA"]
+topics: ["AWS","DVA"]
 published: false
 ---
 # 責任共有モデル
