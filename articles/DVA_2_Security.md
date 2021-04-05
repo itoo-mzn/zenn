@@ -40,6 +40,8 @@ AWSが利用者に変わって暗号化してくれる
 - S3
 - EBS など
 
+
+
 # IAM
 **原則：アクセスキーよりIAMロール**
 
@@ -66,3 +68,5 @@ AWS以外で認証されたユーザに権限を委任し、AWSリソースへ�
 - ウェブ認証フェデレーション(AWS Cognito, Google・Facebook等)
 - SAMLベースのフェデレーション
 
+# AWS Secrets Manager
+# AWS Key Management Service

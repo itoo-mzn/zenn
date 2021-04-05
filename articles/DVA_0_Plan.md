@@ -54,32 +54,33 @@ C.  [AWS 認定デベロッパー アソシエイト模擬試験問題集（5回
 6. (問題で分からない所がある場合)サービス別資料で復習
 
 - サービス別資料（優先順）
-・Lambda
-・API Gateway
-・Codeシリーズ
-・ECS、ECR、Fargate
-・DynamoDB
-・ElastiCache
+<!-- ・Lambda -->
+<!-- ・API Gateway -->
+<!-- ・Codeシリーズ -->
+<!-- ・ECS、ECR、Fargate -->
+<!-- ・DynamoDB -->
+<!-- ・ElastiCache -->
 ・Cognito
-・AWS Elastic Beanstalk
-・X-ray
-・SQS
+<!-- ・AWS Elastic Beanstalk -->
+<!-- ・X-ray -->
+<!-- ・SQS -->
 ・Kinesis シリーズ
-・Serverless Application Model(SAM)
+<!-- ・Serverless Application Model(SAM) -->
 ・Serverless モニタリング
 ・実践的 Serverless セキュリティプラクティス
-・AWS CloudFormation
+<!-- ・AWS CloudFormation -->
 ・AWS CloudTrail & AWS Config
 ・AWS OpsWorks
-・AWS Key Management Service
-・SNS
-・AWS Step Functions
-・CloudWatch
-・CloudFront
-・Step Functions
-・AWS Secrets Manager
+<!-- ・AWS Key Management Service -->
+<!-- ・SNS -->
+<!-- ・AWS Step Functions -->
+<!-- ・CloudWatch -->
+<!-- ・CloudFront -->
+<!-- ・AWS Secrets Manager -->
 ・AWS AppSync
-
+<!-- S3 -->
+<!-- STS(Security Token Service) -->
+<!-- IAM -->
 
 # Tips
 ## 出題範囲
@@ -87,16 +88,8 @@ C.  [AWS 認定デベロッパー アソシエイト模擬試験問題集（5回
 
 ## 役立った原則
 - スケールアップよりもスケールアウト
-- アクセスキーより IAM ロールが望ましい
 - アンマネージドサービスよりもマネージド
 - リソースや API を直接公開する事は避け、AWS エッジサービスや API ゲートウェイを使用する
 - サーバーにセッション状態を保存していては優れたアーキテクチャにはならない
 - インフラストラクチャを疎結合化する
 - サーバーレス化する
-- トラブルシューティング時には、セキュリティグループや NACL を常に確認する
-- VPC のプライベートサブネット内に作成されたインスタンスは、NAT を使用しない限りインターネットと通信することが出来ない
-- インターネットと通信するには、インターネットゲートウェイとルートテーブルのルートが必要
-- EBS ボリュームは、EC2 インスタンスに疎結合されている。
-- ブートボリュームの場合を除いて、アタッチまたはデタッチできる
-- セキュリティグループでは、許可のみ行う。
-- ネットワークACLでは、明示的な拒否ができる。

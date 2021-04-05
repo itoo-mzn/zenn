@@ -2,7 +2,6 @@
 title: "分野3 AWSサービスを使用した開発"
 emoji: "🛠"
 type: "tech" # tech: 技術記事 / idea: アイデア
-
 topics: ["AWS","DVA"]
 published: false
 ---
