@@ -3,7 +3,7 @@ title: "AWS SOA取得 計画"
 emoji: "⏰"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["AWS","SOA"]
-published: false
+published: true
 ---
 # 目標
 6/27(日)までにAW SOAを取得する。
@@ -31,7 +31,7 @@ published: false
 # 出題範囲(SOA-C01)
 分野 1: モニタリングとレポート 22%
 分野 2: 高可用性 8%
-分野 3: 展開とプロビジョニング 14%
+分野 3: デプロイとプロビジョニング 14%
 分野 4: ストレージおよびデータの管理 12%
 分野 5: セキュリティとコンプライアンス 18%
 分野 6: ネットワーク 14%
@@ -62,7 +62,7 @@ E. [AWS チュートリアル](https://aws.amazon.com/jp/getting-started/hands-o
 - [x] 2. [試験問題サンプル](https://d1.awsstatic.com/ja_JP/training-and-certification/docs-sysops-associate/AWS-Certified-SysOps-Administrator-Associate_Sample-Questions.pdf)を解く
 - [x] 3. 試験準備ワークショップ(A)で抑えるべきサービスと原則を確認
 - [x] 4. サービス別資料(B)を一読
-- [ ] 5. Udemy(C)の問題を解く
+- [ ] 5. Udemy(C)の問題を解く (No.1~4)
 - [ ] 6. (問題で分からない所がある場合)B.サービス別資料で復習+このノートに整理
 - [ ] 7. 5と6が完了（1周目）
 - [ ] 8. 5と6が完了（2周目）
@@ -71,9 +71,9 @@ E. [AWS チュートリアル](https://aws.amazon.com/jp/getting-started/hands-o
 - [ ] 8. 5と6が完了（5周目）
 
 ## Udemyの結果リスト
-| 日付 | No. - n回目 | 点 | 備考 |
+| 日付 | No. - n回目 | 正答率 | 備考 |
 | --- | --- | --- | --- |
-| 4/10 | 1-1 |  |  |
+| 4/10 | 1-1 | 43% |  |
 | 4/10 | 2-1 |  |  |
 | 4/11 | 3-1 |  |  |
 | 4/11 | 4-1 |  |  |
@@ -94,7 +94,6 @@ E. [AWS チュートリアル](https://aws.amazon.com/jp/getting-started/hands-o
 - WAF
 - Organizations
 - VPC
-
 ### 重要
 - Powershell
 - IAM2
@@ -112,7 +111,13 @@ E. [AWS チュートリアル](https://aws.amazon.com/jp/getting-started/hands-o
 - VPCフローログ
   - Logの見方
 
-
+# 責任共有モデル
+## AWS責任
+- ユーザーがAWSクラウド内に展開したデータの所有権はユーザーが保持。（= AWSはユーザーの管理するデータにアクセスしない）
+- データセンターとリージョンを相互接続する AWSグローバルネットワークを流れるすべてのデータは、安全性が保証された施設から外部に通信される前に物理レイヤーで自動的に暗号化されます。
+- AWS側のインフラ環境は仮想化ソフトウェアでフィルタリングすることにより、ユーザーからはユーザーに割り当てられていない物理ホストまたはインスタンスにアクセスできない。
+## ユーザ責任
+- VPCネットワーク内の暗号化やセキュリティ対応
 
 # 分野 1: モニタリングとレポート 22%
 
@@ -148,8 +153,10 @@ DNS（＝ドメイン名とIPアドレスを変換（名前解決）するシス
 ### トラフィックルーティング
 
 ## CloudFront
-CDN。
-  - クライアントからオリジンまでのデータの流れ 、暗号化処理
+CDN。画像や動画をキャッシュ。
+- クライアントからオリジンまでのデータの流れ 、暗号化処理
+- 有効期限が切れる前にエッジキャッシュからファイルを削除したい場合：aws cloudfront create-invalidation(無効化)コマンドを使用して、エッジキャッシュのファイルを無効化する。
+
 ## Elastic Load Balancing
   - ALB、ELB、NLBで出来る事出来ない事
   - ASG、EC2を含めたデータの流れ、Connection Draining、証明書を使ったデータの暗号化、X-Forwarded-For
@@ -181,6 +188,18 @@ CDN。
 - Guard Duty
 セキュリティの観点から脅威を検知
   - 仕様、ユースケース
+
+## Artifact
+AWSとの契約やコンプライアンスなどに関わる情報を一元管理することができるサービス。監査対応。(CodeArtifact は全く関係ない)
+1. レポート機能
+ISO認定、PCI(Payment Card Industry)、SOCレポートなどの AWSセキュリティ・コンプライアンスドキュメントをダウンロードできる。
+2. 契約に関する機能
+AWSとの契約を確認・管理。複数のアカウントに紐づく契約を管理。
+
+## AWS Shield
+マネージド型の分散サービス妨害 (DDoS) を防御するAWSサービス。
+- スタンダード : 無料。通常、Cloudfrontなどを利用すると自動で適用される。
+- アドバンスト : アプリケーションを標的とした攻撃に対する高レベルな保護。
 
 # 分野 6: ネットワーク 14%
 ## VPC(IGW, NAT, VPCエンドポイント)
@@ -239,9 +258,18 @@ AWS サービス制限の一部 (39 項目) に対して、現在の利用状況
 ## Cost Explorer
 
 ## Systems Manager
+([参考サイト](https://dev.classmethod.jp/articles/relay-re-introduction-2019-ssm/))
 サーバ群を管理する多機能なツールセットの総称。
 （範囲が広すぎてどこまでが"AWS Systems Manager"というサービスの中に収めるべきなのかよくわからない）
-  - パッチ適用、シークレットデータの格納
+  - シークレットデータの格納
+### 使う前の手順
+・SSM Agentの導入
+・SSM AgentからSSM APIへの経路確保
+・IAMロールの付与
+### Patch Manager
+OSパッチの管理。セキュリティ関連のアップデートおよびその他のタイプのアップデートの両方に関して、インスタンスへのパッチ適用プロセスを自動化します。オペレーティングシステムとアプリケーションの両方にパッチを適用することができます。
+（AWS Batch：バッチコンピューティングワークロード(大規模計算)を実行）
+
 
 ## StepFunctions
 ### ステートマシン
