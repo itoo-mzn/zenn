@@ -3,7 +3,7 @@ title: "AWS SOA取得 計画"
 emoji: "⏰"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["AWS","SOA"]
-published: true
+published: false
 ---
 # 目標
 6/27(日)までにAW SOAを取得する。
