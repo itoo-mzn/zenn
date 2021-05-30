@@ -1,0 +1,12 @@
+title: "SOA"
+summary: "SOA"
+topics: ["AWS"]
+published: false
+price: 1000 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - aws-soa-01-plan
+  - aws-soa-02-monitoring
+  - aws-soa-03-availability-deploy
+  - aws-soa-04-security-network
+  - aws-soa-05-strage-automation
