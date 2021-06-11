@@ -75,11 +75,11 @@ E. [AWS チュートリアル](https://aws.amazon.com/jp/getting-started/hands-o
 - [ ] 8. 5と6が完了（5周目）無理っぽい
 
 - B見る
-  - CloudWatch
+  - CloudWatch 見た
   - CloudTrail
-  - Config
-  - Systems Manager
-  - Cognito
+  - Config 見た
+  - Systems Manager 見た
+  - Cognito 見た
   - IAM
 
 
@@ -94,9 +94,9 @@ E. [AWS チュートリアル](https://aws.amazon.com/jp/getting-started/hands-o
 | 5/10 | 2-2 | 56% | 見直し〜5/16 (目標5/15)|
 | 5/18 | 3-2 | 41% | 見直し〜?? (目標5/20)|
 | 5/?? | 4-2 | 58% | 見直し〜5/31 (目標5/25)|
-| 6/6 | 1-3 | 64% | 見直し〜 (目標6/10)|
+| 6/6 | 1-3 | 64% | 見直し〜6/9 (目標6/10) 問題No.50 cognitoの問題のみ未理解|
+| 6/9 | 2-3 | 66% | 見直し〜6/ (目標6/12) |
 
-知識を整理する必要あると思うので、4-2 の見直し後、Zennのノートまとめる。
 
 # 過去の受験者の感想
 ## <学習が特に必要な分野>
