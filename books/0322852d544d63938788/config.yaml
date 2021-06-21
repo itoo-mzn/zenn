@@ -1,11 +1,12 @@
-title: "SOA"
-summary: "SOA"
-topics: ["AWS"]
-published: false
-price: 800 # 有料の場合200〜5000
+title: "AWS SOA 対策参考本"
+summary: "私がAWS SOA合格するまでに勉強したことを詰め込んでいます。\n
+SOA-C01試験を対象としていますが、内容の多くはC02試験でも参考になると思います。\n
+SAAは対策本が多いのに、SOA試験対策本はなかなかありません。私も苦労したのでこれから受験される方の一助になれば幸いです。"
+topics: ["AWS", "SOA"]
+published: true
+price: 500 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
-  - aws-soa-01-plan
   - aws-soa-02-monitoring
   - aws-soa-03-availability-deploy
   - aws-soa-04-security-network
