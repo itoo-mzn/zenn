@@ -7,6 +7,9 @@ published: false
 ---
 
 # プログラム実行
+Goは、mainパッケージ内のmain関数からプログラムがスタートする。
+（プログラムがスタートする地点のことを、エントリーポイントという。）
+
 ## 実行
 Goファイルがあるフォルダーに移動。
 ```zsh
@@ -95,6 +98,11 @@ func main() {
 }
 ```
 
+型の確認は、reflect.TypeOf() でできる。
+```go
+fmt.Println(reflect.TypeOf(num1))
+// println(reflect.TypeOf(num1)) （つまりビルトインのprintln）では変な出力になる。
+```
 
 # 標準入力
 ```go:main.go
@@ -115,4 +123,33 @@ go run src/helloworld/main.go 3 5
 
 # 結果
 合計: 8
+```
+
+# 関数
+```go:main.go
+import (
+	"os"
+	"strconv"
+)
+
+func main() {
+	sum := sum(os.Args[1], os.Args[2])
+	println("合計:", sum)
+}
+
+// func 関数名(引数名 型) 返り値の型 { ... }
+func sum(number1 string, number2 string) int {
+	int1, _ := strconv.Atoi(number1)
+	int2, _ := strconv.Atoi(number2)
+	return int1 + int2
+}
+```
+```go
+// func 関数名(引数名 型) (返り値名 返り値の型) { ... }
+func sum(number1 string, number2 string) (result int) {
+	int1, _ := strconv.Atoi(number1)
+	int2, _ := strconv.Atoi(number2)
+	result = int1 + int2
+	return result
+}
 ```
