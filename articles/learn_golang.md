@@ -153,3 +153,45 @@ func sum(number1 string, number2 string) (result int) {
 	return result
 }
 ```
+
+## ポインター
+  値を関数に渡すとき、**その関数内での変更は、呼び出し元に影響を与えない**。
+
+  :::message
+  Go は"値渡し"の言語。
+  つまり、関数に値を渡すたびに、Goがその値を受け取って**ローカルコピー(メモリ内の新しい変数)を作成**する。
+  :::
+
+```go:main.go
+func main() {
+	first := "ジョン"
+	updateName(first)
+	println(first) // ジョン と出力される
+}
+
+func updateName(name string) {
+	name = "田中" // update
+}
+```
+
+  updateName関数で行う変更を main関数のfirst変数にも反映させるには、ポインターを使用する。
+  **ポインターで、値ではなくアドレスメモリを渡すことで、呼び出し元にも反映される**。
+
+  #### ポインター
+  **変数のメモリアドレス**を格納する変数。
+  #### &演算子
+  その後にあるオブジェクトのアドレスを取得。
+  #### *演算子
+  ポインターを逆参照する。つまり、ポインターに格納されたアドレスにあるオブジェクトへアクセスする。
+
+```go:main.go
+func main() {
+	first := "ジョン"
+	updateName(&first) // ポインター(メモリアドレス)を渡す
+	println(first) // 田中 と出力される
+}
+
+func updateName(name *string) { // 注: 変数名でなく、型のとなりに*を書く
+	*name = "田中" // ポインター先の文字列をupdate
+}
+```
