@@ -204,3 +204,23 @@ Goには、public や private キーワードが存在しない。
 #### パブリック
 名前の先頭が大文字。
 
+```go:sum.go
+// 自作したpackage
+package calculator
+
+// パッケージの中からしか呼び出せない
+var logMessage = "[LOG]"
+
+// どこからでもアクセスできる
+var Version = "1.0"
+
+// パッケージの中からしか呼び出せない
+func internalSum(number int) int {
+	return number - 1
+}
+
+// どこからでもアクセスできる
+func Sum(number1, number2 int) int {
+	return number1 + number2
+}
+```
