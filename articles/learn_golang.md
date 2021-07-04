@@ -270,3 +270,25 @@ go 1.14
 + replace github.com/myuser/calculator => ../calculator
 ```
 
+# if文
+```go:main.go
+import "fmt"
+
+func givemeanumber() int {
+	return -1
+}
+
+func main() {
+	// 変数numを定義して、それをif内で使う
+	if num := givemeanumber(); num < 0 {
+		fmt.Println(num, "is negative")
+	} else if num < 10 {
+		fmt.Println(num, "has only one digit")
+	} else {
+		fmt.Println(num, "has multiple digits")
+	}
+
+	// if文で定義した変数numは、if外で使えない
+	fmt.Println(num) // エラー undifed: num
+}
+```
