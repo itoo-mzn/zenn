@@ -197,6 +197,7 @@ func updateName(name *string) { // 注: 変数名でなく、型のとなりに*
 ```
 
 # パッケージ
+## スコープ
 Goには、public や private キーワードが存在しない。
 変数や関数の先頭文字が 小文字 or 大文字 で判断される。
 #### プライベート
@@ -224,3 +225,48 @@ func Sum(number1, number2 int) int {
 	return number1 + number2
 }
 ```
+
+## モジュールを作成
+上のコードでモジュールを作成するには、そのコード(ファイル)があるカレントディレクトリで `go mod init` を実行する。
+```
+go mod init github.com/myuser/calculator
+```
+→ github.com/myuser/calculator がモジュール名になる。
+→ go.mod が生成される。
+```go:go.mod
+module github.com/myuser/calculator
+
+go 1.16
+```
+
+## 作成したモジュールを使う
+```go:main.go
+// 自作（calculator）パッケージを使う
+import "github.com/myuser/calculator"
+
+func main() {
+	total := calculator.Sum(3, 5)
+	println(total)
+	println("version: ", calculator.Version)
+}
+```
+
+:::message
+上記のようにコードを書くだけでは使えない。
+:::
+
+1. 呼び出す側のファイルがあるディレクトリで `go mod init` を実行する。
+```
+go mod init github.com/myuser/calculator
+```
+2. 生成された go.mod ファイルを編集。
+```diff go:go.mod
+module helloworld
+
+go 1.14
+
++ require github.com/myuser/calculator v0.0.0
+
++ replace github.com/myuser/calculator => ../calculator
+```
+
