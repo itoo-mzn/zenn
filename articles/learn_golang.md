@@ -292,3 +292,32 @@ func main() {
 	fmt.Println(num) // エラー undifed: num
 }
 ```
+
+# swich文
+```go:main.go
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	sec := time.Now().Unix() // UNIXタイム	
+	rand.Seed(sec) // seed値としてUNIXタイムを使い、実行の度(1秒毎?)にランダムな値を生成
+	i := rand.Int31n(10) // 0~10 の乱数
+	fmt.Println(i)
+	
+	switch i {
+	case 0:
+		fmt.Println("zero")
+	case 1:
+		fmt.Println("one")
+	case 2:
+		fmt.Println("two")
+	default: // デフォルト
+		fmt.Println("default output")
+	}
+
+	fmt.Println("ok")
+}
+```
