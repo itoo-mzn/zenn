@@ -125,6 +125,30 @@ go run src/helloworld/main.go 3 5
 合計: 8
 ```
 
+# Print関数について
+TODO: 使いこなせていないので、後で詳しく調べること
+```go:main.go
+import "fmt"
+
+func main() {
+	fmt.Print("Hello", "world!")
+	fmt.Print("Hello", "world!")
+	// -> Helloworld!Helloworld!
+
+	// Printlnの場合は、スペースと改行が挿入される
+	fmt.Println("Hello", "world!")
+	fmt.Println("Hello", "world!")
+	// -> Hello world!
+	//    Hello world!
+
+	hello := "Hello world!"
+	fmt.Printf("%s\n", hello) // TODO
+	fmt.Printf("%#v\n", hello) // TODO
+	// -> Hello world!
+	//    "Hello world!"
+}
+```
+
 # 関数
 ```go:main.go
 import (
@@ -319,5 +343,25 @@ func main() {
 	}
 
 	fmt.Println("ok")
+}
+```
+
+## switch文に関数を使用できる
+  switch句にも、case句にも関数を使える。
+```go:main.go
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	switch time.Now().Weekday().String() {
+	case "Monday", "Tuesday", "Wednesday", "Thursday", "Friday":
+		fmt.Println("平日")
+	default:
+		fmt.Println("休日")
+	}
+
+	fmt.Println(time.Now().Weekday().String())
 }
 ```
