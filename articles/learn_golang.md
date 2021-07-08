@@ -386,3 +386,19 @@ func main() {
 	//    200以下
 }
 ```
+
+# for文
+- forの後ろに`()カッコ`不要。
+- 3つの引数は、`; セミコロン`で区切る。
+```go:main.go
+import "fmt"
+
+func main() {
+	sum := 0
+	
+	for i := 1; i < 100; i++ {
+		sum += i
+	}
+	fmt.Println("sumは", sum)
+}
+```
