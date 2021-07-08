@@ -365,3 +365,24 @@ func main() {
 	fmt.Println(time.Now().Weekday().String())
 }
 ```
+
+## fallthrough
+```go:main.go
+import "fmt"
+
+func main() {
+	switch num := 15; {
+	case num < 50:
+		fmt.Printf("%d は50以下\n", num)
+		fallthrough
+	case num > 100:
+		fmt.Println("100以上")
+		fallthrough // caseを検証しない
+	case num < 200:
+		fmt.Println("200以下")
+	}
+	// -> 15 は50以下
+	//    100以上  (fallthroughによって、case文(num > 100)が無視される)
+	//    200以下
+}
+```
