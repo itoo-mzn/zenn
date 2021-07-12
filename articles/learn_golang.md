@@ -402,3 +402,24 @@ func main() {
 	fmt.Println("sumは", sum)
 }
 ```
+
+### Goに while は無いので、forで実現する。
+- for文には、条件式のみ でOK。
+```go:main.go
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	var num int64 // 空の変数
+	rand.Seed(time.Now().Unix()) // 乱数 生成器
+	
+	// numがたまたま 5 にならない限りループする (= while)
+	for num != 5 {
+		num = rand.Int63n(15) // 0~15の乱数
+		fmt.Println(num)
+	}
+}
+```
