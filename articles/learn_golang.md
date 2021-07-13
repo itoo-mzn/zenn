@@ -402,8 +402,8 @@ func main() {
 	fmt.Println("sumは", sum)
 }
 ```
-
-### Goに while は無いので、forで実現する。
+## while
+#### Goに while は無いので、forで実現する。
 - for文には、条件式のみ でOK。
 ```go:main.go
 import (
@@ -423,3 +423,47 @@ func main() {
 	}
 }
 ```
+
+## 無限ループとbreak
+```go:main.go
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	var num int32
+	sec := time.Now().Unix()
+	rand.Seed(sec)
+
+	for {
+		fmt.Print("ループ中")
+
+		if num = rand.Int31n(10); num == 5 { // 変数を定義して、それをif内で使う
+			fmt.Println("終了")
+			break // ループから抜ける
+		}
+
+		// break実行時には、この行は実行されない
+		fmt.Println(num)
+	}
+}
+```
+
+## continue
+```go:main.go
+func main() {
+	sum := 0
+	for num := 1; num <= 10; num++ {
+		// numが3の倍数なら、sumに足さない
+		if num%3 == 0 {
+			continue // continue以下の処理は行わず、次のループに移る
+		}
+		fmt.Println(num)
+		sum += num
+	}
+	fmt.Println(sum)
+}
+```
+
