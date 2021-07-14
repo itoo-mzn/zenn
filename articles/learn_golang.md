@@ -467,3 +467,51 @@ func main() {
 }
 ```
 
+# defer関数
+遅延実行する。
+```go:main.go
+import "fmt"
+
+func main() {
+	for i := 1; i <= 3; i++ {
+		defer fmt.Println("defer", -i) // [1, 2, 3]とスタック的に保管され、3, 2, 1の順で遅延実行される（取り出される）
+		fmt.Println("regular", i) // ここで"regular 3"が終わると、deferが遅延実行される
+
+		/* 出力
+		regular 1
+		regular 2
+		regular 3
+		defer -3
+		defer -2
+		defer -1
+		*/
+	}
+}
+```
+
+```go:main.go
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+)
+
+func main() {
+	f, err := os.Create("notes.txt") // ファイル新規作成
+	if err != nil {
+		return
+	}
+	defer f.Close() // 閉じる。忘れないようにdeferで遅延実行を予約しておく（以下に大量のコードがある場合など）
+
+	// if文で変数を定義するパターン
+	if _, err = io.WriteString(f, "これが書き込まれる"); err != nil {
+		return
+	}
+
+	out, _ := ioutil.ReadFile("notes.txt") // ファイル読み込み
+	fmt.Println(string(out)) // 出力
+
+	f.Sync() // メモリ上のファイル内容をディスクに書き出す（内容を同期）
+}
+```
