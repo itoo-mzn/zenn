@@ -515,3 +515,54 @@ func main() {
 	f.Sync() // メモリ上のファイル内容をディスクに書き出す（内容を同期）
 }
 ```
+
+# panic
+プログラムを強制的にパニックにする。ログメッセージを出力してクラッシュする。
+```go:main.go
+import "fmt"
+
+func main() {
+	g(0) // 関数g()を実行
+	fmt.Println("finish") // panicにより、この行は実行されない
+}
+
+func g(i int) {
+	if i > 3 {
+		fmt.Println("パニック前") // 2. panic前の処理は、ふつうに2番目に実行される
+		panic("パニック") // 4. deferの後に実行される
+	}
+
+	defer fmt.Println("defer:", i) // 3. panic("パニック")より先に実行される
+
+	fmt.Println("print:", i) // 1. まずはこの行が実行される
+	g(i + 1) // 再帰(panicが無ければ、無限に繰り返す)
+}
+
+/* 出力
+  print: 0
+  print: 1
+  print: 2
+  print: 3
+  パニック前
+  defer: 3
+  defer: 2
+  defer: 1
+  defer: 0
+  panic: パニック
+
+  goroutine 1 [running]:
+  main.g(0x4)
+          /Users/itotakuya/projects/go/src/helloworld/main.go:329 +0x22e
+  main.g(0x3)
+          /Users/itotakuya/projects/go/src/helloworld/main.go:335 +0x17a
+  main.g(0x2)
+          /Users/itotakuya/projects/go/src/helloworld/main.go:335 +0x17a
+  main.g(0x1)
+          /Users/itotakuya/projects/go/src/helloworld/main.go:335 +0x17a
+  main.g(0x0)
+          /Users/itotakuya/projects/go/src/helloworld/main.go:335 +0x17a
+  main.main()
+          /Users/itotakuya/projects/go/src/helloworld/main.go:322 +0x2e
+  exit status 2
+*/
+```
