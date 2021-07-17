@@ -516,7 +516,11 @@ func main() {
 }
 ```
 
-# panic
+# 例外処理
+panic と recover の組み合わせは、Go での特徴的な例外処理方法。
+（他のプログラミング言語では、try/catch。）
+
+## panic関数
 プログラムを強制的にパニックにする。ログメッセージを出力してクラッシュする。
 ```go:main.go
 import "fmt"
@@ -565,4 +569,48 @@ func g(i int) {
           /Users/itotakuya/projects/go/src/helloworld/main.go:322 +0x2e
   exit status 2
 */
+```
+
+## recover関数
+`panic()`後に、制御できる。
+`defer()`の中で実行できる。
+`panic()`と違い、ログメッセージを出力しない。
+```go:main.go
+import "fmt"
+
+func main() {
+	defer func() { // 5. panicが発生したので、deferの後で実行される
+		if r := recover(); r != nil { // panicが起きたときに、catchするよう予約
+			fmt.Println("リカバーした", r) // r = "パニック"
+		}
+	}()
+
+	g(0)
+	fmt.Println("finish!!") // panicにより、この行は実行されない
+}
+
+func g(i int) {
+	if i > 3 {
+		fmt.Println("パニック前") // 2. panic前の処理は、ふつうに2番目に実行される
+		panic("パニック") // 4. panic発生
+	}
+
+	defer fmt.Println("defer:", i) // 3. recover() より先に実行される
+
+	fmt.Println("print:", i) // 1. まずはこの行が実行される
+	g(i + 1) // 再帰(panicが無ければ、無限に繰り返す)
+}
+
+/* 出力
+	print: 0
+	print: 1
+	print: 2
+	print: 3
+	パニック前
+	defer: 3
+	defer: 2
+	defer: 1
+	defer: 0
+	リカバーした パニック
+/*
 ```
