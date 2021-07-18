@@ -614,3 +614,58 @@ func g(i int) {
 	リカバーした パニック
 /*
 ```
+
+# 練習問題（復習）
+## FizzBuzz
+```go:main.go
+func main() {
+	fizzBuzz(15)
+	fizzBuzz(10)
+	fizzBuzz(9)
+	fizzBuzz(2)
+}
+
+func fizzBuzz(i int) {
+	switch {
+	case i%15 == 0:
+		fmt.Println("FizzBuzz")
+	case i%5 == 0:
+		fmt.Println("Buzz")
+	case i%3 == 0:
+		fmt.Println("Fizz")
+	default:
+		fmt.Println(i)
+	}
+}
+```
+
+## 平方根を推測する
+```go:main.go
+func main() {
+	guessSquare(25)
+}
+
+func guessSquare(i float64) {
+	// 計算途中値（初期値は1）
+	sqroot := 1.00
+	// 計算結果
+	guess := 0.00
+
+	// 計算するのは10回まで
+	for count := 1; count <= 10; count++ {
+		// 計算する（下記ニュートン法）
+		// sqroot n+1 = sqroot n − (sqroot n * sqroot n − x) / (2 * sqroot n)
+		guess = sqroot - (sqroot*sqroot-i)/(2*sqroot)
+
+		if sqroot == guess {
+			// 計算前後で結果が同じであれば、それが平方根
+			fmt.Println("平方根は:", guess)
+			break // ループ10回以下でも終了
+		} else {
+			// ループ
+			fmt.Println("計算途中:", guess)
+			sqroot = guess
+		}
+	}
+}
+```
