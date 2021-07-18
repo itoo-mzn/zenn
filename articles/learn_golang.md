@@ -669,3 +669,26 @@ func guessSquare(i float64) {
 	}
 }
 ```
+
+## 入力した数値を出力する
+```go:main.go
+func main() {
+	val := 0
+
+	// 繰り返し整数の入力を求めます。 ループの終了条件は、ユーザーが負の数を入力した場合です。
+	for val >= 0 {
+		fmt.Print("数字を入力 : ")
+		fmt.Scanf("%d", &val)
+		if val == 0 {
+			// 数が 0 の場合は、0 is neither negative nor positive と出力します。 数の要求を続けます。
+			fmt.Println(val, "is neither negative nor positive")
+		} else if val < 0 {
+			// ユーザーが負の数を入力したら、プログラムをクラッシュさせます。 その後、スタック トレース エラーを出力します
+			panic("負の数なので終了")
+		} else {
+			// 数が正の値の場合は、You entered: X と出力します (X は入力された数)。 数の要求を続けます。
+			fmt.Println("入力したのは :", val)
+		}
+	}
+}
+```
