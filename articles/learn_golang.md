@@ -733,3 +733,24 @@ func main() {
 	fmt.Println(len(cities)) // 3
 }
 ```
+
+### 2次元配列
+```go:main.go
+func main() {
+	var twoD [3][5]int
+
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 5; j++ {
+			twoD[i][j] = (i + 1) * (j + 1)
+		}
+		fmt.Println("Row", i, ":", twoD[i])
+	}
+	fmt.Println(twoD)
+}
+/* 出力
+	Row 0 : [1 2 3 4 5]
+	Row 1 : [2 4 6 8 10]
+	Row 2 : [3 6 9 12 15]
+	[[1 2 3 4 5] [2 4 6 8 10] [3 6 9 12 15]]
+/*
+```
