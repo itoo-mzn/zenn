@@ -754,3 +754,13 @@ func main() {
 	[[1 2 3 4 5] [2 4 6 8 10] [3 6 9 12 15]]
 /*
 ```
+
+# スライス(途中)
+```go:main.go
+func main() {
+	months := []string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+	fmt.Println(months)
+	fmt.Println("length:", len(months))
+	fmt.Println("capacity:", cap(months))
+}
+```
