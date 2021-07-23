@@ -756,11 +756,48 @@ func main() {
 ```
 
 # スライス(途中)
+スライスは、同じ型の要素が連続していることを表すデータ型。
+ただし、配列との大きな違いは、スライスのサイズは固定ではなく動的であるということ。
+
+スライスのコンポーネントは次の 3 つのみです。
+- 基になる配列の最初の要素へのポインター : この要素は、必ずしも配列の最初の要素 array[0] であるとは限りません。
+- スライスの長さ : スライス内の要素数。
+- スライスの容量 : スライスの始めから、基になる配列の終わりまでの要素数。
+
+つまり、基になる配列に対して、ある位置からある位置まで取得した配列 ということ。
+
+```go:main.go
+func main() {
+	// スライスを宣言（サイズを指定しない）
+	months := []string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+
+	fmt.Println(months)
+	fmt.Println("length:", len(months)) // 要素数
+	fmt.Println("capacity:", cap(months)) // 容量
+}
+```
+
+## スライスの拡張
 ```go:main.go
 func main() {
 	months := []string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
-	fmt.Println(months)
 	fmt.Println("length:", len(months))
 	fmt.Println("capacity:", cap(months))
+
+	quarter1 := months[0:3]
+	quarter2 := months[3:6]
+	quarter3 := months[6:9]
+	quarter4 := months[9:12]
+
+	fmt.Println(quarter1, len(quarter1), cap(quarter1)) // [January February March] 3 12
+	fmt.Println(quarter2, len(quarter2), cap(quarter2)) // [April May June] 3 9
+	fmt.Println(quarter3, len(quarter3), cap(quarter3)) // [July August September] 3 6
+	fmt.Println(quarter4, len(quarter4), cap(quarter4)) // [October November December] 3 3
+	// lenは、そのスライスが持つ要素数。
+	// capは、基になる配列を基準に、どこからスライスしたかによって変わる。
+
+	quarter2Extend := quarter2[:4] // スライスを拡張（要素数を3→4に）
+	fmt.Println(quarter2, len(quarter2), cap(quarter2)) // [April May June] 3 9
+	fmt.Println(quarter2Extend, len(quarter2Extend), cap(quarter2Extend)) // [April May June July] 4 9
 }
 ```
