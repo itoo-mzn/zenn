@@ -801,3 +801,27 @@ func main() {
 	fmt.Println(quarter2Extend, len(quarter2Extend), cap(quarter2Extend)) // [April May June July] 4 9
 }
 ```
+
+## 要素の追加
+要素の追加に対して、スライスの容量(cap)は自動的に2のn乗で増える。（メモリが自動的に確保される）
+```go:main.go
+func main() {
+	var numbers []int
+	for i := 0; i < 10; i++ {
+		numbers = append(numbers, i) // 要素を追加
+		fmt.Printf("%d\tcap=%d\t%v\n", i, cap(numbers), numbers)
+	}
+}
+/* 出力
+	0       cap=1   [0]
+	1       cap=2   [0 1]
+	2       cap=4   [0 1 2]
+	3       cap=4   [0 1 2 3]
+	4       cap=8   [0 1 2 3 4]
+	5       cap=8   [0 1 2 3 4 5]
+	6       cap=8   [0 1 2 3 4 5 6]
+	7       cap=8   [0 1 2 3 4 5 6 7]
+	8       cap=16  [0 1 2 3 4 5 6 7 8]
+	9       cap=16  [0 1 2 3 4 5 6 7 8 9]
+/*
+```
