@@ -755,7 +755,7 @@ func main() {
 /*
 ```
 
-# スライス(途中)
+# スライス
 スライスは、同じ型の要素が連続していることを表すデータ型。
 ただし、配列との大きな違いは、スライスのサイズは固定ではなく動的であるということ。
 
@@ -778,6 +778,15 @@ func main() {
 ```
 
 ## スライスの拡張
+### スライス演算子 s[i:p] 
+- s
+  配列。
+- i 
+  **新しいスライスに追加する、基になる配列(または別のスライス)の最初の要素へのポインター**。
+  配列内のインデックス位置iにある要素( **array[i]** )に対応。
+- p
+  **新しいスライスに追加する、基になる配列の最後の要素へのポインター**。
+  配列内のインデックス位置p-1にある要素( **array[p-1]** )に対応。
 ```go:main.go
 func main() {
 	months := []string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
@@ -825,3 +834,26 @@ func main() {
 	9       cap=16  [0 1 2 3 4 5 6 7 8 9]
 /*
 ```
+
+## 要素の削除
+1. append()
+```go:main.go
+func main() {
+	letters := []string{"A", "B", "C", "D", "E"} // スライス
+	remove := 2 // 削除する要素の位置
+
+	if remove < len(letters) {
+
+		fmt.Println("Before", letters, "Remove", letters[remove]) // Before [A B C D E] Remove C
+
+		fmt.Println(letters[remove]) // C
+		fmt.Println(letters[:remove]) // [A B] = Cの手前まで
+		fmt.Println(letters[remove+1:]) // [D E] = C以降
+		letters = append(letters[:remove], letters[remove+1:]...) // (切り出した)[A B]に、(切り出した)[D E]を追加している
+
+		fmt.Println("After", letters) // After [A B D E]
+
+	}
+}
+```
+2. copy()
