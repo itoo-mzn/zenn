@@ -856,4 +856,44 @@ func main() {
 	}
 }
 ```
+
 2. copy()
+#### コピーしないとどうなるか？（なぜコピーするのか）
+スライスの要素を変更すると、基になる配列の要素も変更される。
+なので、同じ配列を基にしている 他のスライスにも影響が及んでしまう。
+```go:main.go
+func main() {
+	letters := []string{"A", "B", "C", "D", "E"} // スライス
+	fmt.Println("Before", letters)
+
+	slice1 := letters[0:2] // A, B
+	slice2 := letters[1:4] // B, C, D
+
+	slice1[1] = "X"
+  
+	fmt.Println("slice1", slice1) // slice1 [A X]
+	fmt.Println("slice2", slice2) // slice2 [X C D] : 同じ配列を基にしているため、要素が変更されている
+	
+	fmt.Println("After", letters) // After [A X C D E] : 基にしている配列自体も、変更される
+}
+```
+
+#### 配列をコピーして使う
+```go:main.go
+func main() {
+	letters := []string{"A", "B", "C", "D", "E"}
+	fmt.Println("Before", letters)
+
+	slice1 := letters[0:2] // A, B
+
+	slice2 := make([]string, 3) // cap=3と指定した 空のスライスが生成される
+	copy(slice2, letters[1:4]) // slice2にletters[1:4]をコピーする -> B, C, D
+
+	slice1[1] = "X"
+  
+	fmt.Println("slice1", slice1) // slice1 [A X]
+	fmt.Println("slice2", slice2) // slice2 [B C D] : 要素が変更されていない!
+	
+	fmt.Println("After", letters) // After [A X C D E] : slice1が基にしている配列は当然変更される
+}
+```
