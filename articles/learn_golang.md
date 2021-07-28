@@ -930,3 +930,39 @@ func main() {
 ```go
 studentAge := make(map[string]int)
 ```
+
+## 項目の追加、削除
+```go:main.go
+func main() {
+	// 空のマップを作成
+	studentAge := make(map[string]int)
+	fmt.Println(studentAge) // map[]
+	
+	// マップに追加
+	studentAge["john"] = 32
+	studentAge["bob"] = 31
+  fmt.Println(studentAge) // map[bob:31 john:32]
+
+	// マップ内の項目にアクセス
+	fmt.Println("john's age is", studentAge["john"]) // john's age is 32
+	
+	// マップ内にないキーでアクセスすると、初期値が返る（今回はintなので 0）
+	fmt.Println("hogehoge's age is", studentAge["hogehoge"]) // john's age is 0
+
+	// マップ内に存在するかを確認したい場合
+	age, exist := studentAge["hogehoge"] // 2つ目の戻り値でboolが返る
+	if exist {
+    fmt.Println("hogehoge's age is", age)
+	} else {
+		fmt.Println("not exist")
+	}
+
+
+	// 項目の削除
+	delete(studentAge, "john") // delete(マップ, 削除する項目のキー)
+	fmt.Println(studentAge) // map[bob:31]
+
+	// 存在しない項目を削除
+	delete(studentAge, "hogehoge") // エラー（パニック）にならない
+}
+```
