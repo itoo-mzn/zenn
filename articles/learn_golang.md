@@ -966,3 +966,35 @@ func main() {
 	delete(studentAge, "hogehoge") // エラー（パニック）にならない
 }
 ```
+
+# マップ内でループさせる
+range を使って、すべての項目にアクセスできる。
+```go
+range マップ
+```
+
+```go:main.go
+func main() {
+	studentAge := map[string]int{
+		"john": 32,
+		"bob": 31,
+	}
+
+  // 処理イメージ
+	// 1. rangeによって、マップの1つ目("john": 32)がname, ageに代入される。
+	// 2. {}内が実行される
+	for name, age := range studentAge {
+		fmt.Printf("%s\t%d\n", name, age)
+		// john    32
+    // bob     31
+	}
+
+	for name := range studentAge {
+		fmt.Printf("%s\t", name) // john    bob
+	}
+
+	for _, age := range studentAge {
+		fmt.Printf("%d\t", age) // 32      31
+	}
+}
+```
