@@ -998,3 +998,24 @@ func main() {
 	}
 }
 ```
+
+# 構造体
+```go:main.go
+type Employee struct {
+	ID        int
+	FirstName string
+	LastName  string
+}
+
+func main() {
+	employee1 := Employee{1001, "Bob", "Hoge"}
+	fmt.Println(employee1) // {1001 Bob Hoge}
+
+	employee2 := Employee{FirstName: "John", LastName: "Fuga"}
+	fmt.Println(employee2) // {0 John Fuga}
+	fmt.Println(employee2.ID) // 0
+
+	employee2.ID = 1002
+	fmt.Println(employee2) // {1002 John Fuga}
+}
+```
