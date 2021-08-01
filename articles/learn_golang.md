@@ -1019,3 +1019,19 @@ func main() {
 	fmt.Println(employee2) // {1002 John Fuga}
 }
 ```
+
+#### ポインタを使って、コピーと元の構造体を変更
+```go:main.go
+func main() {
+	employee := Employee{FirstName: "John", LastName: "Fuga"}
+	fmt.Println(employee) // {0 John Fuga}
+
+	// ポインタ作成
+	employeeCopy := &employee
+	employeeCopy.FirstName = "bob"
+	fmt.Println(employeeCopy) // &{0 bob Fuga}
+  
+	// 元の構造体も変更されている
+	fmt.Println(employee) // {0 bob Fuga}
+}
+```
