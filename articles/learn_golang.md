@@ -1035,3 +1035,36 @@ func main() {
 	fmt.Println(employee) // {0 bob Fuga}
 }
 ```
+
+#### 構造体の埋め込み
+```go:main.go
+type Person struct {
+	ID        int
+	FirstName string
+	LastName  string
+}
+
+type Employee struct {
+	Person // Personを埋め込む
+	ManagerID int
+}
+
+type Contractor struct {
+	Person // Personを埋め込む
+	CompanyID int
+}
+
+func main() {
+	employee := Employee{
+		// 初期化の際は、Personフィールド（構造体）を明示しないといけない
+		Person: Person{
+			FirstName: "john",
+		},
+	}
+	fmt.Println(employee) // {{0 john } 0}
+
+	// 初期化でないので、Person経由でなくてOK
+	employee.LastName = "doe"
+	fmt.Println(employee) // {{0 john doe} 0}
+}
+```
