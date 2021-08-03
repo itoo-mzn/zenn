@@ -1068,3 +1068,54 @@ func main() {
 	fmt.Println(employee) // {{0 john doe} 0}
 }
 ```
+
+#### 構造体↔JSON
+```go:main.go
+type Person struct {
+	ID        int
+	FirstName string `json:"name"`
+	LastName  string `json:"lastname,omitempty"`
+}
+
+type Employee struct {
+	Person
+	ManagerID int
+}
+
+type Contractor struct {
+	Person
+	CompanyID int
+}
+
+func main() {
+  employees := []Employee{
+		Employee{
+			Person: Person{
+				LastName: "hoge", FirstName: "john",
+			},
+		},
+		Employee{
+			Person: Person{
+				LastName: "fuga", FirstName: "bob",
+			},
+		},
+	}
+
+	data, _ := json.Marshal(employees) // 構造体をjsonに変換
+	fmt.Printf("%s\n", data)
+	// [
+	// 	{"ID":0,"name":"john","lastname":"hoge","ManagerID":0},
+	// 	{"ID":0,"name":"bob","lastname":"fuga","ManagerID":0}
+	// ]
+	
+	
+	var decorded []Employee
+	json.Unmarshal(data, &decorded) // jsonを構造体に変換(戻す)
+	fmt.Printf("%v", decorded)
+	// [
+	// 	{{0 john hoge} 0}
+	// 	{{0 bob fuga} 0}
+	// ]
+}
+
+```
