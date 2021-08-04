@@ -1117,5 +1117,51 @@ func main() {
 	// 	{{0 bob fuga} 0}
 	// ]
 }
+```
 
+# フィボナッチ数列
+```go:main.go
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
+
+func main() {
+	// 入力を受け取る
+	input_int, _ := strconv.Atoi(os.Args[1])
+
+	// フィボナッチ数列を作成
+	slice := generateFibonacciSequence(input_int)
+	fmt.Println(slice)
+}
+
+func generateFibonacciSequence(input int) []int {
+	if input < 2 {
+		// 入力が2未満の場合計算できないため、panicを起こしnilスライスを返す
+		panic([]int{})
+	} else {
+		// 入力が2以上の場合、フィボナッチ数列を生成する
+		prev_num := 0
+		num := 1
+		slice := []int{}
+
+		// [入力された数値]個のスライスをフィボナッチ数列を生成
+		for i := 0; i < input; i++ {
+			// スライスに要素追加
+			slice = append(slice, num)
+
+			// 計算
+			next_num := prev_num + num
+
+			// 次の計算のために変数(数値)を更新
+			prev_num = num
+			num = next_num
+		}
+
+		return slice
+	}
+}
 ```
