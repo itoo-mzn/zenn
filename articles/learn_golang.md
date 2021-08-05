@@ -1144,22 +1144,23 @@ func generateFibonacciSequence(input int) []int {
 		panic([]int{})
 	} else {
 		// 入力が2以上の場合、フィボナッチ数列を生成する
-		prev_num := 0
-		num := 1
-		slice := []int{}
+		
+		// スライスの初期値の意味
+		// 0 : ロジック上あったほうが便利なので設けたダミーの数値。(不要なので後で削除する)
+		// 1 : 存在することが確定している、最初の値
+		slice := []int{0, 1}
 
-		// [入力された数値]個のスライスをフィボナッチ数列を生成
+		// [入力された数値]個のフィボナッチ数列を生成
 		for i := 0; i < input; i++ {
+			// 追加する数値
+			add_num := slice[len(slice)-2] + slice[len(slice)-1]
+
 			// スライスに要素追加
-			slice = append(slice, num)
-
-			// 計算
-			next_num := prev_num + num
-
-			// 次の計算のために変数(数値)を更新
-			prev_num = num
-			num = next_num
+			slice = append(slice, add_num)
 		}
+
+		// 初期値として用意していた 0 を削除
+		slice = append(slice[:0], slice[1:]...)
 
 		return slice
 	}
