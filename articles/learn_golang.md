@@ -1166,3 +1166,32 @@ func generateFibonacciSequence(input int) []int {
 	}
 }
 ```
+
+# エラー処理
+```go:main.go
+type Employee struct {
+	ID        int
+	FirstName string
+	LastName  string
+	Address   string
+}
+
+func main() {
+	employee, err := getInformation(1001)
+	if err != nil {
+		// なにかする
+	} else {
+		fmt.Println(employee)
+	}
+}
+
+func getInformation(id int) (*Employee, error) {
+	employee, err := apiCallEmployee(1000)
+	return employee, err
+}
+
+func apiCallEmployee(id int) (*Employee, error) {
+	employee := Employee{LastName: "hoge", FirstName: "john"}
+	return &employee, nil
+}
+```
