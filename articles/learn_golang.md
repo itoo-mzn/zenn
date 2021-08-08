@@ -1168,6 +1168,18 @@ func generateFibonacciSequence(input int) []int {
 ```
 
 # エラー処理
+## エラー処理に関する推奨事項
+Goでエラーを処理する場合は、次のような推奨事項を考慮してください。
+
+1. エラーが予想されていなくても、エラーがないかどうかを常に確認します。
+  そのうえで、不要な情報がエンドユーザーに公開されないようにします。
+2. エラーメッセージにプレフィックスを含めて、エラーの発生元がわかるようにします。 たとえば、パッケージや関数の名前を含めることができます。
+3. 可能な限り、再利用可能なエラー変数を作成します。
+4. エラーを返すことと、パニックの違いを理解します。 
+  他に対処方法がない場合は、パニックが発生します。
+	たとえば、依存関係の準備ができていない場合、プログラムは動作しません (既定の動作を実行する場合を除きます)。
+5. 可能な限り多くの詳細情報でエラーをログに記録し(次のセクションで説明)、エンドユーザーが理解可能なエラーを出力します。
+
 ```go:main.go
 type Employee struct {
 	ID        int
@@ -1187,10 +1199,27 @@ func main() {
 
 func getInformation(id int) (*Employee, error) {
 	employee, err := apiCallEmployee(1000)
-	return employee, err
+
+	// 修正前
+	// return employee, err
+
+	// 修正後
+	// 1. エラーが予想されていなくても、エラーがないかどうかを常に確認します。
+	//   そのうえで、不要な情報がエンドユーザーに公開されないようにします。
+	if err != nil {
+		return nil, err // apiCallEmployee()からエラーが返って来ている場合は、errのみ返す
+	}
+	return employee, nil
 }
 
+// 3. 可能な限り、再利用可能なエラー変数を作成します。
+var ErrNotFound = errors.New("Employee not found")
+
 func apiCallEmployee(id int) (*Employee, error) {
+	if id != 1001 {
+		return nil, ErrNotFound
+	}
+
 	employee := Employee{LastName: "hoge", FirstName: "john"}
 	return &employee, nil
 }
