@@ -1224,3 +1224,87 @@ func apiCallEmployee(id int) (*Employee, error) {
 	return &employee, nil
 }
 ```
+
+# ログ
+```go:main.go
+import (
+	"fmt"
+	"log"
+)
+
+func main() {
+	log.Print("printろぐ")
+	// → 2021/08/09 07:23:53 printろぐ
+
+	log.Fatal("fatalろぐ")
+	fmt.Print("これは見えない")
+  // → 2021/08/09 07:23:53 fatalろぐ
+	// Fatal()により、プログラムが停止するため、Fatal()以降は実行されない
+}
+```
+
+```go:main.go
+import (
+	"fmt"
+	"log"
+)
+
+func main() {
+	log.Print("printろぐ")
+	// → 2021/08/09 07:23:53 printろぐ
+
+	log.Panic("panicろぐ")
+	fmt.Print("これは見えない")
+	// → panic: panicろぐ
+	//   goroutine 1 [running]:
+	//   log.Panic(0xc0000c3f58, 0x1, 0x1)
+	// 	  			/usr/local/go/src/log/log.go:354 +0xae
+	//   main.main()
+	// 	  			/Users/itotakuya/projects/go/src/helloworld/main.go:814 +0xa5
+	// Panic()以降は実行されない
+}
+```
+
+```go:main.go
+import (
+	"log"
+)
+
+func main() {
+	log.Print("printろぐ")
+	// → 2021/08/09 07:23:53 printろぐ
+
+	log.SetPrefix("main():") // ログにprefixが設定できる
+  log.Print("printログ")
+	log.Fatal("Fatalログ")
+	// → main():2021/08/09 07:29:49 printログ
+	//   main():2021/08/09 07:29:49 Fatalログ
+	//   exit status 1
+}
+```
+
+### ファイルにログを記録する
+```go:main.go
+import (
+	"log"
+	"os"
+)
+
+func main() {
+	// ファイル作成
+	// os.OpenFile(ファイル名, フラグ(ファイルが無ければ作成する等), パーミッション)
+	file, err := os.OpenFile("ingo.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatal("エラー発生")
+	}
+
+	// 後でファイルにログを記録するが、file.Close()を忘れないようにdefer予約
+	defer file.Close()
+
+	// fileにログを記録することを宣言
+	log.SetOutput(file)
+	// 通常どおり、log.Print()を実行することで、ファイルに記録される
+	log.Print("ログ")
+}
+```
