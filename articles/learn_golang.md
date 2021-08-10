@@ -1328,3 +1328,32 @@ func main() {
 	fmt.Println("この三角形の外周:", t.perimeter())
 }
 ```
+
+### ポインターを参照する
+メソッドに、変数自体でなくポインターを渡すほうが良い場合がある。（変数のアドレスを参照する。）
+- メソッドで変数を更新する場合
+- 引数が大きすぎる場合（そのコピーを回避したい）
+
+```go:main.go
+type triangle struct {
+	size int
+}
+
+// func (変数 構造体) メソッド名() 返却型 {
+func (t triangle) perimeter() int {
+	return t.size * 3
+}
+
+// *triangle で、構造体自体でなく 構造体のポインターを渡すように定義
+func (t *triangle) doubleSize() {
+	t.size *= 2
+}
+
+func main() {
+	t := triangle{3}
+	t.doubleSize() // ポインタを参照して tが更新される
+
+	fmt.Println("size:", t.size) // size: 6
+	fmt.Println("perimeter:", t.perimeter()) // perimeter: 18
+}
+```
