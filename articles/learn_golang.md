@@ -1357,3 +1357,27 @@ func main() {
 	fmt.Println("perimeter:", t.perimeter()) // perimeter: 18
 }
 ```
+
+#### 埋め込まれた構造体のメソッドを呼び出すことができる
+```go:main.go
+type triangle struct {
+	size int
+}
+
+type coloredTriangle struct {
+	triangle // 構造体を埋め込む
+	color string
+}
+
+// func (変数 構造体) メソッド名() 返却型 {
+func (t triangle) perimeter() int {
+	return t.size * 3
+}
+
+func main() {
+	t := coloredTriangle{triangle{3}, "blue"}
+	fmt.Println("size:", t.size)
+	// coloredTriangleが、triangle構造体向けのメソッドも使える
+	fmt.Println("perimeter:", t.perimeter())
+}
+```
