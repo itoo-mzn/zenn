@@ -1454,3 +1454,59 @@ func main() {
 }
 
 ```
+
+# インターフェイス
+```go:main.go
+// インターフェイス ------------------
+type Shape interface {
+	Perimeter() float64
+	Area() float64
+}
+
+// 2つの構造体 ------------------
+// 構造体にはインターフェイスとの関連は定義されていない
+
+// Square構造体 
+type Square struct {
+	size float64
+}
+
+func (s Square) Area() float64 {
+	return s.size * s.size
+}
+
+func (s Square) Perimeter() float64 {
+	return s.size * 4
+}
+
+// Circle構造体
+type Circle struct {
+	radius float64
+}
+
+func (c Circle) Area() float64 {
+	return math.Pi * c.radius * c.radius
+}
+
+func (c Circle) Perimeter() float64 {
+	return 2 * math.Pi * c.radius
+}
+
+// 関数 ------------------
+// パラメータとしてShapeインターフェイスを求める
+func printInformation(s Shape) {
+	fmt.Printf("%T\n", s)
+	fmt.Println("Area:", s.Area())
+	fmt.Println("Perimeter:", s.Perimeter())
+	fmt.Println()
+}
+
+// main ------------------
+func main() {
+	var s Shape = Square{3}
+	printInformation(s)
+
+	c := Circle{6}
+	printInformation(c)
+}
+```
