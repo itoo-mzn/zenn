@@ -1381,3 +1381,76 @@ func main() {
 	fmt.Println("perimeter:", t.perimeter())
 }
 ```
+
+#### メソッドのオーバーロード
+※ オーバーロード(多重定義) : 同じ名前の関数等を定義すること
+```go:main.go
+type triangle struct {
+	size int
+}
+
+// func (変数 構造体) メソッド名() 返却型 {
+func (t triangle) perimeter() int {
+	return t.size * 3
+}
+
+type coloredTriangle struct {
+	triangle
+	color string
+}
+
+func (t coloredTriangle) perimeter() int {
+	return t.size * 5
+}
+
+func main() {
+	t := coloredTriangle{triangle{3}, "blue"}
+	fmt.Println("size:", t.size)
+
+	// coloredTriangleで、coloredTriangle構造体向けのメソッドを使う
+	fmt.Println("perimeter:", t.perimeter()) // perimeter: 15
+	// coloredTriangleで、triangle構造体向けのメソッドも使える
+	fmt.Println("perimeter:", t.triangle.perimeter()) // perimeter: 9
+}
+```
+
+### カプセル化
+
+通常、他のプログラミング言語では、private または public のキーワードをメソッド名の前に配置します。 Goでは、メソッドを公開にするには大文字の識別子だけを、メソッドを非公開にするには子文字の識別子を使用する必要があります。
+
+private : 小文字から始まる名前
+public  : 大文字から始まる名前
+
+```go:size.go
+package geometry
+
+type Triangle struct {
+	size int
+}
+
+func (t *Triangle) doubleSize() {
+	t.size *= 2
+}
+
+func (t *Triangle) SetSize(size int) {
+	t.size = size
+}
+
+func (t *Triangle) Perimeter() int {
+	t.doubleSize()
+	return t.size * 3
+}
+```
+```go:main.go
+func main() {
+	t := geometry.Triangle{}
+	t.SetSize(3)
+	
+	// publicなので実行できる
+	fmt.Println(t.Perimeter()) // 18
+
+  // privateなメソッドなのでアクセスできない
+	fmt.Println(t.doubleSize()) // t.doubleSize undefined
+}
+
+```
