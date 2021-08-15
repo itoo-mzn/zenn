@@ -1510,3 +1510,32 @@ func main() {
 	printInformation(c)
 }
 ```
+
+### stringerインターフェイスを実装する
+```go:main.go
+type Person struct {
+	Name, Country string
+}
+
+// Stringerインターフェイス = fmt.Printfで使用されるインターフェイス
+// 元のString()メソッドをオーバーライドする(カスタム)
+func (p Person) String() string {
+	return fmt.Sprintf("%v is from %v", p.Name, p.Country)
+}
+
+func main() {
+	rs := Person{"john", "USA"}
+	ab := Person{"hoge", "UK"}
+	
+	// 文字列をPrintfすると、オーバーライドした通りに出力される
+	fmt.Printf("%s\n%s\n", rs, ab)
+	// john is from USA
+  // hoge is from UK
+	fmt.Printf("%q\n%q\n", rs, ab)
+  // "john is from USA"
+  // "hoge is from UK"
+
+	// 文字列以外をPrintfするときは、関係なし
+	fmt.Printf("%d\n", 4) // 4
+}
+```
