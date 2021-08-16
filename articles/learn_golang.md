@@ -1578,3 +1578,40 @@ func main() {
 	io.Copy(writer, resp.Body)
 }
 ```
+
+### カスタム サーバー API の作成
+```go:main.go
+type dollars float32
+
+// dollars型を文字列で出力する場合は $25.00 みたいに$をつけて小数点2桁まで表示するように加工する
+func (d dollars) String() string {
+	return fmt.Sprintf("$%.2f", d)
+}
+
+type database map[string]dollars
+
+// ListenAndServe()で呼ばれるServeHTTPメソッドをカスタム
+func (db database) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	for item, price := range db {
+		fmt.Fprintf(w, "%s: %s\n", item, price)
+	}
+}
+
+func main() {
+	// database型をインスタンス化
+	db := database{"Go T-shirt": 25, "Go Jacket": 55}
+	fmt.Println(db)
+
+	log.Fatal(http.ListenAndServe("localhost:8000", db))
+	// localhost:8000にて、
+	// Go Jacket:$55.00
+	// Go T-shirt:$25.0 と表示される
+
+	// ListenAndServeの定義 : 
+	//   package http
+	//   type Handler interface {
+	// 	  	ServeHTTP(w ResponseWriter, r *Request)
+	//   }
+	//   func ListenAndServe(address string, h Handler) error
+}
+```
