@@ -1539,3 +1539,42 @@ func main() {
 	fmt.Printf("%d\n", 4) // 4
 }
 ```
+
+### 既存の実装を拡張する
+```go:main.go
+type GithubResponse []struct {
+	Fullname string `json:"full_name"`
+}
+
+// 独自のWriteインターフェイスを定義
+type custumWriter struct{}
+
+// Writeメソッドをオーバーライド
+func (w custumWriter) Write(p []byte) (n int, err error) {
+	var resp GithubResponse
+	json.Unmarshal(p, &resp)
+	for _, r := range resp {
+		fmt.Println(r.Fullname)
+	}
+	return len(p), nil
+}
+
+func main() {
+	resp, err := http.Get("https://api.github.com/users/microsoft/repos?page=15&per_page=5")
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	// io.Copy(os.Stdout, resp.Body)
+	// 上記では、大量の出力になる
+
+	// 1行の見やすい出力に変更する
+	// Cory()関数のソースを見ると、下記になっているため、Writeインターフェイスを使用する
+	//   func Copy(dst Writer, src Reader) (written int64, err error)
+	// また、Cory()関数のソースを見ると、Writeメソッドを呼び出すことがわかるため、
+	// Writeメソッドをオーバーライドすれば出力を変更できる
+	writer := custumWriter{}
+	io.Copy(writer, resp.Body)
+}
+```
