@@ -1615,3 +1615,44 @@ func main() {
 	//   func ListenAndServe(address string, h Handler) error
 }
 ```
+
+# コンカレンシー
+## 追加で参考にした文献
+  https://zenn.dev/hsaki/books/golang-concurrency/viewer
+
+## goroutineとは
+オペレーティング システムでの従来のアクティビティではなく、軽量スレッドでの同時アクティビティです。 
+
+```go:main.go
+func main() {
+	start := time.Now()
+
+	apis := []string{
+		"https://management.azure.com",
+		"https://dev.azure.com",
+		"https://api.github.com",
+		"https://outlook.office.com/",
+		"https://api.somewhereintheinternet.com/",
+		"https://graph.microsoft.com",
+	}
+
+	for _, api := range apis {
+	  // GETリクエストを送る
+		_, err := http.Get(api)
+
+		// エラー時
+		if err != nil {
+			fmt.Printf("ERROR: %s is down!\n", api)
+			continue
+		}
+		// 成功時
+		fmt.Printf("SUCCESS: %s is up and runnging!\n", api)
+	}
+
+	elapsed := time.Since(start)
+	fmt.Printf("Done! It took %v seconds\n", elapsed.Seconds())
+
+}
+```
+
+## 
