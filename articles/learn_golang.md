@@ -6,6 +6,9 @@ topics: ["Go"]
 published: false
 ---
 
+# 学習元サイト
+https://docs.microsoft.com/ja-jp/learn/paths/go-first-steps/
+
 # プログラム実行
 Goは、mainパッケージ内のmain関数からプログラムがスタートする。
 （プログラムがスタートする地点のことを、エントリーポイントという。）
@@ -1622,6 +1625,7 @@ func main() {
 
 ## goroutineとは
 オペレーティング システムでの従来のアクティビティではなく、軽量スレッドでの同時アクティビティです。 
+（並列でなく）並行処理ができる。
 
 ```go:main.go
 func main() {
@@ -1635,7 +1639,8 @@ func main() {
 		"https://api.somewhereintheinternet.com/",
 		"https://graph.microsoft.com",
 	}
-
+  
+	// 1つ1つのサイトに、順番にGETする
 	for _, api := range apis {
 	  // GETリクエストを送る
 		_, err := http.Get(api)
@@ -1652,7 +1657,49 @@ func main() {
 	elapsed := time.Since(start)
 	fmt.Printf("Done! It took %v seconds\n", elapsed.Seconds())
 
+	// 2秒ぐらいかかってしまう
 }
 ```
 
-## 
+上記のコードを改良。
+```go:main.go
+func main() {
+	start := time.Now()
+
+	apis := []string{
+		"https://management.azure.com",
+		"https://dev.azure.com",
+		"https://api.github.com",
+		"https://outlook.office.com/",
+		"https://api.somewhereintheinternet.com/",
+		"https://graph.microsoft.com",
+	}
+
+	ch := make(chan string)
+
+	for _, api := range apis {
+		// APIごとにgoroutineを作成
+		go checkAPI(api, ch)
+	}
+
+	// サイト数と同じだけ、channelから受信し、出力
+	for i := 0; i < len(apis); i++ {
+		fmt.Print(<-ch)
+	}
+
+	elapsed := time.Since(start)
+	fmt.Printf("Done! It took %v seconds\n", elapsed.Seconds())
+
+	// 0.6秒ほどに短縮
+}
+
+func checkAPI(api string, ch chan string) {
+	_, err := http.Get(api)
+	if err != nil {
+		ch <- fmt.Sprintf("ERROR: %s is down!\n", api)
+		return
+	}
+	// Sprintfを使うのは、まだ出力はしたくないため
+	ch <- fmt.Sprintf("SUCCESS: %s is up and running!\n", api)
+}
+```
