@@ -1703,3 +1703,65 @@ func checkAPI(api string, ch chan string) {
 	ch <- fmt.Sprintf("SUCCESS: %s is up and running!\n", api)
 }
 ```
+
+## チャネルの方向
+```go:main.go
+// チャネルに送信
+func send(ch chan<- string, message string) {
+	fmt.Printf("Senging: %#v\n", message)
+	ch <- message
+}
+// チャネルに受信
+func read(ch <-chan string) {
+	fmt.Printf("Receving: %#v\n", <-ch)
+}
+
+func main() {
+	ch := make(chan string, 1)
+	send(ch, "hello") // Senging: "hello"
+	read(ch) // Receving: "hello"
+}
+```
+
+## 多重化
+selectステートメントはswitchステートメントと同じように機能しますが、チャネル用です。
+
+```go:main.go
+func process(ch chan string) {
+	time.Sleep(3 * time.Second)
+	ch <- "Done processing!"
+}
+
+func replicate(ch chan string) {
+	time.Sleep(1 * time.Second)
+	ch <- "Done replicating!"
+}
+
+func main() {
+	// チャネルを作成
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	// goroutineを作成
+	go process(ch1)
+	go replicate(ch2)
+
+	for i := 0; i < 2; i++ {
+		// select句でイベント(チャネルからの送信)を待ち、来たらcase内を実行する
+		// さらに(2つ以上の)イベントが発生するまで待機したい場合、必要に応じてループを使う必要がある(for)
+		select {
+		case process := <-ch1:
+			fmt.Println(process)
+		case replicate := <-ch2:
+			fmt.Println(replicate)
+		}
+		fmt.Println("ここはイベント終了毎に実行される")
+	}
+}
+  /*
+		Done replicating!
+		ここはイベント終了毎に実行される
+		Done processing!
+		ここはイベント終了毎に実行される
+	/*
+```
