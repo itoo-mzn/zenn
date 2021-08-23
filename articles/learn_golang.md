@@ -1765,3 +1765,46 @@ func main() {
 		ここはイベント終了毎に実行される
 	/*
 ```
+
+## 課題
+### 改良前
+```go:main.go
+// フィボナッチ数列を生成
+func fib(number float64) float64 {
+	x, y := 1.0, 1.0
+	for i := 0; i < int(number); i++ {
+		x, y = y, x+y
+	}
+
+	// ランダムで、0~3秒待つ
+	r := rand.Intn(3)
+	time.Sleep(time.Duration(r) * time.Second)
+
+	return x
+}
+
+func main() {
+	start := time.Now()
+
+	// 1~15までのフィボナッチ数列を出力
+	for i := 1; i < 15; i++ {
+		n := fib(float64(i))
+		fmt.Printf("Fib(%v): %v\n", i, n)
+	}
+
+	// 実行時間を出力
+	elapsed := time.Since(start)
+	fmt.Printf("Done! %v seconds\n", elapsed.Seconds())
+}
+```
+
+### 改良後
+#### 1. 速度改善ver.
+コンカレンシーを実装する改良バージョン。
+現時点では、かかる時間は数秒 (15 秒以内)のはずです。
+バッファーありのチャネルを使用する必要があります。
+
+#### 2. ユーザ入力による制御ver.
+ユーザーが fmt.Scanf() 関数を使用してターミナルに quit と入力するまでフィボナッチ数を計算する新しいバージョンを作成します。 
+ユーザーが Enter キーを押した場合は、新しいフィボナッチ数を計算する必要があります。
+つまり、1 から 10 までのループはなくなります。
