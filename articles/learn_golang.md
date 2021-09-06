@@ -1827,3 +1827,60 @@ func main() {
 つまり、1 から 10 までのループはなくなります。
 
 #### TODO: あとで復習してから、課題解くこと
+
+# Go でプログラムを作成してテストする (オンライン銀行プロジェクト)
+2つのプロジェクトを作成します。
+1つはプログラムのコアロジック用で、もう1つはWebAPIを通してロジックを公開するためのものです。
+## 機能と要件
+- 顧客が口座を作成できるようにします。
+- 顧客がお金を引き出すことができるようにします。
+- 顧客が別の口座に送金できるようにします。
+- 顧客データと最終残高を含む取引明細を提供します。
+- 取引明細を印刷するための Web API を、エンドポイントを通して公開します。
+
+## テスト実行コマンド
+```
+go test -v
+```
+すべての `*_test.go` ファイルが検索される
+
+## コード
+```go:src/bankcore/bank_test.go
+package bank
+
+import "testing"
+
+func TestAccount(t *testing.T) {
+	account := Account{
+		Customer: Customer{
+			Name: "John",
+			Address: "Los Angeles",
+			Phone: "123 555 0147",
+		},
+		Number: 1001,
+	  Balance: 0,
+	}
+
+  // 名前の入力が無ければアカウントを作れない
+	if account.Name == "" {
+		t.Error("can't create an Account object")
+	}
+}
+
+// 現状: 通過
+```
+```go:src/bankcore/bank_test.go
+package bank
+
+type Customer struct {
+  Name string
+	Address string
+	Phone string
+}
+
+type Account struct {
+  Customer
+  Number int32
+	Balance float64
+}
+```
