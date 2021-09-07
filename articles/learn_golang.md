@@ -1850,37 +1850,152 @@ package bank
 
 import "testing"
 
+// テスト
 func TestAccount(t *testing.T) {
 	account := Account{
 		Customer: Customer{
-			Name: "John",
+			Name:    "John",
 			Address: "Los Angeles",
-			Phone: "123 555 0147",
+			Phone:   "123 555 0147",
 		},
-		Number: 1001,
-	  Balance: 0,
+		Number:  1001,
+		Balance: 0,
 	}
 
-  // 名前の入力が無ければアカウントを作れない
+	// 名前の入力が無ければアカウントを作れない
 	if account.Name == "" {
-		t.Error("can't create an Account object")
+		t.Error("アカウントを作れません")
 	}
 }
 
-// 現状: 通過
+func TestDeposit(t *testing.T) {
+	account := Account{
+		Customer: Customer{
+			Name:    "John",
+			Address: "Los Angeles",
+			Phone:   "123 555 0147",
+		},
+		Number:  1001,
+		Balance: 0,
+	}
+
+	// 入金
+	account.Deposit(10)
+
+	// 残高が入金額と等しくない場合、エラーを起こす
+	if account.Balance != 10 {
+		t.Error("入金したのに残高が更新されていません")
+	}
+}
+
+func TestDepositInvalid(t *testing.T) {
+	account := Account{
+		Customer: Customer{
+			Name:    "John",
+			Address: "Los Angeles",
+			Phone:   "123 555 0147",
+		},
+		Number:  1001,
+		Balance: 0,
+	}
+
+	// マイナスの金額を入金したのに、エラーがnilである場合、エラーを起こす
+	if err := account.Deposit(-10); err == nil {
+		t.Error("正の数値だけが入金額として許可されるべき")
+	}
+}
+
+func TestWithdraw(t *testing.T) {
+	account := Account{
+		Customer: Customer{
+			Name:    "John",
+			Address: "Los Angeles",
+			Phone:   "123 555 0147",
+		},
+		Number:  1001,
+		Balance: 0,
+	}
+
+	// 入金して、同じ額を引き出す
+	account.Deposit(10)
+	account.Withdraw(10)
+
+	// 残高は0のはず
+	if account.Balance != 0 {
+		t.Error("引き出したのに残高が更新されていません")
+	}
+}
+
+func TestStatement(t *testing.T) {
+	account := Account{
+		Customer: Customer{
+			Name:    "John",
+			Address: "Los Angeles",
+			Phone:   "123 555 0147",
+		},
+		Number:  1001,
+		Balance: 0,
+	}
+
+	account.Deposit(100)
+	statement := account.Statement()
+
+	// 明細表示が正しいか
+	if statement != "1001 - John - 100" {
+		t.Error("明細表示が正しくありません")
+	}
+}
 ```
 ```go:src/bankcore/bank_test.go
 package bank
 
+import (
+	"errors"
+	"fmt"
+)
+
+// 顧客情報
 type Customer struct {
-  Name string
+	Name    string
 	Address string
-	Phone string
+	Phone   string
 }
 
+// アカウント
 type Account struct {
-  Customer
-  Number int32
-	Balance float64
+	Customer
+	Number  int32   // ID
+	Balance float64 // 残高
+}
+
+// 入金
+func (a *Account) Deposit(amount float64) error {
+	if amount <= 0 {
+		return errors.New("入金額は0より大きい必要があります")
+	}
+
+	// 残高に入金額を足す
+	a.Balance += amount
+	return nil
+}
+
+// 引き出し
+func (a *Account) Withdraw(amount float64) error {
+	if amount <= 0 {
+		return errors.New("残高は0より大きい必要があります")
+	}
+
+	if a.Balance < amount {
+		return errors.New("残高より大きい額を引き出せません")
+	}
+
+	// 残高から引き出し額を引く
+	a.Balance -= amount
+	return nil
+}
+
+// 明細表示
+func (a *Account) Statement() string {
+	return fmt.Sprintf("%v - %v - %v", a.Number, a.Name, a.Balance)
 }
 ```
