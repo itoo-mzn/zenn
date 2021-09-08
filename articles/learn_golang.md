@@ -1945,6 +1945,43 @@ func TestStatement(t *testing.T) {
 		t.Error("明細表示が正しくありません")
 	}
 }
+
+func TestSend(t *testing.T) {
+	send_account := Account{
+		Customer: Customer{
+			Name:    "John",
+			Address: "Los Angeles",
+			Phone:   "123 555 0147",
+		},
+		Number:  1001,
+		Balance: 0,
+	}
+	receive_account := Account{
+		Customer: Customer{
+			Name:    "Alice",
+			Address: "Los Angeles",
+			Phone:   "987 555 0147",
+		},
+		Number:  1002,
+		Balance: 0,
+	}
+
+	send_account.Deposit(100)
+
+	// 100を別アカウントへ送金
+	send_account.Send(&receive_account, 100) // 重要: & でアドレスを渡す(参照渡し)
+	
+  // 明細表示が正しいか
+	send_statement := send_account.Statement()
+	if send_statement != "1001 - John - 0" {
+		t.Error("明細表示が正しくありません")
+	}
+
+	receive_statement := receive_account.Statement()
+	if receive_statement != "1002 - Alice - 100" {
+		t.Error("明細表示が正しくありません")
+	}
+}
 ```
 ```go:src/bankcore/bank.go
 package bank
@@ -1997,6 +2034,20 @@ func (a *Account) Withdraw(amount float64) error {
 // 明細表示
 func (a *Account) Statement() string {
 	return fmt.Sprintf("%v - %v - %v", a.Number, a.Name, a.Balance)
+}
+
+// 送金
+// 第一引数はポインタ(アドレス)
+func (send_account *Account) Send(receive_account *Account, amount float64) error {
+	if amount <= 0 {
+		return errors.New("入金額は0より大きい必要があります")
+	}
+	if send_account.Balance < amount {
+		return errors.New("残高より大きい額を送金できません")
+	}
+	send_account.Withdraw(amount)
+	receive_account.Deposit(amount)
+	return nil
 }
 ```
 ```go:src/bankapi/main.go
