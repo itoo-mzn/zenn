@@ -9,6 +9,16 @@ published: false
 # 学習元サイト
 https://docs.microsoft.com/ja-jp/learn/paths/go-first-steps/
 
+## その他のサイト
+網羅的に説明してくれているスライド
+https://docs.google.com/presentation/d/1RVx8oeIMAWxbB7ZP2IcgZXnbZokjCmTUca-AbIpORGk/edit#slide=id.g4f417182ce_0_80
+
+grpcプロトコルのチュートリアル
+https://github.com/ymmt2005/grpc-tutorial
+
+Goの低レイヤについて
+https://ascii.jp/serialarticles/1235262/
+
 # プログラム実行
 Goは、mainパッケージ内のmain関数からプログラムがスタートする。
 （プログラムがスタートする地点のことを、エントリーポイントという。）
@@ -2169,3 +2179,13 @@ func withdraw(w http.ResponseWriter, req *http.Request) {
 	}
 }
 ```
+
+# 次は
+## goroutineの理解を深める
+
+## 別の教材でも学習する
+網羅的に説明してくれているスライド
+https://docs.google.com/presentation/d/1RVx8oeIMAWxbB7ZP2IcgZXnbZokjCmTUca-AbIpORGk/edit#slide=id.g4f417182ce_0_80
+
+grpcプロトコルのチュートリアル
+https://github.com/ymmt2005/grpc-tutorial
