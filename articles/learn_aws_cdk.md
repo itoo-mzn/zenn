@@ -77,6 +77,72 @@ mkdir cdk-sample
 cdk init --language typescript
 ```
 
+## コンパイル
+TypeScriptはJavaScriptにコンパイルする必要があるため、ソースファイルに変更を加えるたびに、それらをにコンパイルする必要がある。
+そのために、新しいターミナルのタブを開いて、`watch`を実行する。
+（新しいタブで開くのは、バックグラウンドでずっと動いてほしいため）
+```
+npm run watch
+
+Starting compilation in watch mode...
+Found 0 errors. Watching for file changes.
+```
+
+## 主要ファイル
+### lib/cdk-workshop-stack.ts
+主要なファイル。CDKアプリケーションのメインスタックを定義。
+### bin/cdk-workshop.ts
+CDKアプリケーションのエントリポイント。
+`lib/cdk-workshop-stack.ts`で定義されたスタックをロード。
+### cdk.json
+アプリの実行方法をツールキットに指示。
+
+
+## 実行テスト
+
+### cdk synth
+`lib/cdk-workshop-stack.ts`にサンプル実装して、`cdk synth`を実行。
+しかしエラー発生のため、下記のようにnpx経由で実行した。
+
+:::message
+npxを使うとローカル(node_modules\.bin)にインストールされたパッケージをパスを指定せずに実行できる。
+:::
+
+:::message alert
+そもそも使うpackageをyarn addしていなかったので、そこも以後気をつける。
+:::
+
+```
+cdk synth
+
+This CDK CLI is not compatible with the CDK library used by your application. Please upgrade the CLI to the latest version.
+(Cloud assembly schema version mismatch: Maximum schema version supported is 13.0.0, but found 14.0.0)
+```
+
+```
+yarn global upgrade aws-cdk@latest
+(これは必要かは不明)
+
+npm install -g npx
+npx cdk synth
+```
+
+### cdk bootstrap
+`cdk bootstrap`: AWSアカウント、リージョン単位で一度だけ実行するコマンド。
+CDKで利用するリソースを置いておくS3バケットを作成してくれる。
+```
+npx cdk bootstrap --profile cdk-workshop
+```
+:::message alert
+メモ：エラー発生して格闘していたが、`~/.aws/config`の中でスペルミスしていただけだった。
+:::
+
+### cdk deploy
+```
+npx cdk deploy --profile cdk-workshop
+```
+リソースがAWS上に作成され、コンソール画面の CloudFormation にて、リソースタブを開くと作成されたリソースが確認できた。
+
 
 
 
