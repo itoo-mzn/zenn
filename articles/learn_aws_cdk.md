@@ -187,3 +187,10 @@ export class CdkSampleStack extends cdk.Stack {
   }
 }
 ```
+4. 差分を確認。(`cdk diff`)
+5. デプロイ（`cdk deploy`)
+6. Lambdaのコンソール画面から、テスト
+  (イベントテンプレートリストからAmazonAPI Gateway AWSProxyを選択)
+7. 出力に、レスポンスが表示されている。（成功）
+
+
