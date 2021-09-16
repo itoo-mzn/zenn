@@ -146,6 +146,12 @@ npx cdk deploy --profile cdk-workshop
 npx cdk diff --profile cdk-workshop
 ```
 
+## cdk destroy
+スタックごとリソースを削除。
+```
+npx cdk destroy --profile cdk-workshop
+```
+
 # AWS Lamdaリソースを作る
 1. `lamda`ディレクトリを作り、hello.jsを作成。
 実行したい関数を定義。
@@ -192,5 +198,44 @@ export class CdkSampleStack extends cdk.Stack {
 6. Lambdaのコンソール画面から、テスト
   (イベントテンプレートリストからAmazonAPI Gateway AWSProxyを選択)
 7. 出力に、レスポンスが表示されている。（成功）
+
+# AWS APIGatewayリソースを作る
+Lambdaの前にAPIGatewayを配置する。
+(ブラウザやcurlで叩ける)パブリックHTTPエンドポイントを公開する。
+
+1. AWSコンストラクトライブラリをインストール。
+```
+yarn add @aws-cdk/aws-apigateway
+```
+
+2. lib/cdk-sample-stack.tsに追加したいリソースを定義。
+AWSAPIGateway関数をスタックに追加。
+```ts:lib/cdk-sample-stack.ts
+import * as cdk from '@aws-cdk/core';
+import * as lambda from '@aws-cdk/aws-lambda';
+import * as apigw from '@aws-cdk/aws-apigateway';
+
+export class CdkSampleStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Lamdaリソースをスタックに追加
+    const hello = new lambda.Function(this, 'HelloHandler', {
+      runtime: lambda.Runtime.NODEJS_14_X, // 実行環境
+      code: lambda.Code.fromAsset('lambda'), // lamdaディレクトリのコードを読み込む
+      handler: 'hello.handler' // "hello"ファイルの"handler"関数を実行する
+    });
+
+    // hello関数(Lamdaリソース)へのリクエストをプロキシするAPIGatewayを定義
+    new apigw.LambdaRestApi(this, 'Endpoint', {
+      handler: hello
+    });
+  }
+}
+```
+4. 差分を確認。(`cdk diff`)
+5. デプロイ（`cdk deploy`)
+6. deploy完了時のターミナルに表示されているエンドポイントにcurlやブラウザでアクセス。
+7. `Hello, CDK! You've hit /m`と出力される。（成功）
 
 
