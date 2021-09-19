@@ -238,4 +238,96 @@ export class CdkSampleStack extends cdk.Stack {
 6. deploy完了時のターミナルに表示されているエンドポイントにcurlやブラウザでアクセス。
 7. `Hello, CDK! You've hit /m`と出力される。（成功）
 
+# ヒットカウンターを作る
+リクエストの回数をカウントし、DynamoDBに保存する。
 
+```ts:lib/cdk-sample-stack.ts
+import * as cdk from '@aws-cdk/core';
+import * as lambda from '@aws-cdk/aws-lambda';
+import * as apigw from '@aws-cdk/aws-apigateway';
+import { HitCounter } from './hitcounter';
+
+export class CdkSampleStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Lamdaリソースをスタックに追加
+    const hello = new lambda.Function(this, 'HelloHandler', {
+      runtime: lambda.Runtime.NODEJS_14_X, // 実行環境
+      code: lambda.Code.fromAsset('lambda'), // lamdaディレクトリのコードを読み込む
+      handler: 'hello.handler' // "hello"ファイルの"handler"関数を実行する
+    });
+
+    const helloWithCounter = new HitCounter(this, 'HelloHitCounter', {
+      downstream: hello
+    });
+
+    // hello関数(Lamdaリソース)へのリクエストをプロキシするAPIGatewayを定義
+    new apigw.LambdaRestApi(this, 'Endpoint', {
+      handler: helloWithCounter.handler
+    });
+  }
+}
+```
+
+```ts:lib/hitcounter.ts
+import * as cdk from '@aws-cdk/core';
+import * as lambda from '@aws-cdk/aws-lambda';
+import * as dynamodb from '@aws-cdk/aws-dynamodb';
+
+export interface HitCounterProps {
+  // カウントする関数
+  downstream: lambda.IFunction;
+}
+
+// 構造体（→スタックに追加する）
+export class HitCounter extends cdk.Construct {
+  public readonly handler: lambda.Function;
+
+  // props: データを渡す
+  constructor(scope: cdk.Construct, id: string, props: HitCounterProps) {
+    super(scope, id);
+
+    const table = new dynamodb.Table(this, 'Hits', {
+      partitionKey: { name: 'path', type: dynamodb.AttributeType.STRING }
+    });
+
+    this.handler = new lambda.Function(this, 'HitCounterHandler', {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      handler: 'hitcounter.handler',
+      code: lambda.Code.fromAsset('lambda'),
+      environment: {
+        DOWNSTREAM_FUNCTION_NAME: props.downstream.functionName,
+        HITS_TABLE_NAME: table.tableName
+      }
+    });
+  }
+}
+```
+
+```ts:lambda/hitcounter.js
+const { DynamoDB, Lambda } = require('aws-sdk');
+
+exports.handler = async function(event) {
+  console.log("request:", JSON.stringify(event, undefined, 2));
+
+  const dynamo = new DynamoDB();
+  const lambda = new Lambda();
+
+  await dynamo.updateItem({
+    TableName: process.env.HITS_TABLE_NAME, // DynamoDBテーブル名
+    Key: { path: { S: event.path} },
+    UpdateExpression: 'ADD hits :incr',
+    ExpressionAttributeValues: { ':incr': { N: '1'}}
+  }).promise();
+
+  const resp = await lambda.invoke({
+    FunctionName: process.env.DOWNSTREAM_FUNCTION_NAME, // Lambda関数名
+    Payload: JSON.stringify(event) // 返却値
+  }).promise();
+
+  console.log('downstream response:', JSON.stringify(resp, undefined, 2));
+
+  return JSON.parse(resp.Payload);
+}
+```
