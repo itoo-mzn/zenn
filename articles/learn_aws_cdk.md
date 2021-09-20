@@ -98,6 +98,9 @@ CDKアプリケーションのエントリポイント。
 アプリの実行方法をツールキットに指示。
 
 # コマンド（動作確認）
+こちらも詳しい
+https://dev.classmethod.jp/articles/aws-cdk-command-line-interface/#toc-10
+
 ## cdk synth
 `lib/cdk-workshop-stack.ts`にサンプル実装して、`cdk synth`を実行。
 しかしエラー発生のため、下記のようにnpx経由で実行した。
