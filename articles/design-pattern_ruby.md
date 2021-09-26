@@ -37,3 +37,5 @@ ConcreteFactoryによって生成される側のオブジェクト。
 ## デメリット
 - AbstractFactoryをinterfaceや抽象クラス（・抽象メソッド）のようにしないと、ConcreteFactoryにメソッドが増やしたい場合に、全てのConcreteFactoryにメソッドを追加し、本当に全てに追加できたか確認しないといけない。
 （Rubyでは抽象クラス・抽象メソッド（オーバーライドを強要する）をサポートしていないので、別の仕組み（実装）を作って再現しないといけない。）
+
+# 中断した。Builderから再開すること。　(コードはdesign-pattern_rubyディレクトリ)

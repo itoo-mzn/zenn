@@ -2,8 +2,8 @@
 title: "AWS CDK"
 emoji: "🐙"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
-published: false
+topics: ["AWS", "CDK"]
+published: true
 ---
 
 # AWS CDKとは
