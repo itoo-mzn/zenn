@@ -5,6 +5,9 @@ type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["オブジェクト指向", "設計"]
 published: false
 ---
+# 書籍
+https://gihyo.jp/book/2016/978-4-7741-8361-9
+
 # Gitレポジトリ
 書いたコードはGitレポジトリに保存。
 https://github.com/ito0804takuya/object-oriented_design
@@ -130,3 +133,66 @@ def diameter(wheel)
   wheel.rim + (wheel.tire * 2) # 直径 = リム+タイヤの厚み
 end
 ```
+
+# 3章 依存関係を管理する
+適切に設計されたオブジェクトは単一の責任を持つ。そのため、目的のためにはオブジェクト同士の共同作業が必要であり、共同作業をするにオブジェクトは他のオブジェクトを知っていないといけない。**「知っている」というのは依存**であり、しっかり管理する必要がある。
+
+## 依存関係とは
+クラス間に一定の依存関係が生まれるのは避けられないが、依存は最低限にするべき。（コードの合理性が失われるため）
+
+以下のコードには、依存関係がある。（Wheelの変更によって、Gearの変更が強制される状況。）
+```ruby
+# 自転車のギア
+class Gear
+  attr_reader :chainring, :cog, :rim, :tire
+
+  def initialize(chainring, cog, rim, tire)
+    @chainring = chainring # チェーンリングの歯数
+    @cog = cog # コグの歯数
+    @rim = rim # リム(タイヤの内側の金属部分)の直径
+    @tire = tire # タイヤの厚み
+  end
+
+  # ギアの比率(= ペダル1回転に対する車輪の回転数)
+  def ratio
+    chainring / cog.to_f # 浮動小数点へ変換
+  end
+
+  # ギアインチ(ギアと車輪の大きさが異なっても比較できる基準)
+  def gear_inches
+    # ギア比率 * タイヤの直径
+    ratio * Wheel.new(rim, tire).diameter
+  end
+end
+
+# 自転車の車輪
+class Wheel
+  attr_reader :rim, :tire
+
+  def initialize(rim, tire)
+    @rim = rim # リム(タイヤの内側の金属部分)の直径
+    @tire = tire # タイヤの厚み
+  end
+
+  # タイヤの直径
+  def diameter
+    rim + (tire * 2) # 直径 = リム+タイヤの厚み
+  end
+end
+
+puts Gear.new(52, 11, 26, 1.5).gear_inches
+```
+
+### オブジェクトが次のことを知っているとき、オブジェクトには依存関係がある。
+- **他のクラスの名前**
+  Gearは、Wheelという名前のクラスが存在することを知っている。
+- **self以外のどこかに送ろうとするメッセージの名前**
+  Gearは、Wheelのインスタンスがdiameterに応答することを知っている。
+- **メッセージが要求する引数**
+  Gearは、Wheel.newにrimとtireが必要なことを知っている。
+- **引数の順番**
+  Gearは、Wheel.newの第1引数がrimで、第2引数がtireである必要があることを知っている。
+
+## オブジェクト間の結合
+2つ以上のオブジェクトの結合が強固なとき、それらは1つのユニットであるように振る舞う。
+つまり、1つだけを再利用する ということができない。
