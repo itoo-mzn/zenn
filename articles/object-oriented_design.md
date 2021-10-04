@@ -196,3 +196,85 @@ puts Gear.new(52, 11, 26, 1.5).gear_inches
 ## オブジェクト間の結合
 2つ以上のオブジェクトの結合が強固なとき、それらは1つのユニットであるように振る舞う。
 つまり、1つだけを再利用する ということができない。
+
+## 疎結合なコードを書く
+### 依存オブジェクトの注入
+```diff ruby
+# 自転車のギア
+class Gear
+- attr_reader :chainring, :cog, :rim, :tire
++ attr_reader :chainring, :cog, :wheel
+
+  def initialize(chainring, cog, rim, tire)
+    @chainring = chainring # チェーンリングの歯数
+    @cog = cog # コグの歯数
+-   @rim = rim # リム(タイヤの内側の金属部分)の直径
+-   @tire = tire # タイヤの厚み
++   @wheel = wheel # wheelオブジェクト
+  end
+
+  # ギアの比率(= ペダル1回転に対する車輪の回転数)
+  def ratio
+    chainring / cog.to_f # 浮動小数点へ変換
+  end
+
+  # ギアインチ(ギアと車輪の大きさが異なっても比較できる基準)
+  def gear_inches
+    # ギア比率 * タイヤの直径
+-   ratio * Wheel.new(rim, tire).diameter
++   ratio * wheel.diameter
+  end
+end
+
+- puts Gear.new(52, 11, 26, 1.5).gear_inches
++ puts Gear.new(52, 11, Wheel.new(26, 1.5)).gear_inches # Gearが依存しているWheelオブジェクトを注入
+```
+依存が削減され、今は**wheelがdiameterメソッドに応答することだけ知っている(1つだけ依存を残している)状況**に改善。
+
+### 外部メッセージを隔離する
+gear_inchesの`wheel.diameter`は、Gearにおいては**外部メッセージ**。
+```ruby
+def gear_inches
+  # ギア比率 * タイヤの直径
+  ratio * wheel.diameter # selfへのメッセージ+外部メッセージ (外部メッセージが含まれている)
+end
+```
+今は簡素なコードだから良いが、gear_inchesが複雑になるほどこの外部メッセージによって変更が必要になる可能性(壊れる危険性)が高くなる。
+そこで、gear_inches内の**外部的な依存を取り除くため、専用のメソッド内にカプセル化する**。
+```ruby
+def gear_inches
+  ratio * diameter # selfへのメッセージのみ
+end
+
+def diameter
+  wheel.diameter # 外部メッセージ
+end
+```
+
+### 引数の順番への依存を除去する
+引数が必要なメッセージを送るとき、引数を「正しい順番」で渡す必要がある場合、それは**引数の順番に依存している**。
+```ruby
+# 第1引数はchainringで, 第2引数はcog, 第3引数はwheel であることを知っている必要がある
+Gear.new(52, 11, Wheel.new(26, 1.5))
+```
+
+:::message alert
+本書では「引数をハッシュで渡すテクニック」が紹介されていたが、今は**キーワード引数**があるので、キーワード引数を使うほうがいい。
+（調べたところ、本書が2016年出版で、キーワード引数は2017年に導入されたので、タイミングが悪かったのだと思われる。）
+:::
+
+```ruby
+Gear.new(chainring: 52, cog: 11, wheel: Wheel.new(26, 1.5))
+```
+
+## 依存方向の管理
+依存関係には常に方向がある。依存方向の決め方を知る。
+
+### 依存方向の選択
+#### 結論 : 「自身よりも変更されないもの」に依存すること
+#### 見定め方・考え方
+- そのクラスは他のクラスより要件が変わりやすいか。
+  変わりにくいものの例：Rubyの基本的なクラス、フレームワークのコード
+- 具象クラスは、抽象クラスより変わる可能性が高い。
+  抽象化されたものへの依存は、具象的なものへの依存よりも常に安全。
+- 多くから依存されているクラスを変更すると、広範囲に影響がでる。
