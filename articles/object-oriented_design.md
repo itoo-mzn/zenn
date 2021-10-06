@@ -298,7 +298,24 @@ Gear.new(chainring: 52, cog: 11, wheel: Wheel.new(26, 1.5))
 
 ### より良いインターフェイス
 本書では、自転車旅行を提供する旅行会社のシステムを例にしている。
-=
+- 参加者(Customer)
+- 旅行(Trip)
+- 工程(Route)
+- 自転車(Bike)
+- 整備士(Mechanic)
 
 #### 参加者(Customer)と旅行(Trip)のメッセージ
-Customer → suitable_trips() → Trip
+参加者は、適切な旅行を探している。これを下記のように表す。（本書ではシーケンス図で表している）
+`Customerクラス → suitable_trips(on_date, of_difficuly, need_bike)メッセージ → Tripクラス`
+(Tripにsuitable_tripsメソッドがある)
+Tripに「自転車が利用可能か」も聞いている。これは、Tripが担う責任ではない。
+→**このメッセージを送る必要があるが、だれが応答すべきなのか？を考える**。
+
+自転車については、Bicycleに聞くように変更。
+`Customerクラス → suitable_trips(on_date, of_difficuly)メッセージ → Tripクラス`
+`Customerクラス → suitable_bicycle(trip_date, route_type)メッセージ → Bicycleクラス`
+Tripから余計な責任は取り除けたが、Customerが「何を望むか」だけでなく、「どのようにして望むものを準備するか」まで知っている（知りすぎている）。
+（メニューで何を望むか注文するのでなく、Customerが厨房に入りこんで調理している ような状況。）
+
+#### 旅行(Trip)と整備士(Mechanic)のメッセージ
+旅行の出発前に、自転車が整備されているか確認したい。
