@@ -385,8 +385,10 @@ https://qiita.com/tbpgr/items/6f1c0c7b77218f74c63e
   `private`が最も不安定。（publicが安定。）
 2. アプリケーションの**ほかのところに、どれだけメソッドが見えるか** を制御するため。
 
+:::message
 これらは、アクセスを**拒否する訳ではなく、ただ大変にする**のみ。そこを勘違いしないこと。
 （絶対的な制限でないため、だれでもその障壁を超えることはできる。）
+:::
 それでも使うのは、上記1.の通り**そのメソッドの安定性を示すため**である。
 
 ### デメテルの法則
@@ -399,4 +401,127 @@ customer.bicycle.wheel.tire
 メッセージチェーン内のどこかで起きる関係のない変更によって、変更を与儀なくされるリスクが高まっている。
 
 # 5章 ダックタイピングでコストを削減する
+動的型付けオブジェクト指向プログラミング言語で使われる型付けのやり方のこと。
+（由来：そのオブジェクトがアヒルのように鳴き、アヒルのように歩くならば、そのクラスが何であれ、それはアヒルである。）
+
+## ダックタイピングを理解する
+### ダックを見逃す
+以下は、ダックタイピングする前のコード。
+```ruby
+class Trip
+  attr_reader :bicycles, :customers, :vehicle
+
+  # 引数のmechanicは、どんなクラスのものでも良いことになっている
+  def prepare(mechanic)
+    # しかし、mechanicがprepare_bicyclesに応答するはずだと信じている
+    # → prepare_bicyclesに応答できるオブジェクトが渡される ことに依存している
+    mechanic.prepare_bicycles(bicycles)
+  end
+end
+
+class Mechanic
+  def prepare_bicycles(bicycles)
+    bicycles.each {|bicycle| prepare_bicycle(bicycle)}
+  end
+
+  def prepare_bicycle(bicycle)
+    # 何かの処理
+  end
+end
+```
+
+### 問題を悪化させる
+あえて問題を悪化させて考えるために、下記のように要件が変わったとする。
+「旅行の準備には、整備士に加え、旅行のコーディネーターと運転手も必要になった」
+```ruby
+class Trip
+  attr_reader :bicycles, :customers, :vehicle
+
+  def prepare(preparers)
+    preparers.each {|preparer|
+      # prepare_bicyclesに応答できないオブジェクトにも対応するためcase文で場合分け
+      case preparer
+      when Mechanic
+        preparer.prepare_bicycles(bicycles)
+      when TripCoordinator
+        preparer.buy_food(customers)
+      when Driver
+        preparer.gas_up(vehicle)
+      end
+    }
+  end
+end
+
+# (その他のクラスは略)
+```
+ここでの問題点は、**Tripが具象クラスとそのメソッドを知りすぎている**こと。
+
+### ダックを見つける
+ダックを見つける思考を下記に示す。
+1. 依存を取り除く(ダックを見つける)鍵となるのは、「Tripクラスのprepareメソッドは単一の目的を達成するためにあるので、その**引数も単一の目的を達成するために渡されてくる**」と認識すること。
+2. prepareの目的は、旅行を準備すること。
+3. その引数も、旅行の準備に協力しようとやってくる(渡されてくる)。つまり、**引数はすべて準備するもの(Preparer)だ**と考える
+4. **TripはPreparer(整備士、コーディネーター、運転手)に何をしてほしいか**。それは**旅行に行くための準備(prepare_trip)**。
+5. よって、**Preparerは皆、prepare_tripに応答できればいい**。
+:::message alert
+**実際にPreparerクラスを作るのではない**。ダックタイプは概念。
+:::
+
+```ruby
+class Trip
+  attr_reader :bicycles, :customers, :vehicle
+
+  def prepare(preparers)
+    preparers.each { |preparer| preparer.prepare_trip(self) }
+  end
+end
+
+class Mechanic
+  def prepare_trip(trip)
+    trip.bicycles.each { |bicycle| prepare_bicycle(bicycle) }
+  end
+
+  def prepare_bicycle(bicycle)
+    # 何かの処理
+  end
+end
+
+class TripCoordinator
+  def prepare_trip(trip)
+    buy_food(trip.customers)
+  end
+  
+  # ...
+end
+
+class Driver
+  def prepare_trip(trip)
+    gas_up(trip.vehicle)
+  end
+  
+  # ...
+end
+```
+
+:::message
+### ポリモーフィズム
+多岐にわたるオブジェクトが、同じメッセージに応答できる能力。
+:::
+
+## 隠れたダックを見つける
+既存のコード内にダックタイプが潜んでいることがある。
+よく使われるコーディングパターンの中には、その存在を示唆するものがある。
+- クラスで分岐するcase文
+- `kind_of?`と`is_a?`
+- `responds_to?`
+
+### クラスで分岐するcase文
+前述のコードで示した内容。(オブジェクトのクラスによって分岐させていた。)
+
+### `kind_of?`と`is_a?`
+`kind_of?`と`is_a?`も、そのオブジェクトのクラスを確認するものなので、上記と同じ。
+
+### `responds_to?`
+`responds_to?`はオブジェクトにメソッドがあるか調べる。
+そのオブジェクトのクラスを確認することと、そのオブジェクトがメッセージに応答するかどうか確認することは、この文脈上同じ。(そのオブジェクトが何を実行できるか知っている)
 
