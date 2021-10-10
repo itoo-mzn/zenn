@@ -525,3 +525,275 @@ end
 `responds_to?`はオブジェクトにメソッドがあるか調べる。
 そのオブジェクトのクラスを確認することと、そのオブジェクトがメッセージに応答するかどうか確認することは、この文脈上同じ。(そのオブジェクトが何を実行できるか知っている)
 
+# 6章 継承によって振る舞いを獲得する
+継承したクラスが応答できないメッセージ(メソッドが無い場合)は、親クラス(スーパークラス)に自動的に問い合わせる。
+(自分で応答できる場合は当然、自分で応答する。)
+##### 例：Rubyのnil?メソッド
+すべてのクラスの親クラスである*Objectクラス*には`nil? -> false`と定義してある。
+*Nillクラス*には`nil? -> true`と定義されてある。
+そうすることで、Nillインスタンス.nil?はtrueに、その他のインスタンスはfalseを返すようになっている。
+
+## 継承を使うべき箇所を識別する
+以下、2種類の自転車（ロードバイク、マウンテンバイク）を例にする。
+
+### 複数の型を埋め込む定義したクラス
+```ruby:1つのクラスに2つの型を埋め込んだ
+class Bicycle
+  attr_reader :style, :size, :tape_color, :front_shock, :rear_shock
+
+  def initialize(args)
+    @style = args[:style] # 自転車の種類
+    @size = args[:size] # 自転車のサイズ
+    @tape_color = args[:tape_color] # ハンドルテープの色
+    @front_shock = args[:front_shock] # 前のサスペンション(マウンテンバイク特有)
+    @rear_shock = args[:rear_shock] # 後ろのサスペンション(マウンテンバイク特有)
+  end
+
+  # スペアとして用意するもの
+  def spares
+    if style == :road
+      # ロードバイクの場合
+      {
+        chain: '10-speed',
+        tire_size: '23',
+        tape_color: tape_color
+      }
+    else
+      # ロードバイク以外(マウンテンバイク)の場合
+      {
+        chain: '10-speed',
+        tire_size: '2.1',
+        rear_shock: rear_shock
+      }
+    end
+  end
+end
+
+bike = Bicycle.new(
+  style: :mountain,
+  size: 'S',
+  front_shock: 'Manitou',
+  rear_shock: 'Fox'
+)
+p bike.spares
+```
+
+### 継承を不適切に使う
+```ruby
+class MountainBike < Bicycle
+  attr_reader :front_shock, :rear_shock
+
+  def initialize(args)
+    @front_shock = args[:front_shock] # 前のサスペンション(マウンテンバイク特有)
+    @rear_shock = args[:rear_shock] # 後ろのサスペンション(マウンテンバイク特有)
+    super(args) # 親クラスの同メソッド呼び出し
+  end
+
+  def spares
+    super.merge(rear_shock: rear_shock)
+  end
+end
+```
+このようにクラスを定義してはいけない。
+なぜなら、Bicycleが具象クラスのままで、Bicycleにはロードバイクがまだ含まれている。
+つまり、MountainBike(具象クラス)がロードバイクの振る舞いを継承してしまっている。
+→ Bicycle(親クラス)を抽象クラスにして、RoadBikeをBicycleから分離すべき。
+
+:::message
+**サブクラスはそのスーパークラスを特化したもの**。
+:::
+
+:::message
+#### 継承のルール
+1. **汎化-特化の関係**であること。
+2. 正しいコーディングテクニックを使っていること。
+:::
+
+### 抽象的な親クラスをつくる
+Bicycleから分離し、RoadBikeクラスを新規で作成。
+```ruby
+class Bicycle
+  attr_reader :size, :chain, :tire_size
+
+  def initialize(args = {})
+    @size = args[:size] # 自転車のサイズ
+    @chain = args[:chain]
+    @tire_size = args[:tire_size]
+  end
+
+  def spares
+    {
+      chain: chain,
+      tire_size: tire_size,
+    }
+  end
+end
+
+class RoasBike < Bicycle
+  attr_reader :tape_color
+
+  def initialize(args)
+    @tape_color = args[:tape_color] # ハンドルテープの色
+    super(args) # 親クラスの同メソッド呼び出し
+  end
+
+  def spares
+    # {
+    #   chain: '10-speed',
+    #   tire_size: '23',
+    #   tape_color: tape_color
+    # }
+    super.merge(tape_color: tape_color)
+  end
+end
+
+class MountainBike < Bicycle
+  attr_reader :front_shock, :rear_shock
+
+  def initialize(args)
+    @front_shock = args[:front_shock] # 前のサスペンション(マウンテンバイク特有)
+    @rear_shock = args[:rear_shock] # 後ろのサスペンション(マウンテンバイク特有)
+    super(args) # 親クラスの同メソッド呼び出し
+  end
+
+  def spares
+    # {
+    #   chain: '10-speed',
+    #   tire_size: '2.1',
+    #   rear_shock: rear_shock
+    # }
+    super.merge(rear_shock: rear_shock)
+  end
+end
+```
+
+### テンプレートメソッドパターンを使う
+#### テンプレートメソッドパターン
+親クラスで抽象的に決めて、子クラスで詳細を埋める。
+```diff ruby
+class Bicycle
+  attr_reader :size, :chain, :tire_size
+
+  def initialize(args = {})
+    @size = args[:size]
+    # 初期値として渡されない限りは、自転車共通の値を採用する
+-   @chain = args[:chain]
++   @chain = args[:chain] || default_chain
+    # 初期値として渡されない限りは、各自転車で指定している特有の値を採用する
+-   @tire_size = args[:tire_size]
++   @tire_size = args[:tire_size] || default_tire_size
+  end
+
++ def default_chain
++   '10-speed' # どんな自転車でも共通の初期値
++ end
+
+  def spares
+    {
+      chain: chain,
+      tire_size: tire_size
+    }
+  end
+end
+
+class RoasBike < Bicycle
+  attr_reader :tape_color
+
+  def initialize(args)
+    @tape_color = args[:tape_color]
+    super(args)
+  end
+
++ def default_tire_size
++   '23' # ロードバイク特有の初期値
++ end
+
+  def spares
+    super.merge(tape_color: tape_color)
+  end
+end
+
+class MountainBike < Bicycle
+  attr_reader :front_shock, :rear_shock
+
+  def initialize(args)
+    @front_shock = args[:front_shock]
+    @rear_shock = args[:rear_shock]
+    super(args)
+  end
+
++ def default_tire_size
++   '2.1' # マウンテンバイク特有の初期値
++ end
+
+  def spares
+    super.merge(rear_shock: rear_shock)
+  end
+end
+```
+
+### すべてのテンプレートメソッドパターンを実装する
+上の実装で各パラメータが存在すべき場所に存在できるようになったが、新たな具象クラスを作るときに問題を引き起こす可能性がある。
+具象クラスには`default_tire_size`の実装が必須だが、そのことを知らずに新たな`***Bike`クラスを作り、特に`tire_size`を指定せず初期化するとエラーが起こる。
+→ **一見しただけでは把握できない要件(`default_tire_size`が必須)を、親クラスが子クラスに課している**。
+
+```diff ruby
+class Bicycle
+  attr_reader :size, :chain, :tire_size
+
+  def initialize(args = {})
+    @size = args[:size]
+    # 初期値として渡されない限りは、自転車共通の値を採用する
+    @chain = args[:chain] || default_chain
+    # 初期値として渡されない限りは、各自転車で指定している特有の値を採用する
+    @tire_size = args[:tire_size] || default_tire_size
+  end
+
++ def default_tire_size
++   # なぜエラーが起きたのか明確にする
++   raise NotImplementedError, "#{self.class}クラスはこのメソッドに応答できない:"
++ end
+
+  # 略
+end
+# 略
+```
+
+### フックメッセージを使って子クラスを疎結合にする
+上のコードにおいても改善点があり、それは子クラスの`initialize`。
+親クラスがhashを返すこと(アルゴリズム)を知っていることがまずい。
+(例えば、新しい子クラス`RecumbentBike`を作り、`initialize`で`super`を書き忘れると、指定した値が初期値として設定されずnilとなる。)
+
+*子クラスから親クラスにsuperを送るように(親クラスが)求める*のでなく、**親クラスが子クラスにメッセージを送るようにする**ことで、それを解消する。
+```diff ruby
+class Bicycle
+  attr_reader :size, :chain, :tire_size
+
+  def initialize(args = {})
+    @size = args[:size]
+    @chain = args[:chain] || default_chain
+    @tire_size = args[:tire_size] || default_tire_size
+
++   post_initialize(args)
+    # -> 子クラスにpost_initializeメッセージを送る(無ければこのクラスのpost_initializeに)
+  end
+
++ def post_initialize(args)
++   nil
++ end
+  
+  # 略
+end
+
+class RoasBike < Bicycle
+  attr_reader :tape_color
+
+- def initialize(args)
++ def post_initialize(args)
+    @tape_color = args[:tape_color]
+-   super(args) # -> 親クラスにメッセージを送らなくて良くなった
+  end
+
+  # 略
+end
+```
