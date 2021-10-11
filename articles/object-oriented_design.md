@@ -903,3 +903,108 @@ end
 ### 階層構造は浅くする
 クラスの階層構造は**浅く**する。（広さ、狭さ でなく。）
 複雑になり理解が困難になるため、**深くしてはいけない**。
+
+# 8章 コンポジションでオブジェクトを組み合わせる
+コンポジションとは、組み合わされた全体が*単なる部品の集合*以上となるように、「部品」を「全体」へと組み合わせる行為。
+以下、コンポジションのテクニック。
+
+## 自転車をパーツからcomposeする
+6章で作ったBicycleクラスは、継承を使った抽象親クラス。これをコンポジションを使うように変更する。
+
+Bicycleクラスは`spares`に応答する必要があるが、パーツから構成される自転車は、Partsクラスを持ち、それが`spares`に応答できればいい。
+部品群を表すPartsクラスを作成し、自転車の種類(ロードバイクなど)もPartsの一部として考える。
+
+```ruby
+class Bicycle
+  attr_reader :size, :parts
+
+  def initialize(args = {})
+    @size = args[:size] # 自転車のサイズ
+    @parts = args[:parts] # 自転車の部品
+  end
+
+  def spares
+    parts.spares # 応答をpartsに委譲
+  end
+end
+
+class Parts
+  attr_reader :chain, :tire_size
+
+  def initialize(_atgs = {})
+    @chain = args[:chain] || default_chain
+    @tire_size = args[:tire_size] || default_tire_size
+    post_initialize(args)
+  end
+
+  def spares
+    {
+      chain: chain,
+      tire_size: tire_size
+    }.merge(local_spares) # 自転車ごとに特有のスペアを足す
+  end
+
+  # 子クラスでオーバーライドするメソッド群 -------------
+  def default_tire_size
+    raise NotImplementedError
+  end
+
+  def post_initialize(_args)
+    nil
+  end
+
+  def local_spares
+    {}
+  end
+  # ----------------------------------------------
+
+  def default_chain
+    '10-speed' # どんな自転車でも共通の初期値
+  end
+end
+
+class RoasBikeParts < Parts
+  attr_reader :tape_color
+
+  def post_initialize(args)
+    @tape_color = args[:tape_color] # ハンドルテープの色
+  end
+
+  def local_spares
+    { tape_color: tape_color }
+  end
+
+  def default_tire_size
+    '23' # ロードバイク特有の初期値
+  end
+end
+
+class MountainBikeParts < Parts
+  attr_reader :front_shock, :rear_shock
+
+  def post_initialize(args)
+    @front_shock = args[:front_shock] # 前のサスペンション(マウンテンバイク特有)
+    @rear_shock = args[:rear_shock] # 後ろのサスペンション(マウンテンバイク特有)
+  end
+
+  def local_spares
+    { rear_shock: rear_shock } # マウンテンバイク独自で必要なスペアはrear_shockのみ
+  end
+
+  def default_tire_size
+    '2.1' # マウンテンバイク特有の初期値
+  end
+end
+```
+
+## コンポジションと継承の選択
+
+### 継承
+#### メリット
+#### デメリット
+
+### コンポジション
+#### メリット
+#### デメリット
+
+### 関係の選択
