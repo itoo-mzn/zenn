@@ -807,3 +807,99 @@ end
 例題として、旅行のスケジュールを知ることができるように、機能を追加する。
 - 予定が空いているか確認が必要なのは、自転車・整備士・自動車。
 - 前の旅行からのメンテ(休息)期間は、自転車1日・整備士4日・自動車3日。
+
+モジュールを使って表現する。
+```ruby
+class Schedule
+  def scheduled?(schedulable, start_date, end_date)
+    false # ひとまず、予定が空いていないことにしておく
+  end
+end
+
+module Schedulable
+  attr_writer :schedule
+
+  def schedule
+    @schedule ||= ::Schedule.new
+  end
+
+  def schedulable?(start_date, end_date)
+    !scheduled?(start_date - lead_days, end_date)
+  end
+
+  def scheduled?(start_date, end_date)
+    schedule.scheduled?(self, start_date, end_date)
+  end
+
+  def lead_days
+    0 # 必要に応じてincludeする側で書き換える
+  end
+end
+
+class Bicycle
+  include Schedulable
+
+  def lead_days
+    1 # 自転車のメンテ期間は1日
+  end
+
+  # 略
+end
+
+class Mechanic
+  include Schedulable
+
+  def lead_days
+    4 # 整備士の休息期間は4日
+  end
+
+  # 略
+end
+```
+
+:::message
+**クラスの継承は「である（is-a）」、モジュールでの共有は「のように振る舞う（behave-like-a）」**
+:::
+
+### メソッド探索の仕組み
+`bike.spares`を実行したとき、sparesメソッドがあるかどうかは、下記のように探索される。
+1. MountainBikeクラスにsparesメソッドがあるか確認。
+2. Bicycleクラス(親)にsparesメソッドがあるか確認。
+3. Objectクラス(親の親)にsparesメソッドがあるか確認。
+
+#### モジュールをinclueしている場合
+1. MountainBikeクラスにsparesメソッドがあるか確認。
+2. Bicycleクラス(親)にsparesメソッドがあるか確認。
+3. *Schedulableモジュールにsparesメソッドがあるか確認。*
+4. Objectクラス(親の親)にsparesメソッドがあるか確認。
+
+そのため、Schedulableモジュールに定義したメソッドを、意図せずBicycleクラスがオーバーライドする可能性がある。
+(複数includeしている場合は、最後にincludeしたものが先に探索される。)
+
+##### TODO: include, prepend, extend。ActiveSupport::Concern を調べて学ぶこと!
+
+## 継承可能なコードを書く
+### アンチパターン
+1. オブジェクトがtypeやcategoryという変数名を使い、**どんなメッセージをselfに送るか決めている**パターン。
+→ 共通のコードを抽象親クラスにおき、子クラスで異なる型をつくる。
+2. メッセージを受け取る**オブジェクトのクラスを確認してから、どのメッセージを送るかをオブジェクトが決めている**パターン。
+→ ダックタイプを見落としている。ダックタイプやモジュールを使い、ロールを担わせる。
+
+### 抽象に固執する
+**抽象親クラス内のコードを使わない子クラスがあってはいけない**。
+すべての子クラスで使わないけど一部の子クラスで使うようなコードは、親クラスに置くべきでない。
+
+### リスコフの置換原則(LSP)
+(SOLIDのL)
+**派生型は、上位型と置換可能でなければならない。**
+
+### テンプレートメソッドパターンを使う
+継承可能なコードを書くための最も基本的なコーディング手法は、テンプレートメソッドパターンを使うこと。
+テンプレートメソッドパターンを使うと、**抽象を具象から分けることができる**。
+
+### 前もって疎結合にする
+**継承する側で`super`を呼び出すのは避ける。変わりにフックメッセージを使う**。
+
+### 階層構造は浅くする
+クラスの階層構造は**浅く**する。（広さ、狭さ でなく。）
+複雑になり理解が困難になるため、**深くしてはいけない**。
