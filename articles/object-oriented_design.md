@@ -944,7 +944,7 @@ class Parts
     }.merge(local_spares) # 自転車ごとに特有のスペアを足す
   end
 
-  # 子クラスでオーバーライドするメソッド群 -------------
+  # 子クラスでオーバーライドするメソッド群 -----
   def default_tire_size
     raise NotImplementedError
   end
@@ -956,7 +956,7 @@ class Parts
   def local_spares
     {}
   end
-  # ----------------------------------------------
+  # -----------------------------------
 
   def default_chain
     '10-speed' # どんな自転車でも共通の初期値
@@ -993,6 +993,47 @@ class MountainBikeParts < Parts
 
   def default_tire_size
     '2.1' # マウンテンバイク特有の初期値
+  end
+end
+```
+
+## Partsオブジェクトをcomposeする
+`Parts`クラスはPartの集まり(集合)であるため、`Part`クラスを作る。
+→ PartでPartsをcomposeする。
+```ruby
+class Bicycle
+  attr_reader :size, :parts
+
+  def initialize(args = {})
+    @size = args[:size] # 自転車のサイズ
+    @parts = args[:parts] # 自転車の部品
+  end
+
+  def spares
+    parts.spares
+  end
+end
+
+# Partの集合
+class Parts
+  attr_reader :parts
+
+  def initialize(parts)
+    @parts = parts
+  end
+
+  def spares
+    parts.select { |part| part.need_spare }
+  end
+end
+
+class Part
+  attr_reader :name, :description, :need_spare
+
+  def initialize(args)
+    @name = args[:name]
+    @description = args[:description] # 部品の詳細情報
+    @need_spare = args.fetch(:need_spare, true) # スペアを用意する必要があるか
   end
 end
 ```
