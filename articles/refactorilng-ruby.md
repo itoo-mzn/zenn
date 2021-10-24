@@ -291,3 +291,133 @@ end
 **コードが何をしようとしているか**が、はっきりと分かるようになる。
 :::
 
+## 1.5 レンタルポイント計算メソッドの抽出
+1.4で金額計算をRentalに移したように、レンタルポイント計算も移す。
+```diff ruby
+def Customer
+  #（略）
+  def statement
+    total_amount = 0
+    frequent_renter_points = 0
+    result = "Rental Record for #{@name}\n"
+
+    @rentals.each do |element|
+      # レンタルポイントを加算
+-      frequent_renter_points += 1
+-      # 新作の場合、2日間レンタルでボーナス点をレンタルポイントに加算
+-      frequent_renter_points += 1 if element.movie.price_code == Movie::NEW_RELEASE && element.days_rented > 1
++      frequent_renter_points += element.frequent_renter_points
+
+      # このレンタルの料金を表示
+      result += "\t" + element.movie.title + "\t" + element.charge.to_s + "\n"
+      total_amount += element.charge
+    end
+
+    # フッター行を追加
+    result += "Amount owed is #{total_amount}\n" # 合計金額
+    result += "You earned #{frequent_renter_points} frequent renter points" # 加算されたレンタルポイント
+    result
+  end
+end
+
+class Rental
+  #（略）
++  def frequent_renter_points
++    # 新作の場合、2日間レンタルで2ポイント（ボーナス点）
++    # それ以外（通常）は1ポイント
++    element.movie.price_code == Movie::NEW_RELEASE && element.days_rented > 1 ? 2 : 1
++  end
+end
+```
+
+## 1.6 一時変数の削除
+＜一時変数から問合せメソッドへ＞を適用して、一時変数である`total_amount`を削除する。
+
+```diff ruby
+def Customer
+  #（略）
+  def statement
+-   total_amount = 0
+    frequent_renter_points = 0
+    result = "Rental Record for #{@name}\n" # 出力する文字列
+
+    @rentals.each do |element|
+      # レンタルポイントを加算
+      frequent_renter_points += element.frequent_renter_points
+
+      # このレンタルの料金を表示
+      result += "\t" + element.movie.title + "\t" + element.charge.to_s + "\n"
+-     total_amount += element.charge
+    end
+
+    # フッター行を追加
+-   result += "Amount owed is #{total_amount}\n" # 合計金額
++   result += "Amount owed is #{total_charge}\n" # 合計金額
+    result += "You earned #{frequent_renter_points} frequent renter points" # 加算されたレンタルポイント
+    result
+  end
+
++ private
+  
++ # レンタル料金合計
++ def total_charge
++   @result.inject(0) { |result, rental| result += rental.charge } # 
++ end
+end
+```
+`total_charge`として切り出す際、＜ループからコレクションクロージャメソッドへ＞を適用した。
+
+### ＜ループからコレクションクロージャメソッドへ＞
+each系の処理をmap系の処理にすること。
+繰り返し処理した結果を返却したい場合に、ループの外から変数として渡す必要がなくなる。
+```ruby:each使用時
+array = 1..6
+
+sum = 0
+array.each do |num|
+  sum += num
+  p sum
+end
+```
+```ruby:mapやinject使用時
+array = 1..6
+
+array.inject (0){ |sum,num| p sum+=num} # injectの引数は、sumの初期値
+```
+
+`total_amount`と同様、一時変数である`frequent_renter_points`を削除する。
+```diff ruby
+def Customer
+  #（略）
+  def statement
+-   frequent_renter_points = 0
+    result = "Rental Record for #{@name}\n" # 出力する文字列
+
+    @rentals.each do |element|
+-     frequent_renter_points += element.frequent_renter_points
+
+      # このレンタルの料金を表示
+      result += "\t" + element.movie.title + "\t" + element.charge.to_s + "\n"
+    end
+
+    # フッター行を追加
+    result += "Amount owed is #{total_charge}\n" # 合計金額
+-   result += "You earned #{frequent_renter_points} frequent renter points" # 加算されたレンタルポイント
++   result += "You earned #{total_frequent_renter_points} frequent renter points" # 加算されたレンタルポイント
+    result
+  end
+
+  private
+
+  # レンタル料金合計
+  def total_charge
+    @rentals.inject(0) { |sum, rental| sum += rental.charge }
+  end
+
++ def total_frequent_renter_points
++   @rentals.inject(0) { |sum, rental| sum += rental.frequent_renter_points }
++ end
+end
+```
+
+## 1.7料金コードによる条件分岐からポリモーフィズムへ
