@@ -421,3 +421,49 @@ end
 ```
 
 ## 1.7料金コードによる条件分岐からポリモーフィズムへ
+**case文を使うときは、他のオブジェクトでなく、自身のデータ（状態）によって分岐すべき。**
+
+Rentalクラスの`charge`メソッドはMovieの情報で分岐していたため、インターフェイスは変えずに、Movieに移す。
+（`frequent_renter_points`メソッドも同様に移したが、記載は省略。）
+```diff ruby
+class Rental
+  #（略）
+  # 料金
+  def charge
+-    result = 0
+-
+-    case rental.movie.price_code
+-    when Movie::REGULAR
+-      result += 2
+-      result += (rental.days_rented - 2) * 1.5 if rental.days_rented > 2
+-    when Movie::NEW_RELEASE
+-      result += rental.days_rented * 3
+-    when Movie::CHILDRENS
+-      result += 1.5
+-      result += (rental.days_rented - 3) * 1.5 if rental.days_rented > 3
+-    end
++    # Rentalが持つデータ(days_rented)を渡して、Movieに委譲する
++    movie.charge(days_rented)
+  end
+end
+```
+```diff ruby
+class Movie
+  #（略）
++  def charge(days_rented)
++    result = 0
++
++    case price_code
++    when REGULAR
++      result += 2
++      result += (days_rented - 2) * 1.5 if days_rented > 2
++    when NEW_RELEASE
++      result += days_rented * 3
++    when CHILDRENS
++      result += 1.5
++      result += (days_rented - 3) * 1.5 if days_rented > 3
++    end
++    result
++  end
+end
+```
