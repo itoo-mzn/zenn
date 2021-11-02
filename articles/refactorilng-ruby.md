@@ -499,3 +499,148 @@ end
 メソッドの上位階層への移動
 
 # 4章 テストの構築
+リファクタリングにテストは必要。(赤→緑→リファクタリング)
+`例外`もテストする必要がある。
+
+# 5章 リファクタリングのカタログに先立って
+（6~12章の構成の説明 のため省略。）
+
+# 6章 メソッドの構成方法
+## 6.1 メソッドの抽出
+コードの一部をメソッドにして、その目的を説明する名前をつける。
+- 理由: メソッドの粒度が細ければ、流用性が高くなる。
+- 注意: 意味のある良い名前が思いつかないなら、それは抽出すべきでない。
+
+```ruby:リファクタ前
+def printing_owing
+  outstanding = 0.0
+
+  # バナーを出力
+  puts "*****************************"
+  puts "****** Customer Owes ********"
+  puts "*****************************"
+
+  # 料金を計算
+  @orders.each do |order|
+    outstanding += order.amount
+  end
+
+  # 詳細を表示
+  puts "name: #{@name}"
+  puts "amount: #{outstanding}"
+end
+```
+
+### 6.1.1 パターン: ローカル変数なし
+```ruby
+def printing_owing
+  outstanding = 0.0
+
+  # <メソッドの抽出>
+  print_banner
+
+  # 料金を計算
+  @orders.each do |order|
+    outstanding += order.amount
+  end
+
+  # 詳細を表示
+  puts "name: #{@name}"
+  puts "amount: #{outstanding}"
+end
+
+# バナーを出力
+def print_banner
+  puts "*****************************"
+  puts "****** Customer Owes ********"
+  puts "*****************************"
+end
+```
+
+### 6.1.2 パターン: ローカル変数あり
+```ruby
+def printing_owing
+  outstanding = 0.0
+
+  print_banner
+
+  # 料金を計算
+  @orders.each do |order|
+    outstanding += order.amount
+  end
+
+  # <メソッドの抽出>
+  print_details(outstanding)
+end
+
+# バナーを出力
+def print_banner
+  puts "*****************************"
+  puts "****** Customer Owes ********"
+  puts "*****************************"
+end
+
+# 詳細を表示
+def print_details(outstanding)
+  puts "name: #{@name}"
+  puts "amount: #{outstanding}"
+end
+```
+
+### 6.1.3 パターン: ローカル変数への再代入
+
+```ruby
+def printing_owing
+  print_banner
+
+  # <メソッドの抽出>
+  # ローカル変数に代入することで、以降のコードに影響を与えない
+  outstanding = calculate_outstanding
+
+  print_details(outstanding)
+end
+
+# バナーを出力
+def print_banner
+  puts "*****************************"
+  puts "****** Customer Owes ********"
+  puts "*****************************"
+end
+
+# 詳細を表示
+def print_details(outstanding)
+  puts "name: #{@name}"
+  puts "amount: #{outstanding}"
+end
+
+# 料金を計算
+def calculate_outstanding
+  # outstanding = 0.0
+  # @orders.each do |order|
+  #   outstanding += order.amount
+  # end
+  # outstanding
+  @order.inject(0.0) { |sum, order| sum + order.amount}
+end
+```
+
+## 6.2 メソッドのインライン化
+メソッドを呼び出し元に組み込み、そのメソッドを削除。
+- 条件: メソッドの本体が、名前と同じぐらいわかりやすい場合。
+- 理由: 過剰な間接化はイライラの原因。
+
+```ruby:リファクタ前
+def get_rating
+  more_than_five_late_deliveries ? 2 : 1
+end
+
+def more_than_five_late_deliveries
+  @number > 5
+end
+```
+
+```ruby:リファクタ後
+def get_rating
+  @number > 5 ? 2 : 1
+end
+```
