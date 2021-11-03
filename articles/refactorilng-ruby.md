@@ -508,6 +508,7 @@ end
 # 6章 メソッドの構成方法
 ## 6.1 メソッドの抽出
 コードの一部をメソッドにして、その目的を説明する名前をつける。
+- 条件: なし。
 - 理由: メソッドの粒度が細ければ、流用性が高くなる。
 - 注意: 意味のある良い名前が思いつかないなら、それは抽出すべきでない。
 
@@ -644,3 +645,274 @@ def get_rating
   @number > 5 ? 2 : 1
 end
 ```
+
+## 6.3 一時変数のインライン化
+一時変数を削除。
+- 条件: 単純 かつ 1度しか代入されていない場合。
+- 理由: リファクタリングを妨げる。
+
+## 6.4 一時変数から問合せメソッドへ
+一時変数(式)をメソッドにする。
+メソッドは最初は非公開にしておき、後で他の用途が見つかったら緩めればいい。
+- 条件: なし。
+- 理由: **一時変数の問題点は、一時的でローカルであること**。一時変数にアクセスするためにはメソッドを長くする以外になく、メソッドの長大化を助長するため。
+
+```ruby:リファクタ前
+def price
+  base_price = @quantity * @item_price
+  if base_price > 1000
+    discount_factor = 0.95
+  else
+    discount_factor = 0.98
+  end
+  base_price * discount_factor
+end
+```
+
+```ruby:リファクタ後
+def price
+  base_price * discount_factor
+end
+
+def base_price
+  @quantity * @item_price
+end
+
+def discount_factor
+  base_price > 1000 ? 0.95 : 0.98
+end
+```
+
+```ruby:base_priceを一時変数から問合せメソッドにしなかった場合
+def price
+  # base_priceが一時変数のままの場合
+  base_price = @quantity * @item_price
+
+  discount_factor(base_price)
+  
+  base_price * discount_factor
+end
+
+# base_priceはローカル変数なのでメソッドからアクセスできず、外部から渡さないといけない（引数など）
+def discount_factor(base_price)
+  base_price > 1000 ? 0.95 : 0.98
+end
+```
+
+## 6.5 一時変数からチェインへ
+チェイニングして、一時変数を削除。
+
+```ruby:リファクタ前
+class Select
+  def options
+    @options ||= []
+  end
+
+  def add_option(arg)
+    options << arg
+  end
+end
+
+selection = Select.new
+selection.add_option(2000)
+selection.add_option(2001)
+selection.add_option(2002)
+# add_optionは配列を返すので、このままでは
+# selection.add_option(2000).add_option(2001).add_option(2002) とできない
+selection #<Select:0x00007fee63075fe0 @options=[2000, 2001, 2002]>
+```
+
+```ruby:リファクタ後
+class Select
+  # インスタンス初期化 + option追加 メソッドを追加 (newするのでクラスメソッド)
+  def self.with_option(option)
+    selection = self.new
+    selection.options << option
+    selection
+  end
+
+  def options
+    @options ||= []
+  end
+
+  def add_option(arg)
+    options << arg
+    self # optionsでなく、self(インスタンス)を返す
+  end
+end
+
+Select.with_option(2000).add_option(2001).add_option(2002)
+```
+
+## 6.6 説明用変数の導入
+処理の目的を説明する名前の一時変数に、式orその一部 の結果を保管する。
+- 条件: 式が複雑な場合。
+- 理由: 可読性向上のため。
+:::message alert
+6.6 ~ 6.8項で一時変数を導入するが、**軽々しく一時変数を導入してはいけない**。
+**<6.6 説明用変数の導入>の前に、<6.1 メソッドの抽出>ができないか考える**こと。
+:::
+
+```ruby:リファクタ前
+def price
+  # 基本価格 - 数量割引 + 配送料
+  return @item_price * @quantity - 
+    [0, @quantity - 500].max * @item_price * 0.05 +
+    [@item_price * @quantity * 0.1, 100].min
+end
+```
+
+```ruby:<6.6 説明用変数の導入>後
+def price
+  base_price = @item_price * @quantity
+  quantity_discount = [0, @quantity - 500].max * @item_price * 0.05
+  shipping = [base_price * 0.1, 100].min
+
+  return base_price - quantity_discount + shipping
+end
+```
+
+```ruby:<6.1 メソッドの抽出>後
+def price
+  return base_price - quantity_discount + shipping
+end
+
+def base_price
+  @item_price * @quantity
+end
+
+def quantity_discount
+  [0, @quantity - 500].max * @item_price * 0.05
+end
+
+def shipping
+  [base_price * 0.1, 100].min
+end
+```
+
+## 6.7 一時変数の分割
+代入ごとに別の一時変数を用意する。
+- 条件: ループ変数でも計算結果蓄積用の変数でもないのに、複数回代入される一時変数がある場合。
+- 理由: 2つの異なる目的のために1つの一時変数を使い回すと混乱するため。
+
+## 6.8 引数への代入の除去
+代わりに一時変数を使う。
+- 条件: コードが引数に代入を行っている場合。
+- 理由: Rubyは(参照渡しでなく)値渡しなため、呼び出し元ルーチンには影響はないが、紛らわしいため。また、引数の用途は渡されたものを表すことなので、それに代入して別の役割を持たせないようにするため。
+
+```ruby
+def discount(input_val)
+  input_val -= 2 if input_val > 50 # 引数への代入
+end
+# ↓
+def discount(input_val)
+  result = input_val
+  result -= 2 if input_val > 50
+end
+```
+
+## 6.9 メソッドからメソッドオブジェクトへ
+メソッドを独自のオブジェクト(クラス)に変える。ローカル変数をそのオブジェクトのインスタンス変数にする。
+- 条件: <メソッドの抽出>を適用できないようなローカル変数の使い方をしている場合。
+- 理由: 独自のオブジェクト内で、メソッドの分解(<メソッドの抽出>)ができる。
+
+```ruby:リファクタ前
+class Account
+  # 大きなメソッド
+  def gamma(input_val, quantity, year_to_date)
+    important_value1 = (input_val * quantity) + delta
+    important_value2 = (input_val * year_to_date) + 100
+    
+    if (year_to_date - important_value1) > 100
+      important_value2 -= 20
+    end
+
+    important_value3 = important_value2 * 7
+    # 色々な処理
+    important_value3 - 2 * important_value1
+  end
+end
+```
+
+```ruby:リファクタ後
+class Account
+  # 大きなメソッド
+  def gamma(input_val, quantity, year_to_date)
+    Gamma.new(self, input_val, quantity, year_to_date).compute
+  end
+end
+
+# メソッド→クラスに
+class Gamma
+  attr_reader :account, # 元のクラス
+              # 引数
+              :input_val, 
+              :quantity, 
+              :year_to_date,
+              # 一時変数
+              :important_value1, 
+              :important_value2,
+              :important_value3
+
+  # 元のクラス + 元のメソッドの引数 を受け取る
+  def initialize(account, input_val_arg, quantity_arg, year_to_date_arg)
+    @account = account
+    @input_val = input_val_arg
+    @quantity = quantity_arg
+    @year_to_date = year_to_date_arg
+  end
+
+  # 元のメソッドのロジック
+  def compute
+    @important_value1 = (input_val * quantity) + @account.delta
+    @important_value2 = (input_val * year_to_date) + 100
+    
+    important_thing
+
+    @important_value3 = important_value2 * 7
+    # 色々な処理
+    important_value3 - 2 * important_value1
+  end
+
+  # メソッドの抽出が簡単にできるようになった
+  def important_thing
+    if (year_to_date - important_value1) > 100
+      @important_value2 -= 20
+    end
+  end
+end
+```
+
+## 6.10 アルゴリズム変更
+より簡単なアルゴリズムに変更。
+
+```ruby:リファクタ前
+def fount_friends(people)
+  friends = []
+  people.each do |person|
+    if(person == "Don")
+      friends << "Don"
+    end
+    if(person == "John")
+      friends << "John"
+    end
+    if(person == "Kent")
+      friends << "Kent"
+    end
+  end
+  return friends
+end
+```
+
+```ruby:リファクタ後
+def fount_friends(people)
+  people.select do |person|
+    %w(Don John Kent).include?(person)
+  end
+end
+```
+
+## 6.11 ループからコレクションクロージャメソッドへ
+ループでなく、コレクションクロージャメソッドを使う。
+
+### select
