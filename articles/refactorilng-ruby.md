@@ -916,3 +916,118 @@ end
 ループでなく、コレクションクロージャメソッドを使う。
 
 ### select
+条件に合致するものだけを抽出する。
+```ruby
+managers = []
+employees.each do |e|
+  managers << e if e.manager?
+end
+# ↓
+managers = employees.select { |e| e.manager? } # {}内は真偽値
+```
+
+### map
+ブロックを実行した戻り値を格納する。
+```ruby
+offices = []
+employees.each { |e| offices << e.office }
+# ↓
+offices = employees.map { |e| e.office } # {}内は実行するブロック
+```
+
+
+```ruby:リファクタ前
+managerOffices = []
+employees.each do |e|
+  managerOffices << e.office if e.manager?
+end
+```
+```ruby:リファクタ後
+# チェインで繋げられる
+managerOffices = employees.select { |e| e.manager? }
+                           .map { |e| e.office }
+```
+
+### inject
+合計を出すとき など、ループ内で値を生み出すような場合に使う。
+
+`inject(返り値の初期値)　{ | 返り値, 配列内のオブジェクト| ブロック }`
+(デフォルト引数は0 なので(0)は省略可)
+
+```ruby
+total = 0
+employees.each { |e| total += e.salary }
+# ↓
+total = employees.inject(0) { |sum, e| sum + e.salary }
+```
+
+## 6.12 サンドイッチメソッドの抽出
+```ruby:リファクタ前
+class Person
+  attr_reader :mother, :children, :name
+
+  def initialize(name, date_of_birth, date_of_death=nil, mother=nil)
+    @name, @mother = name, mother
+    @date_of_birth, @date_of_death = date_of_birth, date_of_death
+    @children = []
+    @mother.add_child(self) if @mother
+  end
+
+  def add_child(child)
+    @children << child
+  end
+
+  def alive?
+    @date_of_death.nil?
+  end
+
+  def number_of_living_descendants # 子孫の数
+    children.inject(0) do |count, child| 
+      count += 1 if child.alive?
+      count + child.number_of_living_descendants
+    end
+  end
+
+  def number_of_descendants_named(name) # 名前が一致する数
+    children.inject(0) do |count, child| 
+      count += 1 if child.name == name
+      count + child.number_of_descendants_named(name)
+    end
+  end
+end
+```
+```ruby:リファクタ後
+class Person
+  # 略
+
+  def number_of_living_descendants # 子孫の数
+    count_descendants_matching { |descendant| descendant.alive? }
+  end
+
+  def number_of_descendants_named(name) # 名前が一致する数
+    count_descendants_matching { |descendant| descendant.name == name }
+  end
+
+  protected
+  def count_descendants_matching(&block)
+    children.inject(0) do |count, child|
+      count += 1 if yield(child) # ブロックを実行。(ここは&blockを必要としない。)
+      count + child.count_descendants_matching(&block)
+      # ここ↑で再帰しており、再帰的にcount_descendants_matchingを実行したいので、
+      # count_descendants_matchingには &block が必要。(再帰処理でなければ &block 不要。)
+    end
+  end
+end
+```
+
+#### ブロック
+メソッドに渡すコードの塊。
+#### `yeild`
+ブロックを起動する。
+#### `&block`
+&blockという引数を宣言すると、ブロックがblock変数に代入される。
+block.callメソッドを呼ぶと、ブロックの処理が実行される。
+
+https://qiita.com/genya0407/items/1a34244cba6c3089a317
+
+## 6.13 クラスアノテーションの導入
