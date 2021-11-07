@@ -1100,3 +1100,98 @@ end
 ```
 
 # 7章 オブジェクト間でのメンバの移動
+
+## 7.1 メソッドの移動
+**メソッドを最もよく使っている他のクラスに、同じ内容の新メソッドを作る**。
+古いメソッドは、そのメソッドに処理を委ねる or 削除する。
+- 条件: メソッドが、自身のクラスよりも他クラスをよく利用している or 利用されている場合。（今はそうでなくても、そうなりつつあるとき。）
+
+```ruby:リファクタ前
+# 口座
+class Account
+  def overdraft_charge
+    if @account_type.premium?
+      result = 10
+      resut += (@day_overdrawn -7) * 0.85 if @day_overdrawn > 7
+      result
+    else
+      @day_overdrawn * 1.75
+    end
+  end
+
+  def bank_charge
+    result = 4.5
+    result += overdraft_charge if @day_overdrawn > 0
+    result
+  end
+end
+
+# 口座の種類
+def AccountType
+  # ...
+end
+```
+これから口座の種類が増えるものと仮定する。
+`overdraft_charge`は`@account_type`によって処理が異なっているため、`AccountType`に移す。
+`@day_overdrawn`は口座ごとに異なる値なので、`Account`に残す。
+```ruby:リファクタ後
+# 口座
+class Account
+  # Account固有の情報である@day_overdrawnは引数で渡す
+  def overdraft_charge
+    @account_type.overdraft_charge(@day_overdrawn)
+  end
+
+  def bank_charge
+    result = 4.5
+    result += overdraft_charge if @day_overdrawn > 0
+    result
+  end
+end
+
+# 口座の種類
+def AccountType
+  # ...
+  def overdraft_charge(day_overdrawn)
+    if premium?
+      result = 10
+      resut += (day_overdrawn -7) * 0.85 if day_overdrawn > 7
+      result
+    else
+      day_overdrawn * 1.75
+    end
+  end
+end
+```
+
+さらに、`Account`の`overdraft_charge`を削除するには、`overdraft_charge`を参照している箇所をすべて書き換えることで実現できる。
+（今回は、参照箇所が`bank_charge`1つだけだったと仮定。）
+```ruby:リファクタ後
+# 口座
+class Account
+  # overdraft_chargeは削除した
+  def bank_charge
+    result = 4.5
+    result += @account_type.overdraft_charge(@day_overdrawn) if @day_overdrawn > 0
+    result
+  end
+end
+
+# 口座の種類
+def AccountType
+  # ...
+  def overdraft_charge(day_overdrawn)
+    if premium?
+      result = 10
+      resut += (day_overdrawn -7) * 0.85 if day_overdrawn > 7
+      result
+    else
+      day_overdrawn * 1.75
+    end
+  end
+end
+```
+
+# 7.2 フィールドの移動
+**移すクラスに新しいフィールドのreader（必要ならwriterも)を作り、フィールドを使っているコードを書き換える。**。
+- 条件: フィールドが、自身のクラスよりも他クラスをよく利用している or 利用されている場合。（今はそうでなくても、そうなりつつあるとき。）
