@@ -1052,4 +1052,51 @@ https://tech.ga-tech.co.jp/entry/2019/10/ruby-metaprogramming
 `define_method`や`send`を使うことで実現できる。
 :::
 
-## 6.18 
+## 6.18 動的レセプタから動的メソッド定義へ
+動的メソッド定義を行うことで、`method_missing`を使わずに同じような振る舞いを実現。
+:::message
+`method_missing`
+メソッドが未定義の際にNoMethodErrorを発行するメソッド。ここにバグがあると発見しにくい。
+:::
+
+## 6.19 動的レセプタの分離
+`method_missing`のロジックを、新しく作ったクラスに移す。
+- 条件: `method_missing`を使っているクラスが、容易に書き換えられない場合。
+
+## 6.20 evalを実行時からパース時へ
+*メソッド定義の中で*`eval`を使うのでなく、*メソッドを定義するとき*に使う。
+- 条件: `eval`を使う必要があるが、実行回数を減らしたい場合。
+
+```ruby:リファクタ前
+class Person
+  # attribute名の変数がまだ定義されてなければ、default_valueで定義する
+  def self.attr_with_default(options)
+    options.each_pair do | attribute, default_value |
+      define_method attribute do
+        eval "@#{attribute} ||= #{default_value}"
+      end
+    end
+  end
+
+  attr_with_default emails: "[]",
+                    employee_number: "EmployNumberGenerator.next"
+end
+```
+```ruby:リファクタ後
+class Person
+  # attribute名の変数がまだ定義されてなければ、default_valueで定義する
+  def self.attr_with_default(options)
+    options.each_pair do | attribute, default_value |
+      # ループ処理ごとevalでまとめる
+      eval　"define_method #{attribute} do
+              @#{attribute} ||= #{default_value}
+            end"
+    end
+  end
+
+  attr_with_default emails: "[]",
+                    employee_number: "EmployNumberGenerator.next"
+end
+```
+
+# 7章 オブジェクト間でのメンバの移動
