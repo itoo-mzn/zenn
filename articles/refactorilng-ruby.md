@@ -1192,6 +1192,103 @@ def AccountType
 end
 ```
 
-# 7.2 フィールドの移動
-**移すクラスに新しいフィールドのreader（必要ならwriterも)を作り、フィールドを使っているコードを書き換える。**。
+## 7.2 フィールドの移動
+**移すクラスに新しいフィールドのreader（必要ならwriterも)を作り、フィールドを使っているコードを書き換える**。
 - 条件: フィールドが、自身のクラスよりも他クラスをよく利用している or 利用されている場合。（今はそうでなくても、そうなりつつあるとき。）
+
+```ruby:リファクタ前
+# 口座
+class Account
+  # ...
+  def interest_for_amount_days(amount, days)
+    @interest_rate * amount * days /365
+  end
+end
+```
+```ruby:リファクタ後
+class Account
+  # ...
+  def interest_for_amount_days(amount, days)
+    interest_rate * amount * days /365
+  end
+
+  def interest_rate
+    @account_type.interest_rate
+  end
+end
+```
+
+## 7.3 クラスの抽出
+新しいクラスを作成。関連フィールド・メソッドを移す。
+- 条件: 2つのクラスで行うべき仕事をしているクラスがある場合。
+
+```ruby:リファクタ前
+class Person
+  attr_reader :name
+  attr_accessor :office_area_code
+  attr_accessor :office_number
+  
+  def telephone_number
+    '(' + @office_area_code + ')' + @office_number
+  end
+end
+
+person = Person.new
+person.office_area_code = 123
+p person.office_area_code
+```
+
+```ruby:リファクタ後
+class Person
+  attr_reader :name
+
+  # 新しいクラスへのリンクを作る
+  def initialize
+    @office_telephone = TelephoneNumber.new
+  end
+
+  # 下記のコメント部のようにゲッター・セッターを容易すれば、フィールドへのアクセス方法は変えないで済む。
+  # -----------------------------------------------
+  # 既存のフィールドは、新しいクラスのフィールドに向ける
+  # ゲッター
+  # def office_area_code
+  #   @office_telephone.area_code
+  # end
+  # # セッター
+  # def office_area_code(arg)
+  #   @office_telephone.area_code = arg
+  # end
+  # -----------------------------------------------
+
+  # 移動したフィールドへのアクセスは、office_telephone経由となる。
+  def office_telephone
+    @office_telephone
+  end
+
+  # メソッドは新しいクラスに移動
+  def telephone_number
+    @office_telephone.telephone_number
+  end
+end
+
+class TelephoneNumber
+  attr_accessor :area_code, :number
+
+  def telephone_number
+    '(' + area_code + ')' + number
+  end
+end
+
+person = Person.new
+# 移動したフィールドへのアクセスは、office_telephone経由となる。
+person.office_telephone.area_code = 123
+p person.office_telephone.area_code
+```
+
+## 7.4 クラスのインライン化
+すべての機能を他のクラスに移して、クラスを削除する。（<7.3 クラスの抽出>の逆）
+- 条件: 大した仕事をしていないクラスがある場合。
+
+<7.3 クラスの抽出>の逆のことをすればいい。
+
+## 7.5 委譲の隠蔽
