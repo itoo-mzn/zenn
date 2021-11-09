@@ -1292,3 +1292,55 @@ p person.office_telephone.area_code
 <7.3 クラスの抽出>の逆のことをすればいい。
 
 ## 7.5 委譲の隠蔽
+サーバに、委譲を隠すためのメソッドを作る。
+- 条件: クライアント（呼び出し元）が、サーバ（呼ばれる側）オブジェクトの委譲クラスを呼び出している。
+  - サーバ（呼ばれる側） : 下記例では、`Person`と`Department`。
+  - 委譲クラス : 下記例では、`Department`。
+- 理由: カプセル化できるため。
+
+### カプセル化
+オブジェクトがシステムの他の部分についてあまり知識を持たなくていい。
+→　システムに変更を加えても、その変更を知らせないといけないオブジェクトが減るため、変更しやすい。
+
+```ruby:リファクタ前
+# 社員
+class Person
+  attr_accessor :department
+end
+
+# 部門
+class Department
+  attr_reader :manager
+
+  def initialize(manager)
+    @manager = manager
+  end
+end
+
+manager = person.department.manager
+```
+```ruby:リファクタ後
+class Person
+  attr_writer :department # ゲッターは不要になった
+
+  def manager
+    @department.manager
+  end
+end
+
+class Department
+  attr_reader :manager
+
+  def initialize(manager)
+    @manager = manager
+  end
+
+  # ...
+end
+
+# managerを取得するためにはdepartmentを経由しないといけない という知識が必要なくなる
+manager = person.manager
+```
+
+## 7.6 横流しブローカーの除去
+
