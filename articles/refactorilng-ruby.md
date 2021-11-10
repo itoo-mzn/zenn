@@ -1293,8 +1293,8 @@ p person.office_telephone.area_code
 
 ## 7.5 委譲の隠蔽
 サーバに、委譲を隠すためのメソッドを作る。
-- 条件: クライアント（呼び出し元）が、サーバ（呼ばれる側）オブジェクトの委譲クラスを呼び出している。
-  - サーバ（呼ばれる側） : 下記例では、`Person`と`Department`。
+- 条件: クライアント（呼び出し元）が、サーバ（呼ばれる側）クラスの委譲クラスを呼び出している。
+  - サーバ（呼ばれる側） : 下記例では、`Person`。
   - 委譲クラス : 下記例では、`Department`。
 - 理由: カプセル化できるため。
 
@@ -1343,4 +1343,63 @@ manager = person.manager
 ```
 
 ## 7.6 横流しブローカーの除去
+クライアントに、委譲オブジェクトを直接呼び出させる。（<7.5 委譲の隠蔽>の逆）
+- 条件: クラスが単純な委譲をやりすぎている。
+- 理由: 委譲オブジェクトに新しいメンバが追加されるたびに、サーバクラスに委譲メソッドを作らないといけないため。（<7.5 委譲の隠蔽>の代償）
 
+<7.5 委譲の隠蔽>の逆のことをすればいい。
+
+# 8章 データの構成
+## 8.1 自己カプセル化フィールド
+フィールド（インスタンス変数）に直接アクセスするのでなく、ゲッター・セッターを作りそれを経由する。
+```ruby:リファクタ前
+class Item
+  def initialize(base_price, tax_rate)
+    @base_price = base_price
+    @tax_rate = tax_rate
+  end
+
+  def raise_base_price_by(percent)
+    @base_price = @base_price * (1 + percent/100)
+  end
+
+  def total
+    @base_price * (1 + @tax_rate)
+  end
+end
+```
+```ruby:リファクタ後
+class Item
+  attr_accessor :base_price, :tax_rate
+
+  def initialize(base_price, tax_rate)
+    @base_price = base_price
+    @tax_rate = tax_rate
+  end
+
+  def raise_base_price_by(percent)
+    base_price = base_price * (1 + percent/100)
+  end
+
+  def total
+    base_price * (1 + tax_rate)
+  end
+end
+
+class ImportedItem < Item
+  attr_reader :import_duty
+
+  def initialize(base_price, tax_rate, import_duty)
+    super(base_price, tax_rate)
+    # 関税
+    @import_duty = import_duty
+  end
+
+  def tax_rate
+    # Item側の振る舞いを変えず、簡単にtax_rateをオーバーライドできた
+    super + import_duty
+  end
+end
+```
+
+## 8.2 データ値からオブジェクトへ
