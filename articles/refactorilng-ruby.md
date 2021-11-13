@@ -79,142 +79,100 @@ https://github.com/ito0804takuya/refactoring-ruby
 
 # 6章 メソッドの構成方法
 ## 6.1 メソッドの抽出
-コードの一部をメソッドにして、その目的を説明する名前をつける。
-- 条件: なし。
+**コードの一部をメソッドにして、その目的を説明する名前をつける**。
 - 理由: メソッドの粒度が細ければ、流用性が高くなる。
 - 注意: 意味のある良い名前が思いつかないなら、それは抽出すべきでない。
 
-```ruby:リファクタ前
-def printing_owing
-  outstanding = 0.0
-
-  # バナーを出力
-  puts "*****************************"
-  puts "****** Customer Owes ********"
-  puts "*****************************"
-
-  # 料金を計算
-  @orders.each do |order|
-    outstanding += order.amount
-  end
-
-  # 詳細を表示
-  puts "name: #{@name}"
-  puts "amount: #{outstanding}"
-end
-```
+（感想: とても重要。<6.2 メソッドのインライン化>にもあるように。メソッドの粒度は粗すぎず細かすぎないように気をつける。）
 
 ### 6.1.1 パターン: ローカル変数なし
-```ruby
-def printing_owing
-  outstanding = 0.0
-
-  # <メソッドの抽出>
-  print_banner
-
-  # 料金を計算
-  @orders.each do |order|
-    outstanding += order.amount
-  end
-
-  # 詳細を表示
-  puts "name: #{@name}"
-  puts "amount: #{outstanding}"
+```ruby:リファクタ前
+def sample_method
+  puts "sample"
+  # その他諸々の処理...
+end
+```
+```ruby:リファクタ後
+def sample_method
+  print_sample_method
 end
 
-# バナーを出力
-def print_banner
-  puts "*****************************"
-  puts "****** Customer Owes ********"
-  puts "*****************************"
+def print_sample
+  puts "sample"
+  # その他諸々の処理...
 end
 ```
 
 ### 6.1.2 パターン: ローカル変数あり
-```ruby
-def printing_owing
-  outstanding = 0.0
-
-  print_banner
-
-  # 料金を計算
-  @orders.each do |order|
-    outstanding += order.amount
-  end
-
-  # <メソッドの抽出>
-  print_details(outstanding)
+```ruby:リファクタ前
+def sample_method
+  local_variable = 0
+  puts "instance_variable: #{@instance_variable}"
+  puts "local_variable: #{local_variable}"
+  # その他諸々の処理で、local_variableは使われる...
+end
+```
+```ruby:リファクタ後
+def sample_method
+  local_variable = 0
+  print_sample_method(local_variable)
+  # その他諸々の処理で、local_variableは使われる...
 end
 
-# バナーを出力
-def print_banner
-  puts "*****************************"
-  puts "****** Customer Owes ********"
-  puts "*****************************"
-end
-
-# 詳細を表示
-def print_details(outstanding)
-  puts "name: #{@name}"
-  puts "amount: #{outstanding}"
+# ローカル変数は別メソッド間でアクセスできないため、引数で渡す必要がある。
+def print_sample_method(local_variable)
+  puts "instance_variable: #{@instance_variable}"
+  puts "local_variable: #{local_variable}"
 end
 ```
 
 ### 6.1.3 パターン: ローカル変数への再代入
-
-```ruby
-def printing_owing
-  print_banner
-
-  # <メソッドの抽出>
-  # ローカル変数に代入することで、以降のコードに影響を与えない
-  outstanding = calculate_outstanding
-
-  print_details(outstanding)
+```ruby:リファクタ前
+def sample_method
+  local_variable = 0
+  @sample.each do |sample|
+    local_variable += sample.num
+  end
+  # その他諸々の処理で、local_variableは使われる...
+end
+```
+```ruby:リファクタ後
+def sample_method
+  # ローカル変数に再代入することで、以降の処理に影響を与えない
+  local_variable = calculate_sum
+  # その他諸々の処理で、local_variableは使われる...
 end
 
-# バナーを出力
-def print_banner
-  puts "*****************************"
-  puts "****** Customer Owes ********"
-  puts "*****************************"
-end
-
-# 詳細を表示
-def print_details(outstanding)
-  puts "name: #{@name}"
-  puts "amount: #{outstanding}"
-end
-
-# 料金を計算
-def calculate_outstanding
-  # outstanding = 0.0
-  # @orders.each do |order|
-  #   outstanding += order.amount
+def calculate_sum
+  # local_variable = 0
+  # @sample.each do |sample|
+  #   local_variable += sample.num
   # end
-  # outstanding
-  @order.inject(0.0) { |sum, order| sum + order.amount}
+  # local_variable
+  
+  # 上記はinjectでスマートに書ける
+  @sample.inject(0) { |local_variable, sample| local_variable + sample.num }
 end
 ```
 
 ## 6.2 メソッドのインライン化
 メソッドを呼び出し元に組み込み、そのメソッドを削除。
-- 条件: メソッドの本体が、名前と同じぐらいわかりやすい場合。
+- 条件: メソッドの本体が、そのメソッドの名前と同じぐらいわかりやすい場合。
 - 理由: 過剰な間接化はイライラの原因。
 
 ```ruby:リファクタ前
-def get_rating
-  more_than_five_late_deliveries ? 2 : 1
+def sample_method
+  is_more_than_five ? 2 : 1
 end
 
-def more_than_five_late_deliveries
-  @number > 5
+def is_more_than_five
+  @sample > 5
 end
 ```
 
 ```ruby:リファクタ後
-def get_rating
-  @number > 5 ? 2 : 1
+def sample_method
+  @sample > 5 ? 2 : 1
 end
 ```
 
@@ -229,18 +187,21 @@ end
 - 条件: なし。
 - 理由: **一時変数の問題点は、一時的でローカルであること**。一時変数にアクセスするためにはメソッドを長くする以外になく、メソッドの長大化を助長するため。
 
-(整理前)/////////
+:::message
 この変更で不安なのは下記2点。
-- 同じメソッドを2回呼び出している。パフォーマンスは大丈夫か。
+- 同じメソッドを2回以上呼び出しても、パフォーマンスは大丈夫か。
   - **リファクタリングは、わかりやすくすることに集中すべき。**（パフォーマンスを上げるのは別の仕事）
   - **メソッド呼び出し回数が増えても、ほとんどの場合問題ない。**
-- 複数回呼び出しているメソッドが、**冪等かどうか**。（今回はOK）
+- 複数回呼び出しているメソッドが、**冪等かどうか**。
+:::
 
 :::message
 **一時変数は無いほうがいい**。なぜそこに一時変数があるのか分からなくなってしまうため。
 **コードが何をしようとしているか**が、はっきりと分かるようになる。
 :::
-(整理前)/////////
+
+（感想: とても重要。特に「メソッドを複数回呼び出しまって良いのか」という点。この点は、個人的にはこれまで抵抗があったが、この本を読んで考え方が理解でき、納得した上でこれから一時変数をメソッド化できるようになった。）
+
 
 ```ruby:リファクタ前
 def price
