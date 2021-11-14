@@ -200,17 +200,20 @@ end
 **コードが何をしようとしているか**が、はっきりと分かるようになる。
 :::
 
-（感想: とても重要。特に「メソッドを複数回呼び出しまって良いのか」という点。この点は、個人的にはこれまで抵抗があったが、この本を読んで考え方が理解でき、納得した上でこれから一時変数をメソッド化できるようになった。）
+（感想: とても重要。特に「メソッドを複数回呼び出しまって良いのか」という点。この点は、個人的にはこれまで抵抗があったが、この本を読んで考え方が理解できた。）
 
 
 ```ruby:リファクタ前
 def price
+  # base_priceを求めるロジック
   base_price = @quantity * @item_price
+  # discount_factorを求めるロジック
   if base_price > 1000
     discount_factor = 0.95
   else
     discount_factor = 0.98
   end
+  # 本質
   base_price * discount_factor
 end
 ```
@@ -247,94 +250,16 @@ end
 
 ## 6.5 一時変数からチェインへ
 チェイニングして、一時変数を削除。
-
-```ruby:リファクタ前
-class Select
-  def options
-    @options ||= []
-  end
-
-  def add_option(arg)
-    options << arg
-  end
-end
-
-selection = Select.new
-selection.add_option(2000)
-selection.add_option(2001)
-selection.add_option(2002)
-# add_optionは配列を返すので、このままでは
-# selection.add_option(2000).add_option(2001).add_option(2002) とできない
-selection #<Select:0x00007fee63075fe0 @options=[2000, 2001, 2002]>
-```
-
-```ruby:リファクタ後
-class Select
-  # インスタンス初期化 + option追加 メソッドを追加 (newするのでクラスメソッド)
-  def self.with_option(option)
-    selection = self.new
-    selection.options << option
-    selection
-  end
-
-  def options
-    @options ||= []
-  end
-
-  def add_option(arg)
-    options << arg
-    self # optionsでなく、self(インスタンス)を返す
-  end
-end
-
-Select.with_option(2000).add_option(2001).add_option(2002)
-```
+- 条件: 一時変数に対して複数行に渡ってメソッドを複数回実行している状況。
 
 ## 6.6 説明用変数の導入
 処理の目的を説明する名前の一時変数に、式orその一部 の結果を保管する。
 - 条件: 式が複雑な場合。
 - 理由: 可読性向上のため。
 :::message alert
-6.6 ~ 6.8項で一時変数を導入するが、**軽々しく一時変数を導入してはいけない**。
+6.6 ~ 6.8項で一時変数を導入するが、**軽々しく一時変数を導入してはいけない**。(理由: 6.4項に記載)
 **<6.6 説明用変数の導入>の前に、<6.1 メソッドの抽出>ができないか考える**こと。
 :::
-
-```ruby:リファクタ前
-def price
-  # 基本価格 - 数量割引 + 配送料
-  return @item_price * @quantity - 
-    [0, @quantity - 500].max * @item_price * 0.05 +
-    [@item_price * @quantity * 0.1, 100].min
-end
-```
-
-```ruby:<6.6 説明用変数の導入>後
-def price
-  base_price = @item_price * @quantity
-  quantity_discount = [0, @quantity - 500].max * @item_price * 0.05
-  shipping = [base_price * 0.1, 100].min
-
-  return base_price - quantity_discount + shipping
-end
-```
-
-```ruby:<6.1 メソッドの抽出>後
-def price
-  return base_price - quantity_discount + shipping
-end
-
-def base_price
-  @item_price * @quantity
-end
-
-def quantity_discount
-  [0, @quantity - 500].max * @item_price * 0.05
-end
-
-def shipping
-  [base_price * 0.1, 100].min
-end
-```
 
 ## 6.7 一時変数の分割
 代入ごとに別の一時変数を用意する。
@@ -342,129 +267,29 @@ end
 - 理由: 2つの異なる目的のために1つの一時変数を使い回すと混乱するため。
 
 ## 6.8 引数への代入の除去
-代わりに一時変数を使う。
-- 条件: コードが引数に代入を行っている場合。
-- 理由: Rubyは(参照渡しでなく)値渡しなため、呼び出し元ルーチンには影響はないが、紛らわしいため。また、引数の用途は渡されたものを表すことなので、それに代入して別の役割を持たせないようにするため。
-
-```ruby
-def discount(input_val)
-  input_val -= 2 if input_val > 50 # 引数への代入
-end
-# ↓
-def discount(input_val)
-  result = input_val
-  result -= 2 if input_val > 50
-end
-```
+引数への代入の代わりに一時変数を使う。
+- 条件: 引数に代入を行っている場合。
+- 理由: Rubyは(参照渡しでなく)値渡しなため、呼び出し元ルーチンには影響はないが、紛らわしく、読みにくいため。
+また、引数の用途は渡されたものを表すことなので、それに代入して別の役割を持たせないようにするため。
 
 ## 6.9 メソッドからメソッドオブジェクトへ
 メソッドを独自のオブジェクト(クラス)に変える。ローカル変数をそのオブジェクトのインスタンス変数にする。
 - 条件: <メソッドの抽出>を適用できないようなローカル変数の使い方をしている場合。
 - 理由: 独自のオブジェクト内で、メソッドの分解(<メソッドの抽出>)ができる。
 
-```ruby:リファクタ前
-class Account
-  # 大きなメソッド
-  def gamma(input_val, quantity, year_to_date)
-    important_value1 = (input_val * quantity) + delta
-    important_value2 = (input_val * year_to_date) + 100
-    
-    if (year_to_date - important_value1) > 100
-      important_value2 -= 20
-    end
-
-    important_value3 = important_value2 * 7
-    # 色々な処理
-    important_value3 - 2 * important_value1
-  end
-end
-```
-
-```ruby:リファクタ後
-class Account
-  # 大きなメソッド
-  def gamma(input_val, quantity, year_to_date)
-    Gamma.new(self, input_val, quantity, year_to_date).compute
-  end
-end
-
-# メソッド→クラスに
-class Gamma
-  attr_reader :account, # 元のクラス
-              # 引数
-              :input_val, 
-              :quantity, 
-              :year_to_date,
-              # 一時変数
-              :important_value1, 
-              :important_value2,
-              :important_value3
-
-  # 元のクラス + 元のメソッドの引数 を受け取る
-  def initialize(account, input_val_arg, quantity_arg, year_to_date_arg)
-    @account = account
-    @input_val = input_val_arg
-    @quantity = quantity_arg
-    @year_to_date = year_to_date_arg
-  end
-
-  # 元のメソッドのロジック
-  def compute
-    @important_value1 = (input_val * quantity) + @account.delta
-    @important_value2 = (input_val * year_to_date) + 100
-    
-    important_thing
-
-    @important_value3 = important_value2 * 7
-    # 色々な処理
-    important_value3 - 2 * important_value1
-  end
-
-  # メソッドの抽出が簡単にできるようになった
-  def important_thing
-    if (year_to_date - important_value1) > 100
-      @important_value2 -= 20
-    end
-  end
-end
-```
+（感想: 手間のかかるリファクタなので、巨大なメソッドに適用するのが費用対効果的に良いと思う。）
 
 ## 6.10 アルゴリズム変更
 より簡単なアルゴリズムに変更。
-
-```ruby:リファクタ前
-def fount_friends(people)
-  friends = []
-  people.each do |person|
-    if(person == "Don")
-      friends << "Don"
-    end
-    if(person == "John")
-      friends << "John"
-    end
-    if(person == "Kent")
-      friends << "Kent"
-    end
-  end
-  return friends
-end
-```
-
-```ruby:リファクタ後
-def fount_friends(people)
-  people.select do |person|
-    %w(Don John Kent).include?(person)
-  end
-end
-```
+（感想: 6.11項のコレクションクロージャメソッドを使うことで、アルゴリズムを簡単にすることがかなり実現できると思う。）
 
 ## 6.11 ループからコレクションクロージャメソッドへ
 ループでなく、コレクションクロージャメソッドを使う。
-each系の処理をmap系の処理にすること。
+**each系の処理をmap系の処理にする**こと。
 繰り返し処理した結果を返却したい場合に、ループの外から変数として渡す必要がなくなる。
 
 ### select
-条件に合致するものだけを抽出する。
+**条件に合致するものだけを抽出**する。
 ```ruby
 managers = []
 employees.each do |e|
@@ -475,7 +300,7 @@ managers = employees.select { |e| e.manager? } # {}内は真偽値
 ```
 
 ### map
-ブロックを実行した戻り値を格納する。
+**ブロックを実行した戻り値を格納**する。
 ```ruby
 offices = []
 employees.each { |e| offices << e.office }
@@ -483,6 +308,7 @@ employees.each { |e| offices << e.office }
 offices = employees.map { |e| e.office } # {}内は実行するブロック
 ```
 
+----
 
 ```ruby:リファクタ前
 managerOffices = []
@@ -497,16 +323,18 @@ managerOffices = employees.select { |e| e.manager? }
 ```
 
 ### inject
-合計を出すとき など、ループ内で値を生み出すような場合に使う。
+**合計を出すとき** など、ループ内で値を生み出すような場合に使う。
+返り値の初期値が設定できる。（例: 0からスタートする、10からスタートする）
 
 `inject(返り値の初期値)　{ | 返り値, 配列内のオブジェクト| ブロック }`
-(デフォルト引数は0 なので(0)は省略可)
+
 
 ```ruby
 total = 0
 employees.each { |e| total += e.salary }
 # ↓
 total = employees.inject(0) { |sum, e| sum + e.salary }
+# (デフォルト引数は0 なので(0)は省略可)
 ```
 
 ## 6.12 サンドイッチメソッドの抽出
