@@ -19,6 +19,9 @@ https://github.com/ito0804takuya/refactoring-ruby
 2. 忘れそうな内容
 3. 初めて知って、感動した内容
 
+## 注意
+自分なりに解釈し、咀嚼した内容を記載しているため、実際にリファクタリングを適用する際は、本書の`手順`項にちゃんと從って行わないといけない。
+
 # リファクタリングとは
 **コードの外から見た振る舞いは変えずに、内部構造を改良すること**。
 
@@ -207,12 +210,14 @@ end
 def price
   # base_priceを求めるロジック
   base_price = @quantity * @item_price
+
   # discount_factorを求めるロジック
   if base_price > 1000
     discount_factor = 0.95
   else
     discount_factor = 0.98
   end
+  
   # 本質
   base_price * discount_factor
 end
@@ -287,6 +292,7 @@ end
 ループでなく、コレクションクロージャメソッドを使う。
 **each系の処理をmap系の処理にする**こと。
 繰り返し処理した結果を返却したい場合に、ループの外から変数として渡す必要がなくなる。
+（感想: とても重要。eachを使いたいと思ったとき、必ずmap系で実現できないか確認する。）
 
 ### select
 **条件に合致するものだけを抽出**する。
@@ -338,64 +344,43 @@ total = employees.inject(0) { |sum, e| sum + e.salary }
 ```
 
 ## 6.12 サンドイッチメソッドの抽出
+- 条件: ほぼ同じロジックだが、その中間ぐらいのロジックに差異がある複数のメソッドがあるとき。
+
+重複部分を抽出してメソッドにする。
+その複数のメソッドは、抽出したメソッドにブロックを渡すようにする。
+（感想: よくあるシチュエーションだと感じる。よく使いそう。）
+
 ```ruby:リファクタ前
-class Person
-  attr_reader :mother, :children, :name
-
-  def initialize(name, date_of_birth, date_of_death=nil, mother=nil)
-    @name, @mother = name, mother
-    @date_of_birth, @date_of_death = date_of_birth, date_of_death
-    @children = []
-    @mother.add_child(self) if @mother
-  end
-
-  def add_child(child)
-    @children << child
-  end
-
-  def alive?
-    @date_of_death.nil?
-  end
-
-  def number_of_living_descendants # 子孫の数
-    children.inject(0) do |count, child| 
-      count += 1 if child.alive?
-      count + child.number_of_living_descendants
+  def sample_method_equal_one
+    if @count.present? && @count == 1
+      @count += 1
     end
   end
 
-  def number_of_descendants_named(name) # 名前が一致する数
-    children.inject(0) do |count, child| 
-      count += 1 if child.name == name
-      count + child.number_of_descendants_named(name)
+  def sample_method_equal_arg(arg)
+    if @count.present? && @count == arg # 少しだけ違う
+      @count += 1
     end
   end
-end
 ```
 ```ruby:リファクタ後
-class Person
-  # 略
-
-  def number_of_living_descendants # 子孫の数
-    count_descendants_matching { |descendant| descendant.alive? }
+  def sample_method_equal_one
+    sample_method_logic { |count| count == 1 } # {}内がブロック
   end
 
-  def number_of_descendants_named(name) # 名前が一致する数
-    count_descendants_matching { |descendant| descendant.name == name }
+  def sample_method_equal_arg(arg)
+    sample_method_logic { |count| count == arg }
   end
 
-  protected
-  def count_descendants_matching(&block)
-    children.inject(0) do |count, child|
-      count += 1 if yield(child) # ブロックを実行。(ここは&blockを必要としない。)
-      count + child.count_descendants_matching(&block)
-      # ここ↑で再帰しており、再帰的にcount_descendants_matchingを実行したいので、
-      # count_descendants_matchingには &block が必要。(再帰処理でなければ &block 不要。)
+  def sample_method_logic
+    if @count.present? && yield(@count) # ブロックを実行。
+      @count += 1
     end
   end
-end
 ```
 
+### ブロックについて
+よく知らなかったため、下記の記事を参考に下記の通り理解した。
 #### ブロック
 メソッドに渡すコードの塊。
 #### `yeild`
@@ -414,10 +399,12 @@ initializeの導入。
 
 ## 6.15 名前付き引数の除去
 キーワード引数の除去。引数が1つであるとき。
+- 理由: 引数が1つだと、わざわざキーワードにする必要がない。メソッドを呼び出すたびにキーワード引数を書かないといけなく、費用対効果が小さいため。
 
 ## 6.16 使われていないデフォルト引数の除去
 使われていないデフォルト引数を除去。
 引数による条件分岐などが削除できる可能性がある。
+（感想: 使われていないことをちゃんと確認しないといけない。）
 
 ## 6.17 動的メソッド定義
 メソッドを動的に定義する。
@@ -432,48 +419,8 @@ https://tech.ga-tech.co.jp/entry/2019/10/ruby-metaprogramming
 動的メソッド定義を行うことで、`method_missing`を使わずに同じような振る舞いを実現。
 :::message
 `method_missing`
-メソッドが未定義の際にNoMethodErrorを発行するメソッド。ここにバグがあると発見しにくい。
+メソッドが未定義の際にNoMethodErrorを発行するメソッド。ここにバグがあると発見しにくいため、自前でmethod_missingを実装するのは避けたほうがいい。
 :::
-
-## 6.19 動的レセプタの分離
-`method_missing`のロジックを、新しく作ったクラスに移す。
-- 条件: `method_missing`を使っているクラスが、容易に書き換えられない場合。
-
-## 6.20 evalを実行時からパース時へ
-*メソッド定義の中で*`eval`を使うのでなく、*メソッドを定義するとき*に使う。
-- 条件: `eval`を使う必要があるが、実行回数を減らしたい場合。
-
-```ruby:リファクタ前
-class Person
-  # attribute名の変数がまだ定義されてなければ、default_valueで定義する
-  def self.attr_with_default(options)
-    options.each_pair do | attribute, default_value |
-      define_method attribute do
-        eval "@#{attribute} ||= #{default_value}"
-      end
-    end
-  end
-
-  attr_with_default emails: "[]",
-                    employee_number: "EmployNumberGenerator.next"
-end
-```
-```ruby:リファクタ後
-class Person
-  # attribute名の変数がまだ定義されてなければ、default_valueで定義する
-  def self.attr_with_default(options)
-    options.each_pair do | attribute, default_value |
-      # ループ処理ごとevalでまとめる
-      eval　"define_method #{attribute} do
-              @#{attribute} ||= #{default_value}
-            end"
-    end
-  end
-
-  attr_with_default emails: "[]",
-                    employee_number: "EmployNumberGenerator.next"
-end
-```
 
 # 7章 オブジェクト間でのメンバの移動
 
@@ -482,117 +429,9 @@ end
 古いメソッドは、そのメソッドに処理を委ねる or 削除する。
 - 条件: メソッドが、自身のクラスよりも他クラスをよく利用している or 利用されている場合。（今はそうでなくても、そうなりつつあるとき。）
 
-```ruby:リファクタ前
-# 口座
-class Account
-  def overdraft_charge
-    if @account_type.premium?
-      result = 10
-      resut += (@day_overdrawn -7) * 0.85 if @day_overdrawn > 7
-      result
-    else
-      @day_overdrawn * 1.75
-    end
-  end
-
-  def bank_charge
-    result = 4.5
-    result += overdraft_charge if @day_overdrawn > 0
-    result
-  end
-end
-
-# 口座の種類
-def AccountType
-  # ...
-end
-```
-これから口座の種類が増えるものと仮定する。
-`overdraft_charge`は`@account_type`によって処理が異なっているため、`AccountType`に移す。
-`@day_overdrawn`は口座ごとに異なる値なので、`Account`に残す。
-```ruby:リファクタ後
-# 口座
-class Account
-  # Account固有の情報である@day_overdrawnは引数で渡す
-  def overdraft_charge
-    @account_type.overdraft_charge(@day_overdrawn)
-  end
-
-  def bank_charge
-    result = 4.5
-    result += overdraft_charge if @day_overdrawn > 0
-    result
-  end
-end
-
-# 口座の種類
-def AccountType
-  # ...
-  def overdraft_charge(day_overdrawn)
-    if premium?
-      result = 10
-      resut += (day_overdrawn -7) * 0.85 if day_overdrawn > 7
-      result
-    else
-      day_overdrawn * 1.75
-    end
-  end
-end
-```
-
-さらに、`Account`の`overdraft_charge`を削除するには、`overdraft_charge`を参照している箇所をすべて書き換えることで実現できる。
-（今回は、参照箇所が`bank_charge`1つだけだったと仮定。）
-```ruby:リファクタ後
-# 口座
-class Account
-  # overdraft_chargeは削除した
-  def bank_charge
-    result = 4.5
-    result += @account_type.overdraft_charge(@day_overdrawn) if @day_overdrawn > 0
-    result
-  end
-end
-
-# 口座の種類
-def AccountType
-  # ...
-  def overdraft_charge(day_overdrawn)
-    if premium?
-      result = 10
-      resut += (day_overdrawn -7) * 0.85 if day_overdrawn > 7
-      result
-    else
-      day_overdrawn * 1.75
-    end
-  end
-end
-```
-
 ## 7.2 フィールドの移動
 **移すクラスに新しいフィールドのreader（必要ならwriterも)を作り、フィールドを使っているコードを書き換える**。
 - 条件: フィールドが、自身のクラスよりも他クラスをよく利用している or 利用されている場合。（今はそうでなくても、そうなりつつあるとき。）
-
-```ruby:リファクタ前
-# 口座
-class Account
-  # ...
-  def interest_for_amount_days(amount, days)
-    @interest_rate * amount * days /365
-  end
-end
-```
-```ruby:リファクタ後
-class Account
-  # ...
-  def interest_for_amount_days(amount, days)
-    interest_rate * amount * days /365
-  end
-
-  def interest_rate
-    @account_type.interest_rate
-  end
-end
-```
 
 ## 7.3 クラスの抽出
 新しいクラスを作成。関連フィールド・メソッドを移す。
@@ -600,7 +439,6 @@ end
 
 ```ruby:リファクタ前
 class Person
-  attr_reader :name
   attr_accessor :office_area_code
   attr_accessor :office_number
   
@@ -611,19 +449,16 @@ end
 
 person = Person.new
 person.office_area_code = 123
-p person.office_area_code
 ```
 
 ```ruby:リファクタ後
 class Person
-  attr_reader :name
-
   # 新しいクラスへのリンクを作る
   def initialize
     @office_telephone = TelephoneNumber.new
   end
 
-  # 下記のコメント部のようにゲッター・セッターを容易すれば、フィールドへのアクセス方法は変えないで済む。
+  # 少し違う手段として、下記のコメント部のようにゲッター・セッターを用意すれば、フィールドへのアクセス方法は変えないで済む。
   # -----------------------------------------------
   # 既存のフィールドは、新しいクラスのフィールドに向ける
   # ゲッター
@@ -658,7 +493,6 @@ end
 person = Person.new
 # 移動したフィールドへのアクセスは、office_telephone経由となる。
 person.office_telephone.area_code = 123
-p person.office_telephone.area_code
 ```
 
 ## 7.4 クラスのインライン化
@@ -675,8 +509,8 @@ p person.office_telephone.area_code
 - 理由: カプセル化できるため。
 
 ### カプセル化
-オブジェクトがシステムの他の部分についてあまり知識を持たなくていい。
-→　システムに変更を加えても、その変更を知らせないといけないオブジェクトが減るため、変更しやすい。
+**オブジェクトがシステムの他の部分についてあまり知識を持たなくていい**。
+→　システムに変更を加えても、**その変更を知らせないといけないオブジェクトが減るため、変更しやすい**。
 
 ```ruby:リファクタ前
 # 社員
@@ -781,4 +615,66 @@ end
 ## 8.2 データ値からオブジェクトへ
 データ項目をオブジェクトに変換する。
 - 理由: 1つの単純なデータ（項目）として表現していたものが、それほど単純でないと分かることがある。そういったときに、振る舞いを追加できるようにするため。
+
+```ruby:リファクタ前
+class Order
+  attr_accessor :customer
+
+  def initialize(customer)
+    @customer = customer # 顧客名(文字列)
+  end
+end
+
+# ----------------------
+# 別のクラスのどこかのコード
+
+# 顧客が注文したorderの数を取得
+def self.number_of_orders_for(orders, customer)
+  orders.select { |order| order.customer == customer }.size
+end
+```
+```ruby:リファクタ後
+class Order
+  def initialize(customer)
+    @customer = Customer.new(customer)
+  end
+
+  def customer
+    @customer.name
+  end
+
+  def customer=(value)
+    @customer = Customer.new(value)
+  end
+end
+
+class Customer
+  attr_reader :name
+
+  def initialize(name)
+    @name = name
+  end
+end
+```
+
+## 8.3 値から参照へ
+- 条件: 同じインスタンス(値オブジェクト)をいくつも生成しており、それらを1つに圧縮したい場合。
+その値オブジェクトを参照オブジェクトに変える。
+
+毎回インスタンスを生成するのでなく、オブジェクト群をハッシュに格納（ロード）しておき、そのハッシュから探して返却する。
+```ruby
+class Sample
+  instances = {}
+
+  def store
+    instances[name] = self
+  end
+
+  def self.with_name(name)
+    instances[name]
+  end
+end
+```
+
+## 8.4 参照から値へ
 
