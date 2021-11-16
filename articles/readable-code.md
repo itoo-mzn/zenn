@@ -26,3 +26,5 @@ https://www.oreilly.co.jp/books/9784873115658/
 ```ruby
 if recieved_value > expected_value
 ```
+
+- 条件分岐では、否定形でなく肯定形を使い、関心が高いor目立つ条件を先に書く。
