@@ -676,5 +676,58 @@ class Sample
 end
 ```
 
-## 8.4 参照から値へ
+## 8.6 ハッシュからオブジェクトへ
+- 条件: 異なる種類のオブジェクトを格納しているhashがある。
+各キーに対応するフィールドを持つオブジェクトを定義し、hashを削除する。
+（感想: フィールドをメソッドに変換できるのがメリット。）
 
+```ruby:リファクタ前
+new_network = { nodes: [], old_networks: [] }
+
+new_network[:old_networks] << node.network
+new_network[:nodes] << node
+
+new_network[:name] = new_network[:old_networks].map { |network| network.name }.join(" - ")
+```
+
+```ruby:リファクタ後
+# このように使いたい↓
+new_network = NewworkResult.new
+
+new_network.old_networks << node.network
+new_network.nodes << node
+
+new_network.name = new_network.old_networks.map { |network| network.name }.join(" - ")
+
+# なので、クラスを定義する↓
+class NewworkResult
+  attr_reader :old_networks, :nodes
+  # attr_accessor :name ← メソッドに移した
+
+  def initialize
+    @old_networks, @nodes = [], []
+  end
+
+  # nameフィールド→nameメソッドに移し、処理を定義できる
+  def name
+    @old_networks.old_networks.map { |network| network.name }.join(" - ")
+  end
+end
+```
+
+## 8.9 マジックナンバーからシンボル定数へ
+マジックナンバーを**意味がわかる名前の定数**に置き換える。
+```ruby:リファクタ前
+def sample_method(number)
+  number * 3.14
+end
+```
+```ruby:リファクタ後
+PI = 3.14
+
+def sample_method(number)
+  number * PI
+end
+```
+
+## 8.10 コレクションのカプセル化
