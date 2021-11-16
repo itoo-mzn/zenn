@@ -717,6 +717,7 @@ end
 
 ## 8.9 マジックナンバーからシンボル定数へ
 マジックナンバーを**意味がわかる名前の定数**に置き換える。
+（感想: とても重要。これは今後必ず行う。）
 ```ruby:リファクタ前
 def sample_method(number)
   number * 3.14
@@ -730,4 +731,56 @@ def sample_method(number)
 end
 ```
 
-## 8.10 コレクションのカプセル化
+## 8.15 サブクラスからフィールドへ
+- 条件: 定数を返すメソッド以外には違いがない複数のサブクラス（子クラス）がある場合。
+メソッドをスーパークラス（親クラス）のフィールドに変えて、サブクラスを削除する。
+
+```ruby:リファクタ前
+class Person
+  # ..
+end
+
+class Female < Person
+  def female?
+    true
+  end
+
+  def code
+    'F'
+  end
+end
+
+class Male < Person
+  def female?
+    false
+  end
+
+  def code
+    'M'
+  end
+end
+```
+```ruby:リファクタ後
+class Person
+  def initialize(female, code)
+    @female = female
+    @code = code
+  end
+
+  def female?
+    @female
+  end
+
+  def code
+    @code
+  end
+
+  def self.create_female
+    Person.new(true, 'F')  # フィールドに詰めて初期化する
+  end
+
+  def self.create_male
+    Person.new(false, 'M')
+  end
+end
+```
