@@ -3,7 +3,7 @@ title: "[WIP] オブジェクト指向設計実践ガイド"
 emoji: "📘"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["オブジェクト指向", "設計"]
-published: false
+published: true
 ---
 # 書籍
 https://gihyo.jp/book/2016/978-4-7741-8361-9
