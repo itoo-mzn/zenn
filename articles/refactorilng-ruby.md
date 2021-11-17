@@ -1,9 +1,9 @@
 ---
-title: "リファクタリング (Rubyエディション)"
+title: "[WIP] リファクタリング (Rubyエディション)"
 emoji: "💎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Ruby"]
-published: false
+published: true
 ---
 
 # 書籍

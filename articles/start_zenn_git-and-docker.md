@@ -1,9 +1,9 @@
 ---
-title: "[WIP]Zennをgit+dockerで始めました"
+title: "Zennをgit+dockerで始めました"
 emoji: "✍🏻"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["Zenn"]
-published: false # true: 公開 / false: 非公開
+published: true # true: 公開 / false: 非公開
 ---
 # 概要
 ふと目についたこちらの記事。
@@ -19,6 +19,6 @@ https://zenn.dev/tocyuki/articles/050e408742dc0522f752
 - markdownで記事を書く
 - 記事でアウトプットする
 
-# 始め方
+# 始め方
 1. 上記の記事のとおりに実行する。
 2. おわり。
