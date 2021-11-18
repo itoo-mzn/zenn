@@ -808,3 +808,224 @@ end
 ```
 
 # 9章 条件式の単純化
+## 9.1 条件文の分解
+**条件部からメソッドを抽出**する。
+- 条件: 条件が複雑な場合。
+（感想: とても重要。よく使用される条件はメソッドに抽出することで再利用しやすくなる。今後複雑な条件を書く必要が出た場合は、必ず検討をする。）
+
+```ruby:リファクタ前
+if number >= 10 || number <= -10
+  p "絶対値が10以上"
+else
+  p "絶対値が10未満"
+```
+```ruby:リファクタ後
+if is_over_ten(number)
+  p "絶対値が10以上"
+else
+  p "絶対値が10未満"
+end
+
+def is_over_ten(number)
+  number >= 10 || number <= -10
+end
+```
+
+## 9.2 条件分岐の組み替え
+Rubyらしく書くことで読みやすくする。
+（感想: とても重要。Rubyらしさ、PHPらしさ...というのは言語特有なので、言語を深く知ることはこういうときに力を発揮する。）
+
+### 三項演算子 → OR代入 へ
+```ruby
+samples = params.present? ? params : []
+# ↓
+samples = params : []
+```
+
+### 条件分岐 → 明示的なreturn へ
+```ruby
+def sample_method(number)
+  if sample > 10
+    1
+  else
+    2
+  end
+end
+# ↓
+def sample_method(number)
+  return 1 if sample > 10
+  2
+end
+```
+
+## 9.3 条件式の統合
+- 条件: 同じ結果になる条件が複数ある場合。
+
+それらを1つにまとめ、メソッドとして抽出する。
+
+```ruby:リファクタ前
+def sample_method
+  return 0 if @data.size > 5
+  return 0 if @amount > 10 # 結果は上と同じ
+  1
+end
+```
+```ruby:リファクタ後
+def sample_method
+  return 0 if sample_condition
+  1
+end
+
+def sample_condition
+  @data.size > 5 || @amount > 10
+end
+```
+
+## 9.5 制御フラグの除去
+**`break`や`return`を使って、制御フラグを除去**する。
+- 条件: 制御フラグがある場合。
+
+### break使用
+```ruby:リファクタ前
+def check_security(people)
+  found = false # 制御フラグ
+  people.each do |person|
+    unless found
+      if person == "Taro"
+        send_alert
+        found = true # ある条件に合致したら制御フラグを切り替え
+      end
+      if person == "Hanako"
+        send_alert
+        found = true
+      end
+    end
+  end
+end
+```
+```ruby:リファクタ後
+def check_security(people)
+  people.each do |person|
+    if person == "Taro"
+      send_alert
+      break # ループを抜ける
+    end
+    if person == "Hanako"
+      send_alert
+      break
+    end
+  end
+end
+# まだリファクタの余地があるが、別の話になるので割愛
+```
+
+### return使用
+```ruby:リファクタ前
+def check_security(people)
+  # 制御フラグ かつ 別で使用する値
+  found = "" # 初期値
+  people.each do |person|
+    if found == ""
+      if person == "Taro"
+        send_alert
+        found = "Taro"
+      end
+      if person == "Hanako"
+        send_alert
+        found = "Hanako"
+      end
+    end
+  end
+  some_later_code(found)
+end
+```
+```ruby:リファクタ後
+def check_security(people)
+  found = found_miscreant(people) # 2つのことをしていたので、メソッドに切り出し
+  some_later_code(found)
+end
+
+# foundの値を返すメソッド
+def found_miscreant(people)
+  people.each do |person|
+    if person == "Taro"
+      send_alert
+      return "Taro" # 早期return
+    end
+    if person == "Hanako"
+      send_alert
+      return "Hanako"
+    end
+    end
+  end
+  "" # 条件に合致しなかった → 初期値のまま
+end
+```
+
+## 9.6 条件分岐のネストからガード節へ
+- 条件: 
+  - 条件分岐によって、正常な実行経路がわかりづらい場合。
+  - 異常な状態を表す条件(特殊条件)がある場合。
+
+**特殊条件をガード節で処理（早期リターン）する**。
+（感想: とても重要。使い分けの指針を下記した。）
+
+:::message
+条件分岐には2種類ある。
+1. 分岐先のいずれも(if/else)、正常な振る舞いで、同じぐらい実行され、同じくらい重要な場合。 → **if/else**
+2. 分岐先の片方が、異常状態を表したり、まれなケースな場合。 → **ガード節**
+:::
+
+```ruby:リファクタ前
+# 支払う給与
+def pay_amount
+  if @dead
+    result = dead_amount # 死亡
+  else
+    if @separated
+      result = separated_amount # 別居中
+    else
+      if @retired
+        result = retired_amount # 退職
+      else
+        result = normal_pay_amount # 通常
+      end
+    end
+  end
+  result
+end
+```
+```ruby:リファクタ後
+def pay_amount
+  # 特殊な条件は早期return
+  return dead_amount if @dead # 死亡 
+  return separated_amount if @separated # 別居中
+  return retired_amount if @retired # 退職
+
+  normal_pay_amount # 通常
+end
+```
+
+### 条件式を逆にしながら<条件分岐のネストからガード節へ>
+（感想: 条件を逆にしたほうがすっきりするときがある ということだと思う。）
+
+```ruby:リファクタ前
+def adjussted_capital
+  result = 0
+  if @capital > 0
+    if @interest_rate > 0 && @duration > 0
+      result = ( @income / @duration) * ADJ_FACTOR
+    end
+  end
+  result
+end
+```
+```ruby:リファクタ後
+def adjussted_capital
+  return 0 if @capital <= 0 # 条件を逆にした
+  return 0 if @interest_rate <= 0 || @duration <= 0 # 条件を逆にした
+  (@income / @duration) * ADJ_FACTOR
+end
+```
+
+## 
