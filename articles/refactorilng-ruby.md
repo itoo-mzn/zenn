@@ -1125,3 +1125,48 @@ end
 
 設定メソッド（セッター）を削除する。
 → `attr_writer`(`attr_accessor`) や `def フィールド=(value)`を削除する。
+
+## 10.12 コンストラクタからファクトリメソッドへ
+:::message
+コンストラクタ : クラスからインスタンスを作る時に実行される処理
+:::
+
+```ruby:リファクタ前
+class ProductController
+  def create
+    # どういう値かによって、作るプロダクトの種類が異なる
+    # → この判定をオブジェクトクラスでやっていないことが問題。色々な箇所で毎回このロジックを書く必要があるため。
+    @product = if imported
+                  ImportedProduct.new(base_price)
+                else
+                  if base_price > 1000
+                    LuxuryProduct.new(base_price)
+                  else
+                    Product.new(base_price)
+                  end
+                end
+  end
+end
+```
+```ruby:リファクタ後
+class ProductController
+  def create
+    @product = Product.create(base_price, imported)
+  end
+end
+
+class Product
+  # ファクトリメソッドへ
+  def self.create(base_price, imported=false)
+    if imported
+      ImportedProduct.new(base_price)
+    else
+      if base_price > 1000
+        LuxuryProduct.new(base_price)
+      else
+        Product.new(base_price)
+      end
+    end
+  end
+end
+```
