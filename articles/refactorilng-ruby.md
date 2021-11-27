@@ -1333,3 +1333,147 @@ end
 ```
 
 ## 11.8 テンプレートメソッドの作成
+- 条件: 同じような処理をするメソッドが別々の子クラスにあるが、内容がわずかに違う。
+
+違いのある処理を抽出して、子クラスで同じメソッド名で実装。
+共通する処理を親クラスで実装。
+
+### 継承を使ったテンプレートメソッド
+```ruby:リファクタ前
+# レシート表示
+def statement
+  result = "レンタル #{name}"
+  @rentals.each do |rental|
+    result << "#{rental.movie.title} #{rental.charge}" # 映画のタイトル、料金
+  end
+  result << "合計#{total_charge}"
+  result << "#{total_frequent_rental_points}"
+  result
+end
+
+# レシートをHTMLで表示（なのでstatementと少し違う）
+def html_statement
+  result = "<h1>レンタル #{name}</h1>"
+  @rentals.each do |rental|
+    result << "#{rental.movie.title} #{rental.charge}<br/>"
+  end
+  result << "<p>合計#{total_charge}</p>"
+  result << "<p>#{total_frequent_rental_points}</p>"
+  result
+end
+```
+```ruby:リファクタ後
+# クライアントコード``````
+class Customer
+  def statement
+    TextStatement.value(self)
+  end
+
+  def html_statement
+    HtmlStatement.value(self)
+  end
+end
+# ````````
+
+class Statement
+  # 2つの子クラスで共通している処理
+  def value(customer)
+    result = header_string(customer)
+    customer.rentals.each do |rental|
+      result << each_rental_string(rental)
+    end
+    result << footer_string(customer)
+  end
+end
+
+# 子クラス側では、独自の実装をする
+class TextStatement < Statement
+  def header_string(customer)
+    "レンタル #{customer.name}"
+  end
+
+  def each_rental_string(rental)
+    "#{rental.movie.title} #{rental.charge}"
+  end
+
+  def footer_string(customer)
+    <<-EOS
+      "合計#{customer.total_charge}"
+      result << "#{customer.total_frequent_rental_points}"
+    EOS
+  end
+end
+
+class HtmlStatement < Statement
+  def header_string(customer)
+    "<h1>レンタル #{customer.name}</h1>"
+  end
+
+  def each_rental_string(rental)
+    "#{rental.movie.title} #{rental.charge}<br/>"
+  end
+
+  def footer_string(customer)
+    <<-EOS
+      "<p>合計#{customer.total_charge}</p>"
+      "<p>#{customer.total_frequent_rental_points}</p>"
+    EOS
+  end
+end
+```
+
+### モジュールのextendを使ったテンプレートメソッド
+Statementクラスのインスタンスを作ることがない場合は、モジュールでextendするのが良い。
+
+継承を使った場合、親クラスは1つだけなのに対し、
+extendを使うと、複雑な継承の問題を避けられる。
+
+:::message
+**extend**
+extendを使うと、moduleのメソッドをそのオブジェクトのインスタンスメソッドとして取り込むことができる。
+:::
+
+```ruby:リファクタ後
+# クライアントコード``````
+class Customer
+  def statement
+    Statement.new.extend(TextStatement).value(self)
+  end
+
+  def html_statement
+    Statement.new.extend(HtmlStatement).value(self)
+  end
+end
+# ````````
+
+class Statement
+  # ...
+end
+
+module TextStatement
+  # ...
+end
+
+module HtmlStatement
+  # ...
+end
+```
+
+#### 参考記事
+https://qiita.com/shiopon01/items/fd6803f792398c5219cd#%E3%82%AF%E3%83%A9%E3%82%B9%E3%81%AB%E7%B5%84%E3%81%BF%E8%BE%BC%E3%82%93%E3%81%A7%E5%A4%9A%E9%87%8D%E7%B6%99%E6%89%BF%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8Bmix-in
+→ 名前空間を作ってモジュール名やメソッド名の衝突を防ぐ。
+
+https://qiita.com/leon-joel/items/f7c4643023f44def5ebd#activesupportconcern
+→ ActiveSupport::Concernについても記載あり。
+
+## 11.9 継承から委譲へ
+- 条件: 子クラスが親クラスのインターフェイスの一部しか使っていない or データを継承することが望ましくない 場合。
+
+親クラスに処理を委譲し、継承構造を解消する。
+
+## 11.10 委譲から継承へ
+- 条件: 多数の委譲メソッドを書いている。
+
+委譲先のクラスをモジュールにして、委譲元のクラスでincludeする。
+（<11.9 継承から委譲へ>の逆だが、基本的には継承でなくモジュールを使って階層を作る。）
+
