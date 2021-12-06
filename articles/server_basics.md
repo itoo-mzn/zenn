@@ -31,3 +31,15 @@ https://www.amazon.co.jp/%E3%82%A4%E3%83%A9%E3%82%B9%E3%83%88%E5%9B%B3%E8%A7%A3%
 
 ##### 参考記事
 https://qiita.com/jnchito/items/3884f9a2ccc057f8f3a3
+
+# 3. サーバーを用意する
+- サーバー用のOSをサーバーOSという。UNIX系サーバーOSとWindows系サーバーOSがある。
+  - UNIX系 : Linux, AIX(IBM)など
+    - Linuxのディストリビューション (=Linuxカーネルとその他の機能をまとめ、ユーザが使いやすいようにしたもの。)
+      - RedHat : 大規模システムで使われる。有料。
+      - CentOS : RedHatの商用部分を除いたもの。
+      - Debian : 広く使われている。
+      - Ubuntu : Debianベース。使いやすい。
+  - Windows系
+
+# 4. 
