@@ -43,4 +43,31 @@ order by avg(height) desc
 countries.nameだけでのGROUP BYが駄目なのは、countries.nameが重複しない保証が無いため。
 なので、idでもGROUP BYしないといけない。
 
+#### 4. 各国の平均身長を高い方から順に表示してください。ただし、FROM句はplayersテーブルとして、テーブル結合を使わず副問合せを用いてください。
+```sql
+select 
+  (select c.name
+   from countries c
+   where p.country_id = c.id) as '国名',
+  avg(height) as '平均身長'
+from players p
+group by p.country_id
+order by avg(p.height) desc
+;
+```
+サブクエリは、SELECT句でも使える。
 
+#### 5. キックオフ日時と対戦国の国名をキックオフ日時の早いものから順に表示してください。
+```sql
+select
+kickoff,
+my_country.name,
+enemy_country.name
+from pairings
+join countries as my_country
+  on pairings.my_country_id = my_country.id
+join countries enemy_country
+  on pairings.enemy_country_id = enemy_country.id
+order by kickoff
+;
+```
