@@ -71,3 +71,45 @@ join countries enemy_country
 order by kickoff
 ;
 ```
+
+#### 6. すべての選手を対象として選手ごとの得点ランキングを表示してください。（SELECT句で副問合せを使うこと）
+```sql
+select 
+  name as 名称,
+  position as ポジション,
+  club as 所属クラブ,
+  ( select count(g.id)
+    from goals g
+    where g.player_id = p.id
+    group by p.id
+   ) as ゴール数
+from players p
+order by ゴール数 desc
+;
+```
+
+#### 7. すべての選手を対象として選手ごとの得点ランキングを表示してください。（テーブル結合を使うこと）
+```sql
+select 
+  name as 名称,
+  position as ポジション,
+  club as 所属クラブ,
+  count(g.id) as ゴール数
+from players p
+-- join goals g
+left join goals g
+  on g.player_id = p.id
+-- group by p.id
+group by p.id, p.name, p.position, p.club
+order by ゴール数 desc
+;
+```
+- LEFT JOINじゃないと、ゴールしていない（goalsにデータがない）playerが含まれない。
+  （実行結果のレコード合計数が違う。）
+- **グループ関数を使っている場合は、SELECT句に使っているカラムをすべてGROUP BY句に記述しないといけない。**
+  （**MySQLはエラーにならずに実行できてしまうが、他で通用しないので正しく覚えること。**）
+:::message alert
+**GROUP BY句を使うときは、SELECT句に集約キー以外の列名を書けない。**
+:::
+
+
