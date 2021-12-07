@@ -32,6 +32,9 @@ https://www.amazon.co.jp/%E3%82%A4%E3%83%A9%E3%82%B9%E3%83%88%E5%9B%B3%E8%A7%A3%
 ##### 参考記事
 https://qiita.com/jnchito/items/3884f9a2ccc057f8f3a3
 
+# 2. ネットワークの基礎知識
+別途、腰を据えて勉強する必要がある。この章は割愛。
+
 # 3. サーバーを用意する
 - サーバー用のOSをサーバーOSという。UNIX系サーバーOSとWindows系サーバーOSがある。
   - UNIX系 : Linux, AIX(IBM)など
@@ -42,4 +45,12 @@ https://qiita.com/jnchito/items/3884f9a2ccc057f8f3a3
       - Ubuntu : Debianベース。使いやすい。
   - Windows系
 
-# 4. 
+# 4. 社内サーバーの基本
+## DHCPサーバー
+  アドレスプール（配布するよう設定したIPアドレス）から未使用のIPアドレスをクライアント（PCなど）に配布する。
+  家にあるルーターには、大抵この機能が付いている。詳しくは下記記事を参照。
+
+##### 参考記事
+https://www.officedaytime.com/tips/router2.html
+
+## DNSサーバー
