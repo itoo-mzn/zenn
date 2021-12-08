@@ -9,6 +9,9 @@ published: false
 # 出題元サイト
 https://tech.pjin.jp/blog/2016/12/05/sql%E7%B7%B4%E7%BF%92%E5%95%8F%E9%A1%8C-%E4%B8%80%E8%A6%A7%E3%81%BE%E3%81%A8%E3%82%81/
 
+# 実行環境
+MySQL 5.6
+
 # 問題・回答・解答・メモ
 #### 1. 各グループの中でFIFAランクが最も高い国と低い国のランキング番号を表示してください。
 ```sql
@@ -112,4 +115,51 @@ order by ゴール数 desc
 **GROUP BY句を使うときは、SELECT句に集約キー以外の列名を書けない。**
 :::
 
+#### 8. 各ポジションごとの総得点を表示してください。
+```sql
+select players.position as ポジション, count(goals.id) as ゴール数
+from goals
+left join players
+  on goals.player_id = players.id
+group by players.position
+;
+```
+
+#### 9. ワールドカップ開催当時（2014-06-13）の年齢をプレイヤー毎に表示する。
+```sql
+select birth, TIMESTAMPDIFF(YEAR, birth, '2014-06-13') as age, name, position
+from players
+order by age desc
+;
+```
+MySQLでは、日付計算用の関数`TIMESTAMPDIFF()`で年齢を簡単に求められる。
+
+#### 10. オウンゴールの回数を表示する
+```sql
+select count(goals.id)
+from goals
+where 1=1
+and player_id is null
+;
+```
+
+#### 11. 各グループごとの総得点数を表示して下さい。
+```sql
+select c.group_name, count(g.id)
+from goals g
+join pairings p
+  on g.pairing_id = p.id
+  and p.kickoff between '2014-6-13 00:00:00' and '2014-6-27 23:59:59'
+join countries c
+  on p.my_country_id = c.id
+group by c.group_name
+;
+```
+:::message
+BETWEEN句で日付を絞り込むときは、
+- 期間の末尾は、時間を23:59:59で指定しないとその日のデータが含まれない。
+- 期間の先頭は、時間を00:00:00で指定しなくても取得できた。（MySQLだけなのか不明。）明示したほうが良いと思っている。
+
+`between '2014-6-13 00:00:00' and '2014-6-27 23:59:59'`
+:::
 
