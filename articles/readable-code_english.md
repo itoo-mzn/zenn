@@ -41,3 +41,6 @@ if recieved_value > expected_value
 ```
 https://basics.k-labo.work/2017/08/31/%E8%AB%96%E7%90%86%E6%BC%94%E7%AE%97/
 
+- DRY(Don’t Repeat Yourself)
+
+## 9章 変数と可読性
