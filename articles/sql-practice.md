@@ -163,3 +163,49 @@ BETWEEN句で日付を絞り込むときは、
 `between '2014-6-13 00:00:00' and '2014-6-27 23:59:59'`
 :::
 
+#### 12. 日本VSコロンビア戦（pairings.id = 103）でのコロンビアの得点のゴール時間を表示してください
+```sql
+select goals.goal_time
+from goals
+where 1=1
+and pairing_id = 103
+;
+```
+
+#### 13. 日本VSコロンビア戦（pairings.id = 103）でのコロンビアの得点のゴール時間を表示してください
+```sql:回答
+select c.name, count(g.pairing_id)
+from goals g
+-- join pairings p
+inner join pairings p
+  on g.pairing_id = p.id
+  and p.id in (103, 39)
+-- join countries c
+inner join countries c
+  on p.my_country_id = c.id
+group by g.pairing_id, c.name
+;
+```
+
+解答として下記が示されていた。
+```sql:解答
+SELECT c.name, COUNT(g.goal_time)
+FROM goals g
+LEFT JOIN pairings p 
+  ON p.id = g.pairing_id
+LEFT JOIN countries c 
+  ON p.my_country_id = c.id 
+WHERE p.id = 103 OR p.id = 39
+GROUP BY c.name
+;
+```
+
+両者の違いは下記。
+- 回答: ON句で絞り込んでからINNER JOIN(= JOIN)。
+- 解答: LEFT JOIN(= LEFT OUTER JOIN)してからWHEREで絞り込む。
+
+回答のほうが、実行過程でのデータ量が少なくなるから良いと思っている。
+調べると、下記の記事で言及されていた。**今回はINNER JOINなので**、回答のほうが良い。
+
+##### 参考記事
+https://zukucode.com/2017/08/sql-join-where.html
