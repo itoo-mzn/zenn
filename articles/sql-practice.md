@@ -209,3 +209,75 @@ GROUP BY c.name
 
 ##### 参考記事
 https://zukucode.com/2017/08/sql-join-where.html
+
+#### 14. グループCの各対戦毎にゴール数を表示してください。（外部結合で）
+```sql
+select 
+  pa.kickoff, 
+  my_c.name as my_country, 
+  en_c.name as enemy_country,
+  my_c.ranking as my_ranking, 
+  en_c.ranking as enemy_ranking,
+  count(g.id)
+from pairings pa
+left join countries my_c
+  on pa.my_country_id = my_c.id
+left join countries en_c
+  on pa.enemy_country_id = en_c.id
+left join goals g
+  on pa.id = g.pairing_id
+where 1=1
+  and my_c.group_name = 'C'
+  and en_c.group_name = 'C' -- 自分も敵もCグループ（こうしないと、決勝戦の結果も含まれてしまう）
+group by 
+--   g.id, # 間違えた。
+  pa.kickoff, 
+  my_c.name, 
+  en_c.name,
+  my_c.ranking, 
+  en_c.ranking
+order by
+  pa.kickoff,
+  my_c.ranking
+;
+```
+
+#### 15. グループCの各対戦毎にゴール数を表示してください。（サブクエリで）
+コメント部は、14.のもの。
+```sql:解答
+select 
+  pa.kickoff, 
+  my_c.name as my_country, 
+  en_c.name as enemy_country,
+  my_c.ranking as my_ranking, 
+  en_c.ranking as enemy_ranking,
+--   count(g.id)
+  (
+    select count(g.id)
+    from goals g
+    where pa.id = g.pairing_id
+   ) as my_goals
+from pairings pa
+left join countries my_c
+  on pa.my_country_id = my_c.id
+left join countries en_c
+  on pa.enemy_country_id = en_c.id
+/* left join goals g
+  on pa.id = g.pairing_id */
+where 1=1
+  and my_c.group_name = 'C'
+  and en_c.group_name = 'C'
+/* group by 
+  pa.kickoff, 
+  my_c.name, 
+  en_c.name,
+  my_c.ranking, 
+  en_c.ranking */
+order by
+  pa.kickoff,
+  my_c.ranking
+;
+```
+サブクエリを使うと、GROUP BYを使わないでいいので、すっきりする。
+COUNTをサブクエリを使ってSELECT句で行った形。
+
