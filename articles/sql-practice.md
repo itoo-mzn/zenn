@@ -281,3 +281,109 @@ order by
 サブクエリを使うと、GROUP BYを使わないでいいので、すっきりする。
 COUNTをサブクエリを使ってSELECT句で行った形。
 
+#### 16. グループCの各対戦毎にゴール数を表示してください。（問15のSQLにカラムを付けくわえる形で）
+```sql:解答
+select 
+  pa.kickoff, 
+  my_c.name as my_country, 
+  en_c.name as enemy_country,
+  my_c.ranking as my_ranking, 
+  en_c.ranking as enemy_ranking,
+  (
+    select count(g.id)
+    from goals g
+    where pa.id = g.pairing_id
+  ) as my_goals,
+  (
+    select count(g2.id)
+    -- 敵のゴール数を取得するためには、my_goalsと別のgoalsのビューでCOUNTしないといけないため、新たにg2が必要になる
+    from goals g2 
+    left join pairings pa2
+      on pa2.id = g2.pairing_id
+    -- 自分と敵を入れ替えて絞り込む
+    where 1=1
+      and pa2.my_country_id = pa.enemy_country_id -- paが使える
+      and pa2.enemy_country_id = pa.my_country_id
+  ) as enemy_goals -- 敵のゴール数
+from pairings pa
+left join countries my_c
+  on pa.my_country_id = my_c.id
+left join countries en_c
+  on pa.enemy_country_id = en_c.id
+where 1=1
+  and my_c.group_name = 'C'
+  and en_c.group_name = 'C'
+order by
+  pa.kickoff,
+  my_c.ranking
+;
+```
+
+#### 17. 問題16の結果に得失点差を追加してください。
+```sql
+select 
+  pa.kickoff, 
+  my_c.name as my_country, 
+  en_c.name as enemy_country,
+  my_c.ranking as my_ranking, 
+  en_c.ranking as enemy_ranking,
+  (
+    select count(g.id)
+    from goals g
+    where pa.id = g.pairing_id
+  ) as my_goals,
+  (
+    select count(g2.id)
+    from goals g2
+    left join pairings pa2
+      on pa2.id = g2.pairing_id
+    where 1=1
+      and pa2.my_country_id = pa.enemy_country_id
+      and pa2.enemy_country_id = pa.my_country_id
+  ) as enemy_goals,
+--    my_goals - enemy_goals as goal_diff -- こうしたいが、できない。(UnknownColumn)
+  (
+    select count(g.id)
+    from goals g
+    where pa.id = g.pairing_id
+  ) - (
+    select count(g2.id)
+    from goals g2
+    left join pairings pa2
+      on pa2.id = g2.pairing_id
+    where 1=1
+      and pa2.my_country_id = pa.enemy_country_id
+      and pa2.enemy_country_id = pa.my_country_id
+  ) as goal_diff -- 冗長だがこうするしかない。
+from pairings pa
+left join countries my_c
+  on pa.my_country_id = my_c.id
+left join countries en_c
+  on pa.enemy_country_id = en_c.id
+where 1=1
+  and my_c.group_name = 'C'
+  and en_c.group_name = 'C'
+order by
+  pa.kickoff,
+  my_c.ranking
+;
+```
+
+#### 18. ブラジル（my_country_id = 1）対クロアチア（enemy_country_id = 4）戦のキックオフ時間（現地時間）を表示してください。
+```sql
+select 
+  kickoff, 
+  date_add(kickoff, interval -12 hour) as kickoff_jp
+from pairings
+where 1=1
+and my_country_id = 1
+and enemy_country_id = 4
+;
+```
+日付計算用の関数は色々ある。
+`ADDTIME(), SUBTIME(), 
+DATE_ADD(), DATE_SUB(), 
+ADDDATE(), SUBDATE()`
+
+また、DBの種類によって関数（書き方）が違うことがわかった。
+
