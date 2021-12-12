@@ -387,3 +387,49 @@ ADDDATE(), SUBDATE()`
 
 また、DBの種類によって関数（書き方）が違うことがわかった。
 
+#### 19. 年齢ごとの選手数を表示してください。（年齢はワールドカップ開催当時である2014-06-13を使って算出してください。）
+```sql:回答
+select age, count(age)
+from (
+  select TIMESTAMPDIFF(YEAR, birth, '2014-06-13') as age
+  from players
+) as ages -- わざわざサブクエリを使わなくてもいい。
+group by age
+;
+```
+```sql:解答
+SELECT TIMESTAMPDIFF(YEAR, birth, '2014-06-13') AS age, COUNT(id) AS player_count
+FROM players 
+GROUP BY age;
+```
+:::message
+SELECT句で求めた計算結果を、GROUP BY句で集約できる。
+:::
+
+#### 20. 年齢ごとの選手数を表示してください。ただし、10歳毎に合算して表示してください。
+```sql:回答
+select
+  case 
+    when age between 10 and 19 then '10代'
+    when age between 20 and 29 then '20代'
+    when age between 30 and 39 then '30代'
+    when age between 40 and 49 then '40代'
+  end as age_group,
+  count(*)
+from (
+  select TIMESTAMPDIFF(YEAR, birth, '2014-06-13') as age
+  from players
+) as ages
+group by age_group
+;
+```
+```sql:解答
+select
+  truncate(TIMESTAMPDIFF(YEAR, birth, '2014-06-13'), -1) as age,
+  count(id) as player_count
+from players
+group by age
+;
+```
+TRANCATE関数で年齢の1桁目を切り捨てることで、10年ごとの年代が求められ、それをグループ化すればいい。
+（MySQLでは「FLOOR関数」を使ってもできる。）
