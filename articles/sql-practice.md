@@ -433,3 +433,117 @@ group by age
 ```
 TRANCATE関数で年齢の1桁目を切り捨てることで、10年ごとの年代が求められ、それをグループ化すればいい。
 （MySQLでは「FLOOR関数」を使ってもできる。）
+
+#### 21. 年齢ごとの選手数を表示してください。ただし、5歳毎に合算して表示してください。
+```sql:解答
+select 
+  floor(timestampdiff(year, birth, '2014-06-13') / 5) * 5 as age,
+  count(id)
+from players
+group by age
+;
+```
+5で割って小数点を切り捨てて5倍すれば、5歳ごとに分けられる。
+
+#### 22. 以下の条件でSQLを作成し、抽出された結果をもとにどのような傾向があるか考えてみてください。
+・5歳単位、ポジションでグループ化
+・選手数、平均身長、平均体重を表示
+・順序は年齢、ポジション
+```sql
+select 
+  floor(timestampdiff(year, birth, '2014-06-13') / 5) * 5 as age,
+  position,
+  count(id),
+  avg(height),
+  avg(weight)
+from players
+group by age, position
+order by age, position
+;
+```
+
+#### 23. 身長の高い選手ベスト5を抽出し、以下の項目を表示してください。
+・名前
+・身長
+・体重
+```sql
+select name, height, weight
+from players
+order by height desc
+limit 5
+;
+```
+
+#### 24. 身長の高い選手6位～20位を抽出し、以下の項目を表示してください。
+・名前
+・身長
+・体重
+```sql
+select name, height, weight
+from players
+order by height desc
+limit 15
+offset 5
+;
+```
+`LIMIT x OFFSET y` の代わりに、`LIMIT y, x`でも書ける。
+
+#### 25. 全選手の以下のデータを抽出してください。
+```sql
+select uniform_num, name, club
+from players
+;
+```
+
+#### 26. グループCに所属する国をすべて抽出してください。
+```sql
+select *
+from countries
+where 1=1
+and group_name = 'C'
+;
+```
+
+#### 27. グループC以外に所属する国をすべて抽出してください。
+```sql
+select *
+from countries
+where 1=1
+and group_name <> 'C'
+;
+```
+SQLで**否定**は`<>`。
+
+#### 28. 2016年1月13日現在で40歳以上の選手を抽出してください。（誕生日の人を含めてください。）
+```sql:回答
+select *
+from players
+where timestampdiff(year, birth, '2016-01-13') >= 40
+;
+```
+```sql:解答
+SELECT * 
+FROM players
+WHERE birth <= '1976-1-13'
+```
+
+#### 29. 身長が170cm未満の選手を抽出してください。
+```sql
+select *
+from players
+where 1=1
+and height < 170
+;
+```
+
+#### 30. FIFAランクが日本（46位）の前後10位に該当する国（36位～56位）を抽出してください。ただし、BETWEEN句を用いてください。
+```sql
+select *
+from countries
+where 1=1
+and ranking between 36 and 56
+;
+```
+##### BETWEEN句の文法
+`カラム名 BETWEEN 小 AND 大`
+
