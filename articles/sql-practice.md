@@ -653,3 +653,63 @@ select distinct position
 from players
 ;
 ```
+
+#### 41. 全選手の身長と体重を足した値を表示してください。合わせて選手の名前、選手の所属クラブも表示してください。
+```sql
+select name, club, height + weight
+from players
+;
+```
+
+#### 42. 選手名とポジションを以下の形式で出力してください。シングルクォートに注意してください。
+「ジュリオセザール選手のポジションは’GK’です」
+```sql
+select concat(name, '選手のポジションは\'', position, '\'です')
+from players
+;
+```
+- 文字列結合は`CONCAT`。
+- シングルクオート（やその他の特殊文字）を出力するには、`\`でエスケープ。
+
+#### 43. 全選手の身長と体重を足した値をカラム名「体力指数」として表示してください。合わせて選手の名前、選手の所属クラブも表示してください。
+```sql
+select name, club, height + weight as '体力指数'
+from players
+;
+```
+
+#### 44. FIFAランクの高い国から順にすべての国名を表示してください。
+```sql
+select *
+from countries
+order by ranking
+;
+```
+
+#### 45. 全ての選手を年齢の低い順に表示してください。なお、年齢を計算する必要はありません。
+```sql
+select *
+from players
+order by birth desc
+;
+```
+
+#### 46. 全ての選手を身長の大きい順に表示してください。同じ身長の選手は体重の重い順に表示してください。
+```sql
+select *
+from players
+order by height desc, weight desc
+;
+```
+
+#### 47. 全ての選手のポジションの1文字目（GKであればG、FWであればF）を出力してください。
+```sql
+select id, name, LEFT(position, 1)
+from players
+;
+```
+`LEFT`や`SUBSTRING`を始め、文字を加工する方法が色々ある。下記記事がよくまとまっている。
+
+##### 参考記事
+https://qiita.com/yatto5/items/0efc8c22e1fbc4f6f091
+
