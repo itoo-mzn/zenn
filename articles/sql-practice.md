@@ -713,3 +713,40 @@ from players
 ##### 参考記事
 https://qiita.com/yatto5/items/0efc8c22e1fbc4f6f091
 
+#### 48. 出場国の国名が長いものから順に出力してください。
+```sql
+select name, char_length(name)
+from countries
+order by char_length(name) desc
+;
+```
+文字列の長さは、`CHAR_LENGTH`で求められる。(MySQLの場合。他は関数の名称が違う。)
+
+#### 49. 全選手の誕生日を「2017年04月30日」のフォーマットで出力してください。
+```sql
+select name, date_format(birth, '%Y年%m月%d日')
+from players
+;
+```
+date型なので、`DATE_FORMAT`で書式設定できる。
+
+#### 50. 全てのゴール情報を出力してください。ただし、オウンゴール（player_idがNULLのデータ）はIFNULL関数を使用してplayer_idを「9999」と表示してください。
+```sql
+select ifnull(player_id, 9999)
+from goals
+;
+```
+NULLのデータが存在しうる場合は、`IFNULL`で指定の値に変換できる。
+
+#### 51. 全てのゴール情報を出力してください。ただし、オウンゴール（player_idがNULLのデータ）はCASE関数を使用してplayer_idを「9999」と表示してください。
+```sql
+select
+  case when player_id is null then 9999
+       else player_id
+  end as player_id
+from goals
+order by id desc
+;
+```
+`CASE`式が使える。
+
