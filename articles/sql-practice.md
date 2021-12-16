@@ -708,7 +708,7 @@ select id, name, LEFT(position, 1)
 from players
 ;
 ```
-`LEFT`や`SUBSTRING`を始め、文字を加工する方法が色々ある。下記記事がよくまとまっている。
+`LEFT`や`SUBSTRING`関数を始め、文字を加工する方法が色々ある。下記記事がよくまとまっている。
 
 ##### 参考記事
 https://qiita.com/yatto5/items/0efc8c22e1fbc4f6f091
@@ -728,7 +728,7 @@ select name, date_format(birth, '%Y年%m月%d日')
 from players
 ;
 ```
-date型なので、`DATE_FORMAT`で書式設定できる。
+date型なので、`DATE_FORMAT関数`で書式設定できる。
 
 #### 50. 全てのゴール情報を出力してください。ただし、オウンゴール（player_idがNULLのデータ）はIFNULL関数を使用してplayer_idを「9999」と表示してください。
 ```sql
@@ -736,7 +736,7 @@ select ifnull(player_id, 9999)
 from goals
 ;
 ```
-NULLのデータが存在しうる場合は、`IFNULL`で指定の値に変換できる。
+NULLのデータが存在しうる場合は、`IFNULL関数`で指定の値に変換できる。
 
 #### 51. 全てのゴール情報を出力してください。ただし、オウンゴール（player_idがNULLのデータ）はCASE関数を使用してplayer_idを「9999」と表示してください。
 ```sql
@@ -748,5 +748,42 @@ from goals
 order by id desc
 ;
 ```
-`CASE`式が使える。
+（プログラム言語のように）`CASE関数`が使える。
 
+#### 52. 全ての選手の平均身長、平均体重を表示してください。
+```sql
+select avg(height), avg(weight)
+from players
+;
+```
+`AVG`は、平均を求める**グループ関数**。
+単に`AVG`とすると、テーブルの**全レコードを1つのグループ**として実行される。
+（複数のグループに分ける場合は、追加で`GROUP BY句`が必要。
+
+#### 53. 日本の選手（player_idが714から736）が上げたゴール数を表示してください。
+```sql
+select count(id)
+from goals
+where 1=1
+and player_id between 714 and 736
+;
+```
+
+#### 54. オウンゴール（player_idがNULL）以外の総ゴール数を表示してください。ただし、WHERE句は使用しないでください。
+```sql
+-- select count(id)
+select count(player_id)
+from goals
+-- where 1=1
+-- and player_id is not null
+;
+```
+`COUNT`(グループ関数)は、**NULLのレコードはカウントしない**性質がある。
+（なので、IS NOT NULLで絞ってIDでまとめるより、player_idでまとめたほうが良い。）
+
+#### 55. 全ての選手の中で最も高い身長と、最も重い体重を表示してください。
+```sql
+select max(height), max(weight)
+from players
+;
+```
