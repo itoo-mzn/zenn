@@ -44,3 +44,6 @@ https://basics.k-labo.work/2017/08/31/%E8%AB%96%E7%90%86%E6%BC%94%E7%AE%97/
 - DRY(Don’t Repeat Yourself)
 
 ## 9章 変数と可読性
+- JavaScriptでは変数にはいつも`var`を付けること。(`var`をつけないとグローバル変数になる。)
+- JavaScriptとPythonは、ループ内で定義した変数もループ外で使えるため、注意が必要。（スコープが広い）
+
