@@ -787,3 +787,56 @@ select max(height), max(weight)
 from players
 ;
 ```
+
+#### 56. AグループのFIFAランク最上位を表示してください。
+```sql
+select min(ranking)
+from countries
+where 1=1
+and group_name = 'A'
+;
+```
+
+#### 57. CグループのFIFAランクの合計値を表示してください。
+```sql
+select sum(ranking)
+from countries
+where 1=1
+and group_name = 'C'
+;
+```
+
+#### 58. 全ての選手の所属国と名前、背番号を表示してください。
+```sql
+select c.name, p.name, p.uniform_num
+from players p
+join countries c
+  on p.country_id = c.id
+;
+```
+
+#### 59. 全ての試合の国名と選手名、得点時間を表示してください。オウンゴール（player_idがNULL）は表示しないでください。
+```sql
+select c.name, p.name, g.goal_time
+from goals g
+join players p
+  on g.player_id = p.id
+join countries c
+  on p.country_id = c.id
+-- where 1=1
+-- and g.player_id is not null
+;
+```
+`JOIN(INNER JOIN = 内部結合)`のため、`IS NOT NULL`は不要だった。
+
+#### 60. 全ての試合のゴール時間と選手名を表示してください。左側外部結合を使用してオウンゴール（player_idがNULL）も表示してください
+```sql
+select g.goal_time, p.uniform_num, p.name
+from goals g
+left join players p
+  on g.player_id = p.id
+;
+```
+`LEFT JOIN(LEFT OUTER JOIN = 外部結合)`のため、player_id=NULLも表示される。
+
+
