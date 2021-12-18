@@ -840,3 +840,61 @@ left join players p
 `LEFT JOIN(LEFT OUTER JOIN = 外部結合)`のため、player_id=NULLも表示される。
 
 
+#### 61. 全ての試合のゴール時間と選手名を表示してください。右側外部結合を使用してオウンゴール（player_idがNULL）も表示してください。
+```sql
+select g.goal_time, p.uniform_num, p.position, p.name
+from goals g
+left join players p
+  on g.player_id = p.id
+;
+```
+
+#### 62. 全ての試合のゴール時間と選手名、国名を表示してください。また、オウンゴール（player_idがNULL）も表示してください。
+```sql
+select c.name, g.goal_time, p.uniform_num, p.position, p.name
+from goals g
+left join players p
+  on g.player_id = p.id
+left join countries c
+  on p.country_id = c.id
+;
+```
+
+#### 63. 全ての試合のキックオフ時間と対戦国の国名を表示してください。
+```sql
+select pa.kickoff, my_c.name, enemy_c.name
+from goals g
+join pairings pa
+  on g.pairing_id = pa.id
+join countries my_c
+  on pa.my_country_id = my_c.id
+join countries enemy_c
+  on pa.enemy_country_id = enemy_c.id
+;
+```
+
+#### 64. 全てのゴール時間と得点を上げたプレイヤー名を表示してください。オウンゴールは表示しないでください。ただし、結合は使わずに副問合せを用いてください。
+```sql
+select
+g.id,
+g.goal_time,
+(
+  select p.name
+  from players p
+  where 1=1
+  and g.player_id = p.id
+) as '選手名'
+from goals g
+-- where 1=1
+-- and g.player_id is not null
+;
+```
+
+#### 65. 全てのゴール時間と得点を上げたプレイヤー名を表示してください。オウンゴールは表示しないでください。ただし、副問合せは使わずに、結合を用いてください。
+```sql
+select g.id, g.goal_time, p.name
+from goals g
+join players p
+  on g.player_id = p.id
+;
+```
