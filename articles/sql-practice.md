@@ -898,3 +898,139 @@ join players p
   on g.player_id = p.id
 ;
 ```
+
+#### 66. 各ポジションごと（GK、FWなど）に最も身長と、その選手名、所属クラブを表示してください。ただし、FROM句に副問合せを使用してください。
+```sql:解答
+select p1.position, p1.最大身長, p2.name, p2.club
+from (
+  select position, max(height) as 最大身長
+  from players
+  group by position
+) p1
+join players p2
+  on p1.position = p2.position
+  and p1.最大身長 = p2.height -- p1.heightは実行できない
+;
+```
+:::message
+**イメージ**
+サブクエリが特殊条件（加工しているデータ）で、本体が主テーブル（何も加工していないデータ）。
+:::
+
+1. サブクエリでポジション（グループ）ごとの最大身長を求める。
+2. その最大身長を持つ選手のレコードの情報が更にほしいため、playersテーブルを更にJOINする。
+:::message alert
+JOINする条件（ON句）は、レコードが一意に特定できないといけない。
+（今回でいうと、`position`と`height`は一意じゃない可能性もあると思うので微妙では...？）
+:::
+
+#### 67. 各ポジションごと（GK、FWなど）に最も身長と、その選手名を表示してください。ただし、SELECT句に副問合せを使用してください。
+```sql
+select 
+  p1.position, 
+  max(p1.height) as 最大身長,
+  (
+  select p2.name
+  from players p2
+  where 1=1
+    and p1.position = p2.position
+--     and p1.最大身長 = p2.height
+    and max(p1.height) = p2.height
+  ) as 名前
+from players p1
+group by position
+;
+```
+:::message
+**イメージ**
+サブクエリが主テーブル（何も加工していないデータ）を1カラムだけ取り出していて、本体が特殊条件（加工しているデータ）。
+:::
+
+#### 68. 全選手の平均身長より低い選手をすべて抽出してください。表示する列は、背番号、ポジション、名前、身長としてください。
+```sql
+select uniform_num, position, name, height
+from players
+where 1=1
+and height < (
+  select avg(height) -- ここは1行だけ返す結果にしないといけない
+  from players
+)
+;
+```
+WHERE句にサブクエリを使うパターン。
+:::message
+比較演算子(<, >, =)を使うときはサブクエリの返す結果は1行でないといけないが、
+**IN句を使う場合は複数行を返すサブクエリで良い**。
+:::
+
+#### 69. 各グループの最上位と最下位を表示し、その差が50より大きいグループを抽出してください。
+```sql
+select max(ranking), min(ranking)
+from countries
+group by group_name
+having max(ranking) - min(ranking) > 50
+;
+```
+:::message
+**グループ関数(`MAX`や`MIN`や`COUNT`)の結果を使って抽出条件を作りたい場合は、**(WHERE句でなく)**HAVING句**に記述する。
+:::
+
+#### 70. 1980年生まれと、1981年生まれの選手が何人いるか調べてください。ただし、日付関数は使用せず、UNION句を使用してください。
+```sql
+select 1980 as 誕生年, count(p1.id) as 人数
+from players p1
+where 1=1
+and birth between '1980-01-01' and '1980-12-31'
+union
+select 1981 as 誕生年, count(p2.id) as 人数
+from players p2
+where 1=1
+and birth between '1981-01-01' and '1981-12-31'
+;
+```
+**UNION句** : 2つの結果を**縦に**つなげる。
+
+#### 71. 身長が195㎝より大きいか、体重が95kgより大きい選手を抽出してください。ただし、以下の画像のように、どちらの条件にも合致する場合には2件分のデータとして抽出してください。また、結果はidの昇順としてください。
+```sql
+select id, position, name, height, weight
+from players
+where 1=1
+and height > 195
+union all
+select id, position, name, height, weight
+from players
+where 1=1
+and weight > 95
+order by id
+;
+```
+**UNION ALL句** : 重複を削除しない（=同じ行をまとめない）。
+（UNIONは重複を削除する）
+
+---
+
+### Viewとは
+SQLで利用されるViewは実テーブルから作成される「仮想的なテーブル」。
+**必要なデータだけを抜粋**したり、各テーブルから**データを参照しやすいように加工**したViewを作成することができます。
+Viewはあくまでも仮想テーブルなので、その中にデータは存在しませんが、テーブル操作をするのと同じような感覚で参照することができます。
+Viewの実態はSELECT文。Viewにアクセスする際、定義したSELECT文が実行され、抽出したデータを参照することで仮想テーブルのように扱うことができる。
+
+#### Viewを使うメリット
+- 複雑なSQL文をViewとして定義することで、毎回入力する必要がなくなり開発効率が向上する
+- Viewを利用すれば一般ユーザーに見せたくないデータへのアクセスを制限することができる
+
+#### Viewの作成
+`CREATE VIEW [ビュー名] AS [定義]`を実行。
+```sql
+CREATE VIEW players_view AS
+select id, name
+from players
+;
+```
+#### Viewの参照
+`SELECT [カラム] AS [ビュー名]`を実行。（=普段どおりのSQL）
+```sql
+select *
+from players_view
+;
+```
