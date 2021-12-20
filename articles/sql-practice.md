@@ -1052,10 +1052,34 @@ from players_view
 (特定の条件式の中にSELECT文を含むことで、そのSELECTの結果を条件として利用する記述方法。)
 WHERE句で使うことが多い。
 
-1. **単一行サブクエリ (スカラ・サブクエリ)**
+### 1. **単一行サブクエリ (スカラ・サブクエリ)**
   戻り値が1行(1件のデータ)。
   使われる演算子は、比較演算子（=、<、<=、>、>=、!=）やIN/NOT IN演算子、EXISTS/NOT EXISTS演算子など。
-2. **複数行サブクエリ**
+
+#### SELECT句内で使うサブクエリ
+サブクエリの結果を、メインクエリの結果として表示できる。
+単一のSELECT文では、*グループ化された結果*と*全体の結果*を同時に表示できないが、サブクエリを使うと同時に取得できる。
+```sql
+select
+  id, -- テーブルの値をそのまま使う
+  name,
+  ( select avg(height) -- グループ化された結果(サブクエリ)
+    from players
+  )
+from players
+;
+```
+
+#### WHERE句内で使うサブクエリ
+```sql
+select *
+from players
+where 
+  height > ( select avg(height) from players )
+;
+```
+
+### 2. **複数行サブクエリ**
   戻り値が複数行。
   WHERE句だけでなくFROM句でも記述できる。
   使われる演算子は、IN, ANY, ALL。
@@ -1066,10 +1090,24 @@ WHERE 列名 演算子 (
   SELECT 列名 FROM テーブル名 [WHERE 条件式] -- サブクエリ
 )
 ```
-3. **表サブクエリ**
+
+### 3. **表サブクエリ**
   戻り値がn行n列の表となる場合に利用する。(n,nは１以上)
   SELECT文のFROM句やINSERT文などに記述できる。
-4. **相関サブクエリ**
+
+#### FROM句内で使うサブクエリ
+サブクエリの結果を、テーブルとして使う。
+```sql
+select 国ID, 平均身長
+from (
+  select country_id as 国ID, avg(height) as 平均身長
+  from players
+  group by country_id
+) as country_groups
+;
+```
+
+### 4. **相関サブクエリ**
   サブクエリのSELECT文で、主クエリのテーブルの列を参照するもの。
   通常のサブクエリは内側のSELECT文の結果に基づき外側のクエリを実行するのに対し、
   相関サブクエリは外側の実行結果1件に対して内側のSELECT文が実行される。
@@ -1085,4 +1123,43 @@ WHERE 列名 演算子 (
 )
 ```
 
+#### 相関サブクエリの処理の流れ
+```sql:<例>その国の平均身長より高い選手のみを選ぶ
+select id, name
+from players p1
+where height > (
+  select avg(height)
+  from players p2
+  where p1.country_id = p2.country_id
+)
+;
+```
+##### 処理順
+1. 外側のSELECT文が1行分だけ実行される。
+  `select id, name from players p1`の結果の1データのみが取れる。
+2. 取得した結果をサブクエリに代入。
+  1で取得した1つのデータを、`p1.カラム名`に代入。
+  ```sql:(サブクエリ内)
+  select avg(height)
+  from players p2
+  where 10 = p2.country_id -- 具体的なデータが代入される
+  ```
+3. 外側のSELECT文の WHERE句の判定。
+```sql:例
+select id, name
+from players p1
+where height > 178.2 -- 具体的なデータになる
+;
+```
+4. 上の1.~3.(合致すれば取得されるし、そうでなければ取得されない)が、
+  外側のクエリのデータ数分（n回）行われる。
+
 ## インデックス
+- 大量にデータがある場合、インデックスを利用することで検索スピードが向上する。
+- INSERT時、新規データが2倍になるので、処理が重くなる。
+- 算術演算子や関数など**特定の条件下ではインデックスを作成していても利用できない**。
+  - 算術演算子を使用している（age + 5）
+  - 関数を使用している( AVG(age) )
+  - ORを使用（WHERE age = 25 OR age = 26）  等。
+- インデックスは既存のテーブルとは別に保存されるので、データベースの容量と相談しなければならない。
+  **既存のテーブル容量に加えインデックス用のデータ容量が必要**。
