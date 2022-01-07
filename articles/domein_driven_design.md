@@ -24,7 +24,7 @@ https://www.shoeisha.co.jp/book/detail/9784798150727
 難解だと聞いたため、いきなり挑む前に本書でドメイン駆動設計の基本を理解することを目的としている。
 
 # Gitリポジトリ
-本書に登場するJavaのコードの**一部**を、「Rubyで表現してみる」「動かす 」ためのコードを置いています。
+本書に登場するJavaのコードの**一部**を、「Rubyで表現してみる」「動かして理解する」ためのコードを置いています。
 https://github.com/ito0804takuya/domein-driven-design
 
 # ドメイン駆動設計とは
@@ -185,7 +185,95 @@ UserIdオブジェクトを`id`プロパティに定義していれば、何が�
 
 
 # ドメインサービス
+**値オブジェクトやエンティティに記述すると不自然になる振る舞いを解決する**オブジェクト。
+複数のドメインオブジェクト間を横断するような操作に多く見られる。
+
+:::message
+重要なのは、**不自然な振る舞いに限定**すること。
+:::
+
+## 不自然な振る舞いとは
+例えば、ユーザの名前は重複してはいけないという要件があるとする。
+`ユーザに関する関心事はUserクラスに`と単に考えてコード(下記)を書くと、ユーザが自分自身に`重複していない？`と聞くことになる。
+
+```ruby:不自然な振る舞い
+class User
+  attr_accessor :name
+
+  def initialize(name:)
+    @name = name
+  end
+
+  def exists?(user:)
+    # 重複を確認するコード
+  end
+end
+
+user = User.new(name: '山田')
+is_duplicate = user.exists?(user) # 自分自身に問い合わせている
+```
+
+```ruby:ドメインサービス
+class User
+  attr_accessor :name
+
+  def initialize(name:)
+    @name = name
+  end
+end
+
+class UserService
+  def exists?(user:)
+    # 重複を確認するコード
+  end
+end
+
+user = User.new(name: '山田')
+user_service = UserService.new
+is_duplicate = user_service.exists?(user) # UserServiceに問い合わせる
+```
+
+## ドメインモデル貧血症とは
+本来ドメインモデルに記述されるべき知識や振る舞いが、ドメインサービスやアプリケーションサービスに記述され、語るべきことを語っていないドメインオブジェクトの状態。
+
+オブジェクト指向設計の`データと振る舞いをまとめる`という基本戦略の**真逆**をいくもの。
+
+```ruby
+class User
+  attr_accessor :name
+
+  def initialize(name:)
+    @name = name
+  end
+end
+
+class UserService
+  def exists?(user:)
+    # 重複を確認するコード
+  end
+
+  # このメソッドはUserクラスにあるべき
+  def change_user_name(name:)
+    # ユーザの名前を変更するコード
+  end
+end
+```
+
+:::message
+振る舞いを`値オブジェクトやエンティティ`か、`ドメインサービス`に定義するべきか迷ったら、
+`値オブジェクトやエンティティ`に定義すること。
+**可能限りドメインサービスは利用しない**。
+:::
+
+## Railsでは
+サービスというのをRailsでは使わないなと感じ、Railsの思想とは異なるのか？と思って調べてみたところ、こんな記述があった。感じた違和感はこれ↓だった。
+
+> テーブルとActiveRecordモデルが一対一の関係にあるため、例えばUserに関するデータ・振る舞い(CRUD操作も含む)・制約などがActiveRecordのUserモデルに集約されがち。
+( https://ryota21silva.hatenablog.com/entry/2021/09/12/153120 )
+
+つまり、**モデルに何もかも書き過ぎてしまう傾向になりやすい**ため、モデルの肥大化に注意してコーディングしないといけない。
 
 
 <!-- TODO: 01.ドメインモデル貧血症！というコード例 -->
 <!-- TODO: 02.ドメインモデルに拘るとどんな現実的な問題がでてくるのか？ -->
+<!-- クラスのフィールド(DBのカラム)ごとに値オブジェクトやエンティティを生成することになり、値オブジェクトやエンティティまみれになってしまう...？ User.new(UserId, UserName, ...) -->
