@@ -238,6 +238,7 @@ is_duplicate = user_service.exists?(user) # UserServiceに問い合わせる
 
 オブジェクト指向設計の`データと振る舞いをまとめる`という基本戦略の**真逆**をいくもの。
 
+<!-- 01.ドメインモデル貧血症！というコード例 -->
 ```ruby
 class User
   attr_accessor :name
@@ -262,11 +263,11 @@ end
 :::message
 振る舞いを`値オブジェクトやエンティティ`か、`ドメインサービス`に定義するべきか迷ったら、
 `値オブジェクトやエンティティ`に定義すること。
-**可能限りドメインサービスは利用しない**。
+**可能限り、ドメインサービスは利用しない**。
 :::
 
-## Railsでは
-サービスというのをRailsでは使わないなと感じ、Railsの思想とは異なるのか？と思って調べてみたところ、こんな記述があった。感じた違和感はこれ↓だった。
+## Railsでは (余談)
+Railsではサービスを使わないため、Railsは思想が異なるのか？と思い調べてみたところ、こんな記述があった。
 
 > テーブルとActiveRecordモデルが一対一の関係にあるため、例えばUserに関するデータ・振る舞い(CRUD操作も含む)・制約などがActiveRecordのUserモデルに集約されがち。
 ( https://ryota21silva.hatenablog.com/entry/2021/09/12/153120 )
@@ -274,6 +275,99 @@ end
 つまり、**モデルに何もかも書き過ぎてしまう傾向になりやすい**ため、モデルの肥大化に注意してコーディングしないといけない。
 
 
-<!-- TODO: 01.ドメインモデル貧血症！というコード例 -->
+# リポジトリ
+データを永続化・再構築する処理を抽象的に扱うためのオブジェクト。（リポジトリの和訳 : 保管庫）
+
+(オブジェクトの)インスタンスを保存するとき、データストアに書き込む処理を直接実行するのでなく、リポジトリに依頼する。
+（永続化したデータからインスタンスを再構築したいときも同様。）
+
+## 利用例
+以下のコードではデータを保存・検索する処理を直接記述しているため、本来の目的（何をしたいのか）がぼやける。
+
+```ruby:リポジトリ利用前
+require 'mysql2'
+
+class User
+  attr_accessor :name
+
+  def initialize(name:)
+    @name = name
+  end
+end
+
+class UserService
+  def exists?(user:)
+    connection = Mysql2::Client.new(host: '127.0.0.1', username: '', password: '', encoding: 'utf8',
+      database: 'sample')
+    sql = "SELECT * FROM users WHERE name = #{user.name}"
+    result = connection.query(sql)
+    connection.close
+
+    # 以下、重複を確認するコード (略)
+  end
+end
+
+# main
+user = User.new(name: "山田")
+user_service = UserService.new
+
+raise StandardError.new("#{user.name}は既に存在しています。") if user_service.exists?(user: user)
+
+# 以降、DBへの保存処理
+connection = Mysql2::Client.new(host: '127.0.0.1', username: '', password: '', encoding: 'utf8',
+                                database: 'sample')
+sql = "INSERT INTO users (name) VALUES (#{name});"
+connection.query(sql)
+connection.close
+```
+
+データの保存・検索といったDBへの操作は、リポジトリに任せることで、本来やりたい処理の趣旨が際立つ。（= 意図を示す）
+```ruby:リポジトリ利用
+require 'mysql2'
+
+class User
+  attr_accessor :name
+
+  def initialize(name:)
+    @name = name
+  end
+end
+
+class UserService
+  def exists?(user:)
+    user_repository = UserRepository.new
+    user_repository.find(user.name)
+  end
+end
+
+class UserRepository
+  def save(object)
+    # 保存処理
+  end
+
+  def find(name)
+    # 重複確認処理
+  end
+end
+
+# main
+user = User.new(name: "山田")
+user_service = UserService.new
+
+raise StandardError.new("#{user.name}は既に存在しています。") if user_service.exists?(user: user)
+
+# 以降、DBへの保存処理
+user_repository = UserRepository.new
+user_repository.save(user)
+```
+
+↑のコードは生のRubyで書いたが、今はORMを使うことが大半。
+（生で書いたことが無かったので、勉強になった。やっぱりORMのほうが手軽に書ける。）
+
+# アプリケーションサービス
+
+
+
+
 <!-- TODO: 02.ドメインモデルに拘るとどんな現実的な問題がでてくるのか？ -->
 <!-- クラスのフィールド(DBのカラム)ごとに値オブジェクトやエンティティを生成することになり、値オブジェクトやエンティティまみれになってしまう...？ User.new(UserId, UserName, ...) -->
