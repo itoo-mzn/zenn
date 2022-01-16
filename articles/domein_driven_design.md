@@ -365,8 +365,50 @@ user_repository.save(user)
 （生で書いたことが無かったので、勉強になった。やっぱりORMのほうが手軽に書ける。）
 
 # アプリケーションサービス
+**ドメインオブジェクトを操作し、利用者の目的(ユースケース)を達成する**ように導くオブジェクト。
 
+:::message
+ドメインのルールは、アプリケーションサービスに記述しないこと。
 
+**ドメインの知識はドメインオブジェクト(or ドメインサービス)に記述し、アプリケーションサービスがドメインオブジェクトを利用する**ように仕立てる。
+:::
+
+- サービス
+  - **ドメインサービス**
+    ドメインの知識を表現する。
+    （例：ユーザ名の重複確認）
+  - **アプリケーションサービス**
+    アプリケーションを成り立たせるための操作を行う。
+    （例：ユーザの登録処理、退会処理）
+
+```ruby
+# ドメインオブジェクト
+class User
+  attr_accessor :name
+
+  def initialize(name:)
+    @name = name
+  end
+end
+
+# リポジトリ
+class UserRepository
+  def save(object)
+    # 保存処理
+  end
+end
+
+# アプリケーションサービス
+class UserApplicationService
+  def register(name:)
+    user = User.new(name: name)
+    user_repository = UserRepository.new
+    user_repository.save(user)
+  end
+end
+```
+
+# 依存関係のコントロール
 
 
 <!-- TODO: 02.ドメインモデルに拘るとどんな現実的な問題がでてくるのか？ -->
