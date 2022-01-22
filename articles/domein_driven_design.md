@@ -422,7 +422,7 @@ end
 （下記の記事にも書いた内容。）
 > 「自身よりも変更されないもの」に依存すること
 
-https://zenn.dev/itoo/articles/object-oriented_design
+https://zenn.dev/itoo/articles/object-oriented_design#%E4%BE%9D%E5%AD%98%E6%96%B9%E5%90%91%E3%81%AE%E7%AE%A1%E7%90%86
 
 ## 依存関係逆転の原則
 1. **上位レベルのモジュールは、下位レベルのモジュールに依存してはいけない。どちらのモジュールも抽象に依存すべき。**
@@ -431,7 +431,7 @@ https://zenn.dev/itoo/articles/object-oriented_design
 
 ###### < 例 >
 先程の例では、`UserApplicationService`は`UserRepository`に依存している。
-`UserRepository`のほうがより機械に近い具体的な処理を行っているため、下位レベル。
+`UserRepository`のほうが(より機械に近い)具体的な処理を行っているため、下位レベル。
 `UserApplicationService`はそれよりは上位のレベルなので、原則に反している。
 
 そこで、**`UserRepository`の抽象**を作り、2つのモジュールはそれに依存させる。（原則1が解決）
@@ -447,6 +447,13 @@ https://zenn.dev/itoo/articles/object-oriented_design
 **高レベルのモジュールはクライアントとして、低レベルのモジュールを呼び出す。**
 :::
 
+## 依存性の注入
+オブジェクト内に依存関係を記述する（クラス内で他のインスタンスを生成する）のではなく、外部からオブジェクトを注入する。
+
+（下記の記事にも書いたので詳細は割愛。）
+https://zenn.dev/itoo/articles/object-oriented_design#%E7%96%8E%E7%B5%90%E5%90%88%E3%81%AA%E3%82%B3%E3%83%BC%E3%83%89%E3%82%92%E6%9B%B8%E3%81%8F
+
+# 
 
 <!-- TODO: 02.ドメインモデルに拘るとどんな現実的な問題がでてくるのか？ -->
 <!-- クラスのフィールド(DBのカラム)ごとに値オブジェクトやエンティティを生成することになり、値オブジェクトやエンティティまみれになってしまう...？ User.new(UserId, UserName, ...) -->
