@@ -458,7 +458,91 @@ https://techracho.bpsinc.jp/hachi8833/2019_05_09/62314
 （下記の記事にも書いたので詳細は割愛。）
 https://zenn.dev/itoo/articles/object-oriented_design#%E7%96%8E%E7%B5%90%E5%90%88%E3%81%AA%E3%82%B3%E3%83%BC%E3%83%89%E3%82%92%E6%9B%B8%E3%81%8F
 
+# ファクトリ
+**複雑なオブジェクトの生成処理**を責務とするオブジェクト。
+ファクトリを使って生成処理をカプセル化することで、コードの論点が明確になる。
+
+コンストラクタは単純であるべき。
+コンストラクタが単純でなくなるときは、ファクトリを定義する。
+
+```ruby:ファクトリ使用前
+class User
+  attr_accessor :id, :name
+
+  def initialize(name:)
+    @name = name
+    
+    # 重複していないIDをDBから取得するためのコード
+    # connection = Mysql2::Client.new(...)
+    # id = ...
+
+    @id = id
+  end
+
+  # インスタンスを再構築
+  def rebuild_user(id:, name:)
+    @id = id
+    @name = name
+  end
+end
+```
+```ruby:ファクトリ使用後
+class UserFactoryInterface
+  def create(name:)
+    # サブクラスにcreateメソッドの実装を強制させるコード
+  end
+
+end
+
+class UserFactory < UserFactoryInterface
+  def create(name:)
+    # 重複していないIDをDBから取得するためのコード
+    # connection = Mysql2::Client.new(...)
+    # id = ...
+    User.new(id: id, name: name)
+  end
+end
+
+class User
+  attr_accessor :id, :name
+
+  def initialize(id:, name:)
+    @id = id
+    @name = name
+  end
+
+  # 不要になった（コンストラクタが1つになった）
+  # def rebuild_user(id:, name:)
+  #   @id = id
+  #   @name = name
+  # end
+end
+
+class UserApplicationService
+  def register
+    user_factory = UserFactory.new
+    user = user_factory.create(name: name)
+    
+    # 略 (UserRepositoryを使って保存)
+  end
+end
+
+# ------------------------------------------------------
+
+# 開発時の検証用にメモリ上で動かしたい場合、このファクトリに切り替えるだけでよい
+class InMemoryUserFactory < UserFactoryInterface
+  @@current_id = 0
+
+  def create(name:)
+    # テスト用にメモリ上で動かす
+    current_id += 1
+    User.new(id: current_id, name: name)
+  end
+end
+```
+
 # 
+
 
 <!-- TODO: 02.ドメインモデルに拘るとどんな現実的な問題がでてくるのか？ -->
 <!-- クラスのフィールド(DBのカラム)ごとに値オブジェクトやエンティティを生成することになり、値オブジェクトやエンティティまみれになってしまう...？ User.new(UserId, UserName, ...) -->
