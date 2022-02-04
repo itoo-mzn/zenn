@@ -624,7 +624,119 @@ user.change_name(user_name)
 どちらかに傾倒しないバランスが取れた解を目指す。
 :::
 
+# 仕様
+オブジェクトがある判定基準に達しているかを判定するオブジェクト。
 
+:::message
+仕様はオブジェクトの評価のみを行う。
+:::
+
+オブジェクトの評価が複雑な場合、アプリケーションサービスに記述されてしまうことが多い。
+しかし、オブジェクトの評価は重要なドメインのルールなので、サービスに記述されてしまうのは問題。
+
+仕様として切り出すことで、複雑な評価手順がカプセル化されて、コードの意図が明確になる。
+
+```ruby:仕様 導入前
+class Circle
+  # サークル内のユーザ数は30人が上限 (単純な評価)
+  def isFull()
+    count_members >= 30
+  end
+end
+
+class CircleApplicationService
+  # サークルにユーザを追加
+  # (複雑な評価が混入されている)
+  def join()
+    circle_repository = CircleRepository.new
+    circle = circle_repository.find(id)
+
+    user_repository = UserRepository.new
+    users = user_repository.find(circle.members)
+
+    # サークル内のユーザ数は30人が上限なのだが、
+    # プレミアムユーザというユーザ種別があり、
+    # プレミアムユーザが10人所属しているサークルは、上限が50人
+    premium_user_count = users.count(user.is_premium)
+    circle_member_limit = premium_user_count > 10 ? 50 : 30
+
+    raise StandardError.new("満員です") if circle.count_members >= circle_member_limit
+
+    # 追加処理...(略)
+  end
+end
+```
+
+```ruby:仕様 導入後
+# 複雑な評価手順がカプセル化され、コードの意図が明確に
+class CircleApplicationService
+  # サークルにユーザを追加
+  def join()
+    circle_full_specification = CircleFullSpecification.new
+    raise StandardError.new("満員です") if circle_full_specification.is_safisfied_by(circle)
+
+    # 追加処理...(略)
+  end
+end
+
+# 仕様
+class CircleFullSpecification
+  def is_safisfied_by(circle)
+    user_repository = UserRepository.new
+    users = user_repository.find(circle.members)
+
+    # サークル内のユーザ数は30人が上限なのだが、
+    # プレミアムユーザというユーザ種別があり、
+    # プレミアムユーザが10人所属しているサークルは、上限が50人
+    premium_user_count = users.count(user.is_premium)
+    circle_member_limit = premium_user_count > 10 ? 50 : 30
+
+    circle.count_members >= circle_member_limit
+  end
+end
+```
+
+## 仕様とリポジトリを組み合わせる
+仕様は単独で使うのみでなく、リポジトリと組み合わせる手法が存在する。
+つまり、リポジトリに仕様を引き渡して、仕様に合致するオブジェクトを取得する手法。
+
+リポジトリは検索を行うメソッドが定義されるが、検索処理の中には重要なルールが含まれることがある。
+重要なルールは仕様オブジェクトとして定義しリポジトリに引き渡せば、重要なルールがリポジトリに漏れ出すことを防げる。
+
+###### < 例 >
+オススメのサークルを検索できる機能があったとする。
+（`オススメ`の定義 : 直近1ヶ月以内に結成され、かつ、メンバー数が10以上 とする。）
+
+```ruby:リポジトリのみ
+class CircleApplicationService
+  # オススメのサークルを取得
+  def get_recommend_circle()
+    circle_repository = CircleRepository.new
+    # リポジトリに問い合わせる (つまり、[オススメ]に関する重要なルールはリポジトリに存在する)
+    circle_repository.find_recommend_circle
+  end
+end
+```
+
+```ruby:仕様+リポジトリ
+class CircleApplicationService
+  # オススメのサークルを取得
+  def get_recommend_circle()
+    circle_repository = CircleRepository.new
+    circles = circle_repository.find_all
+
+    circle_recommend_spec = CircleRecommendSpecification.new
+    circles.select { |circle| circle_recommend_spec.is_safisfied_by(circle) }
+  end
+end
+
+# オススメサークルの仕様
+class CircleRecommendSpecification
+  def is_safisfied_by(circle)
+    circle.created_at > Date.today.months_ago(3) && circle.count_members > 10
+  end
+end
+```
 
 <!-- TODO: 02.ドメインモデルに拘るとどんな現実的な問題がでてくるのか？ -->
 <!-- クラスのフィールド(DBのカラム)ごとに値オブジェクトやエンティティを生成することになり、値オブジェクトやエンティティまみれになってしまう...？ User.new(UserId, UserName, ...) -->
