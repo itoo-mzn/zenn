@@ -635,7 +635,8 @@ RTS/CTS方式は、無線LANのアクセス制御方式の一つでRTS(Request T
 TCP/IPネットワーク上でネットワーク上の機器の情報を収集して、監視や制御を行うためのプロトコル。
 
 #### RARP (Reverse Address Resolution Protocol)
-ARPがIPアドレス→機器のMACアドレスを得るのとは逆に、MACアドレス→IPアドレスを取得するためのプロトコル。
+**ARPがIPアドレス→機器のMACアドレス**を得るのとは**逆に、RARPはMACアドレス→IPアドレスを取得**するためのプロトコル。
+（DNSは、正引きがドメイン名→IPアドレス、逆引きがIPアドレス→ドメイン名 を取得。）
 
 #### ICMP (Internet Control Message Protocol)
 インターネットプロトコル(IP)の通信制御を補完するプロトコル。
