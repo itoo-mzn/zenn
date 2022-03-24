@@ -193,6 +193,10 @@ https://mathwords.net/gurahu
 - R: オペランド呼出し
 - E: 実行
 
+#### コア数
+CPUの個数。
+https://www.pc-koubou.jp/magazine/23926
+
 ---
 
 - スーパースカラ
@@ -731,6 +735,11 @@ SDNを実現するための技術標準が OpenFlowプロトコルであり，�
 #### SSL(/TSL)アクセラレータ
 通信を暗号化するSSL/TSLを使う際、暗号/復号を専門に行う機器やソフトウェアのこと。
 Webサーバが行う処理を肩代わりすることで負荷を軽減する。
+
+#### 帯域
+1秒間にどれだけ多くのビットを送信出来るかを表す。(単位: bps)
+速度ではない。
+https://beginners-network.com/taiiki.html
 
 ---
 
