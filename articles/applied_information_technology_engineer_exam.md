@@ -626,6 +626,12 @@ https://masassiah.web.fc2.com/contents/20ap/note08.html
 #### トランスポート層(第4層)以上に位置する装置
 - **ゲートウェイ** : プロトコル変換。
 
+### <ウェルノウンポート>
+- FTP : 20
+- SMTP : 25
+- DNS : 53
+- POP3 : 110
+
 ### <IPアドレス>
 この記事に分かりやすくまとめられている。
 https://qiita.com/mogulla3/items/efb4c9328d82d24d98e6
@@ -694,6 +700,8 @@ TCP/IPネットワーク上でネットワーク上の機器の情報を収集�
 **ARPが IPアドレス → 機器のMACアドレス**を得るのとは逆に、
 **RARPは MACアドレス → IPアドレス**を取得するためのプロトコル。
 （DNSは、正引きがドメイン名→IPアドレス、逆引きがIPアドレス→ドメイン名 を取得。）
+
+`nslookup`で、DNSサーバに名前解決を問い合わせ、ドメイン名からIPアドレスを（+その逆も）調べられる。
 
 #### ICMP (Internet Control Message Protocol)
 インターネットプロトコル(IP)の通信制御を補完するプロトコル。
