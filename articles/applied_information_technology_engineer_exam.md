@@ -495,9 +495,6 @@ JISでは以下のように定義。
 ---
 
 ## [マルチメディア]
-暗記に近いため、ここには記載せず、下記サイトを見ることで対応する。
-https://masassiah.web.fc2.com/contents/20ap/note08.html
-
 ### <マルチメディア>
 #### PDF (Portable Document Format)
 テキストや画像だけでなく、レイアウトやフォントの情報などもファイルに納めることができる。
