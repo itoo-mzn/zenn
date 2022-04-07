@@ -529,6 +529,12 @@ JISでは以下のように定義。
   表の中から特定の列だけを取り出す操作。→ **重複の排除**
 - GRANT文
   ユーザに表に関する特定の**権限**を付与。
+  - 権限名 : SELECT(参照), INSERT, DELETE, UPDATE, ALL PRIVILEGES(全て)
+  - オブジェクト名 : テーブル名, ビュー名
+```sql
+GRANT 権限名 ON オブジェクト名 TO ユーザ
+```
+
 - CREATE ASSERTION文
   複数のテーブルに対して制約をかける「宣言」を定義。
 - CONNECT文
