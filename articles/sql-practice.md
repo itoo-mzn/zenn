@@ -1,9 +1,9 @@
 ---
-title: "SQL練習問題"
+title: "SQL練習問題 回答/解答/メモ"
 emoji: "😸"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["SQL"]
-published: false
+published: true
 ---
 
 # 出題元サイト

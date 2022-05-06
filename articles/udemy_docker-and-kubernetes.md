@@ -1,9 +1,9 @@
 ---
-title: "学習レポート「Docker + Kubernetes」"
+title: "Docker + Kubernetes"
 emoji: "🐳"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Docker", "Kubernetes"]
-published: false
+published: true
 ---
 
 # 教材
@@ -14,11 +14,11 @@ https://www.udemy.com/course/web-application-with-docker-kubernetes/
 https://qiita.com/Kta-M/items/ce475c0063d3d3f36d5d#pod
 https://thinkit.co.jp/series/7342
 
-# 学習目的
+# 目的
 - Dockerの習熟度UP
 - Kubernetes技術の新規習得
 
-# 学習内容・要点
+# 内容・要点
 
 ## Docker
 :::message
@@ -153,7 +153,7 @@ kubectl logs TYPE/NAME
 ```
 
 
-# 学習結果
+# 結果
 - 教材としては、Kubernetesの基本を知る + 実際に手を動かして試す という内容であり、内容の基本は押さえることができた。
 - Kubernetesはdocker-composeと似ていると感じたが、その違いがわからなかく、教材の中で解説がなかったため調べた。docker-composeは命令的（例：普通の蕎麦）にリソースを作成するのに対し、Kubernetesは宣言的（例：わんこそば）にリソースを作成・監視するものだと理解した。
 - Kubernetesの全体的な仕組み・各要素を理解するので精一杯であり、使いこなすためには更に深い理解・経験が必要と感じた。（まだ入り口感がすごい。奥が深いと感じる。）その分、使いこなせるようになると幅広く、柔軟に実行環境を構成できると思うので、この機会をきっかけに少しずつ勉強していこうと思う。
