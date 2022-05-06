@@ -3,7 +3,7 @@ title: "応用情報技術者試験"
 emoji: "😎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["応用情報技術者試験"]
-published: false
+published: true
 ---
 # 参考サイト
 https://www.ap-siken.com/
