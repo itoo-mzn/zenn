@@ -1,5 +1,5 @@
 ---
-title: "応用情報技術者試験"
+title: "「応用情報技術者試験」 要点"
 emoji: "😎"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["応用情報技術者試験"]
