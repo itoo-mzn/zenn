@@ -264,7 +264,7 @@ https://zenn.dev/itoo/articles/udemy_docker-and-kubernetes#%E3%83%AA%E3%82%BD%E3
 （FQDN : 完全修飾ドメイン名 / 絶対ドメイン名。`www.example.co.jp`のようにドメイン名を省略せずにすべて指定した表記のこと。）
 
 :::message alert
-今回の学習にあたり、割愛した章
+今回、割愛した章
 - 2章 ストレージシステム
 - 3章　データ分析システム
 - 4-2［パターン11］モバイルアプリの高速開発
