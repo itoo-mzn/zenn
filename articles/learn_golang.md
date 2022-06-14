@@ -10,13 +10,13 @@ published: true
 https://docs.microsoft.com/ja-jp/learn/paths/go-first-steps/
 
 ## その他のサイト
-網羅的に説明してくれているスライド
+#### 網羅的に説明してくれているスライド
 https://docs.google.com/presentation/d/1RVx8oeIMAWxbB7ZP2IcgZXnbZokjCmTUca-AbIpORGk/edit#slide=id.g4f417182ce_0_80
 
-grpcプロトコルのチュートリアル
+#### grpcプロトコルのチュートリアル
 https://github.com/ymmt2005/grpc-tutorial
 
-Goの低レイヤについて
+#### Goの低レイヤについて
 https://ascii.jp/serialarticles/1235262/
 
 # プログラム実行
@@ -25,7 +25,7 @@ Goは、mainパッケージ内のmain関数からプログラムがスタート�
 
 ## 実行
 Goファイルがあるフォルダーに移動。
-```zsh
+```bash
 go run main.go
 
 # 移動しない場合
@@ -35,7 +35,7 @@ go run ./src/helloworld/main.go
 runコマンドは、ビルド(下記buildコマンド) + 実行 を行っている。
 
 ## ビルド
-```zsh
+```bash
 go build main.go
 ```
 ビルドすると、実行したファイルの拡張子がないver.のファイルが生成される。
@@ -134,7 +134,7 @@ func main() {
   println("合計:", number1+number2)
 }
 ```
-```zsh
+```bash
 # 実行
 go run src/helloworld/main.go 3 5
 
