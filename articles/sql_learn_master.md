@@ -13,7 +13,139 @@ https://www.shoeisha.co.jp/book/detail/9784798157825
 http://mickindex.sakura.ne.jp/database/db_support_sinan.html
 
 # 第1部　魔法のSQL
-　1　CASE式のススメ
+## 1.　CASE式のススメ
+- CASE式で**条件分岐**を記述できる。
+- CASE式では、**真になる条件(WHEN句)が見つかった時点で打ち切られて、残りのWHEN句は評価されない**ので要注意。
+- 各分岐が返す結果のデータ型(THEN句)は統一しないといけない。
+- **ELSE句は書く**クセをつける。(書かないと暗黙的にNULLになり、バグの温床になるため)
+
+### 新しい体系に変換して集計
+| 県名 | 県の人口 |
+| - | - |
+
+↓
+| 地方名 | 地方ごとの合計人口 |
+| - | - |
+
+```sql:全てのDBMSで使える
+SELECT
+  --
+  CASE pref_name
+    WHEN '徳島' THEN '四国'
+    WHEN '愛媛' THEN '四国'
+    WHEN '香川' THEN '四国'
+    WHEN '高知' THEN '四国'
+    WHEN '佐賀' THEN '九州'
+    WHEN '福岡' THEN '九州'
+    WHEN '長崎' THEN '九州'
+    ELSE 'その他'
+  END AS '地方名', -- 地方名を出力するためのCASE式
+  --
+  SUM(population) AS '地方ごとの人口' -- 地方ごとの人口 (ほしいデータ)
+FROM
+  PopTbl
+GROUP BY
+  --
+  CASE pref_name -- SELECT句と同じCASEを使う
+    WHEN '徳島' THEN '四国'
+    WHEN '愛媛' THEN '四国'
+    WHEN '香川' THEN '四国'
+    WHEN '高知' THEN '四国'
+    WHEN '佐賀' THEN '九州'
+    WHEN '福岡' THEN '九州'
+    WHEN '長崎' THEN '九州'
+    ELSE 'その他'
+  END -- 県→地方という新しい体系に変換するためのGROUP BYに使うCASE式
+  --
+;
+```
+MySQL, PostgreSQLは列を先に計算するため、同じことを下記SQLでスッキリ書くことができる。
+```sql:MySQL, PostgreSQLで使える
+SELECT
+  CASE pref_name
+    WHEN '徳島' THEN '四国'
+    WHEN '愛媛' THEN '四国'
+    WHEN '香川' THEN '四国'
+    WHEN '高知' THEN '四国'
+    WHEN '佐賀' THEN '九州'
+    WHEN '福岡' THEN '九州'
+    WHEN '長崎' THEN '九州'
+    ELSE 'その他'
+  END AS '地方名',
+  SUM(population) AS '地方ごとの人口'
+FROM
+  PopTbl
+GROUP BY
+  地方名 -- 'シングルクォーテーション'をつけるとエラー発生した
+;
+```
+
+### 異なる条件の集計を1つのSQLで行う
+以下のようにCASE式を利用すれば、**クロス表を作ることができ**、集計をするときに便利。
+([クロス表とは](https://trim-site.co.jp/vocabulary/totalling/cross-tabulation/))
+
+| 県名 | 性別 | 県の人口 |
+| - | - | -|
+
+↓
+| 県名 | 男性の人口 | 女性の人口 |
+| - | - | - |
+```sql
+SELECT
+  pref_name,
+  -- 男性の場合・女性の場合の2つの情報のうち、男性の情報以外を0にして、男性の場合の数(人口)を求める
+  SUM(CASE sex WHEN 1 THEN population ELSE 0 END) AS '男性', 
+  SUM(CASE sex WHEN 2 THEN population ELSE 0 END) AS '女性'
+FROM
+  `PopTbl2`
+GROUP BY
+  pref_name -- これによって1つの県レコードに、男性・女性の2つの情報がぶら下がる
+;
+```
+1つのSQLであるため、2回SQLを発行してアプリケーションで展開する or UNIONする よりもパフォーマンスが良い。
+
+:::message
+プロはWHERE句でなく、SELECT句で条件分岐させる。
+:::
+
+### 複数の列を使った条件を定義
+CASE式を入れ子にすることで、ネストした条件分岐を表現できる。
+```sql
+SELECT
+  *,
+  -- 男性の人口が100人以上の県は1, それ以外は0
+  CASE sex
+    WHEN 1 THEN CASE
+      WHEN population >= 100 THEN 1
+      ELSE 0
+    END
+    ELSE 0
+  END
+FROM
+  PopTbl2
+;
+```
+
+### 条件を分岐してUPDATEする
+30万以上の社員は10%減給して、20万以上30万未満の社員は20%昇給する といった要件の場合、
+UPDATE文を2回実行すると不整合が起きてしまう。
+CASE式を使って1回のUPDATEにできる。
+```sql
+UPDATE
+  TestSal
+SET
+  salary = (
+    CASE
+      WHEN salary >= 300000 THEN salary * (1 - 0.1) -- 30万以上の社員は10%減給
+      WHEN salary >= 200000 AND salary < 300000 THEN salary * (1 + 0.2) -- 20万以上30万未満の社員は20%昇給
+      ELSE salary
+    END
+  )
+;
+```
+
+
+
 　2 必ずわかるウィンドウ関数
 　Column なぜONではなくOVERなのか？
 　3　自己結合の使い方
