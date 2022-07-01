@@ -85,7 +85,7 @@ GROUP BY
 ([クロス表とは](https://trim-site.co.jp/vocabulary/totalling/cross-tabulation/))
 
 | 県名 | 性別 | 県の人口 |
-| - | - | -|
+| - | - | - |
 
 ↓
 | 県名 | 男性の人口 | 女性の人口 |
@@ -106,6 +106,7 @@ GROUP BY
 
 :::message
 プロはWHERE句でなく、SELECT句で条件分岐させる。
+プロはHAVING句でなく、SELECT句で条件分岐させる。
 :::
 
 ### 複数の列を使った条件を定義
@@ -144,6 +145,77 @@ SET
 ;
 ```
 
+### 2つのテーブル間でのマッチング
+CourseMasterテーブル
+| course_id | course_name(講座名) |
+| - | - |
+
+OpenCoursesテーブル
+| month(講座の実施月) | course_id |
+| - | - |
+
+```sql
+SELECT
+  course_name,
+  CASE
+    WHEN EXISTS(
+      SELECT
+        course_id
+      FROM
+        `OpenCourses` oc
+      WHERE
+        oc.course_id = cm.course_id
+      AND MONTH = 200706
+    ) THEN "◯"
+    ELSE "✕"
+  END AS "6月",
+  CASE
+    WHEN EXISTS(
+      SELECT
+        course_id
+      FROM
+        `OpenCourses` oc
+      WHERE
+        oc.course_id = cm.course_id
+      AND MONTH = 200707
+    ) THEN "◯"
+    ELSE "✕"
+  END AS "7月",
+  CASE
+    WHEN EXISTS(
+      SELECT
+        course_id
+      FROM
+        `OpenCourses` oc
+      WHERE
+        oc.course_id = cm.course_id
+      AND MONTH = 200708
+    ) THEN "◯"
+    ELSE "✕"
+  END AS "8月"
+FROM
+  `CourseMaster` cm
+;
+```
+
+:::message
+#### exists句
+existsの内のSQLがデータを取得できたとき（データが存在(exist)するとき）のみ、
+existsの外のSQLが実行される。
+```sql:構文
+SELECT *
+FROM テーブル1
+WHERE exists (
+  select *
+  from テーブル2
+  where 条件
+);
+```
+https://itsakura.com/sql-exists
+:::
+
+CASE式は、文ではなく式であり、**1つの値に定まる**もの。
+だから、SELECT句やWHERE句など、どこにでも書くことができる。
 
 
 　2 必ずわかるウィンドウ関数
