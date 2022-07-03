@@ -230,16 +230,18 @@ CASE式は、文ではなく式であり、**1つの値に定まる**もの。
 各グループ内でのランキングをつけるときや、
 移動平均(今計算している地点を基準に、ある条件で求める平均)を求めるとき 等に使う。
 #### 何をするか
-1. `PARTITION BY句`でテーブルを縦方向に分割してウィンドウを作成し、
+1. `PARTITION BY句`でテーブルを縦方向に分割して**ウィンドウ**を作成し、
+  (`PARTITION BY`が行う縦方向の分割は、`GROUP BY`と同じようなイメージ。
+  オプションなので指定しなくても良いが、その場合はテーブル全体を1つのウィンドウとなる。)
 2. `ORDER BY句`でウィンドウ内でのソートを行い、
 3. `フレーム句`で**カレントレコード**を中心としたサブセット(**フレーム**)を定義し、
 4. `ウィンドウ関数`で欲しい結果を取得する。
-(`PARTITION BY`が行う縦方向の分割は、`GROUP BY`と同じようなイメージ。)
+
 #### 構文
 ```sql
 SELECT 
 <ウィンドウ関数> OVER (
-  PARTITION BY <列>
+  PARTITION BY <列> -- どういうグループ郡にするか
   ORDER BY <列>
   ROWS <数値>　<PRECEDING or FOLLOWING> -- カレントレコードとその直近の?レコードを計算に使う
 )
@@ -250,6 +252,29 @@ FROM テーブル名;
 :::message alert
 MySQLは8.0以降しかウィンドウ関数は使えない。
 :::
+
+### シチュエーション: フレーム句を使って、違う行を自分の行に持ってくる
+| sample_date | ... |
+| - | - |
+
+↓
+
+| cur_date(現在の日付) | latest_date(直近の過去の日付) |
+| - | - |
+
+```sql
+SELECT
+  sample_date AS cur_date,
+  MIN(sample_date) -- MINである必要は無く、集約関数であれば良い
+  over(
+    ORDER BY
+      sample_date ASC -- sample_dateの昇順で並べて
+    rows BETWEEN 1 preceding AND 1 preceding -- カレントレコードの1つ前の日付のみを選ぶ (範囲に指定する)
+  ) AS latest_date
+FROM
+  `LoadSample`
+;
+```
 
 ---
 
