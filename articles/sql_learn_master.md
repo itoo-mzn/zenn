@@ -278,10 +278,101 @@ FROM
 
 ---
 
-　Column なぜONではなくOVERなのか？
-　3　自己結合の使い方
-　Column SQL とフォン・ノイマン
-　4　3値論理とNULL
+## 3. 自己結合の使い方
+### シチュエーション: 非順序対を作成する
+非順序対は、(りんご, みかん), (みかん, りんご)というな組み合わせを同じものと捉える。
+
+| name(果物の名前) | price(果物の価格) |
+| - | - |
+
+```sql
+SELECT
+  p1.name AS p1_name,
+  p2.name AS p2_name
+FROM
+  Products p1
+  INNER JOIN Products p2 -- 自己結合
+  ON  p1.name > p2.name -- 非順序対にする : (りんご, みかん), (みかん, りんご)のような重複を削除できる
+;
+```
+
+### シチュエーション: 部分的に不一致なキーの検索
+```sql:価格が同じ果物だけを取得する
+SELECT DISTINCT
+  p1.name,
+  p1.price
+FROM
+  Products p1
+  INNER JOIN Products p2
+  ON  p1.price = p2.price
+;
+```
+
+## 4. 3値論理とNULL
+### 3値論理とは
+SQLの真理値型で使われる `true`, `false`, `unknown` のこと。
+(プログラミング言語では `true`, `false` のみ。)
+
+`unknown`になるのは、NULLに比較述語を使った場合(`= NULL`, `<> NULL`) など。
+
+### NULLの種類
+NULLについての議論では、一般的に2種類に分けて考える。
+- 未知 (`UNKNOWN`)
+  今は分からないが、条件によっては分かる という状態。
+- 適用不能 (`Not Applicable`, `N/A`)
+  無意味、論理的に不可能 という状態。
+
+:::message alert
+3値論理の`unknown`と、NULLの`UNKNOWN` は異なる存在。
+:::
+
+### 3値論理の真理表
+下記記事の解説がよくまとまっていたためこれを参照。
+https://qiita.com/devopsCoordinator/items/9c10410b50f8fcc2ba79
+
+### 比較述語とNULL
+```sql:全件取得できない
+SELECT *
+FROM students
+WHERE age = 20 
+OR  age <> 20
+;
+```
+上のSQLで、全レコードが取得できそうに見える。
+しかし、`age`がNULLのレコードがあった場合、そのレコードは(trueでなく)`unknown`と評価されるため取得できない。
+そのため、下のように書かないといけない。
+```sql:全件取得できる
+SELECT *
+FROM students
+WHERE age = 20
+OR  age <> 20
+OR  age IN NULL -- NULLも取得
+;
+```
+
+### NOT IN と NOT EXISTS は同値でない
+IN と EXISTS は同値だが、NOT IN と NOT EXISTS は同値でない。
+これも、NULLが含まれる場合にunknownと評価されるため。
+
+### 限定述語とNULL
+限定述語 : ALL と ANY の2つあるが、ANYはINと同値なのであまり使われない。
+
+下記はBクラスの東京在住の誰よりも若いAクラスの人を取得するSQL。
+しかし、class_bに`age`がNULLの東京在住の人がいた場合、このSQLの結果は問答無用で空になってしまう。
+```sql
+SELECT *
+FROM class_a
+WHERE age < ALL (
+  -- ここのサブクエリが返す値が例えば(22, 29, NULL)の場合、主のWHERE句がunknownになる
+  SELECT age
+  FROM class_b
+  WHERE city = '東京'
+);
+```
+
+
+---
+
 　Column 文字列とNULL
 　5　EXISTS述語の使い方
 　6　HAVING句の力
