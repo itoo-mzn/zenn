@@ -308,6 +308,8 @@ FROM
 ;
 ```
 
+---
+
 ## 4. 3値論理とNULL
 ### 3値論理とは
 SQLの真理値型で使われる `true`, `false`, `unknown` のこと。
@@ -354,12 +356,12 @@ OR  age IN NULL -- NULLも取得
 IN と EXISTS は同値だが、NOT IN と NOT EXISTS は同値でない。
 これも、NULLが含まれる場合にunknownと評価されるため。
 
-### 限定述語とNULL
+### 限定述語 / 極値関数 / 集約関数 と NULL
 限定述語 : ALL と ANY の2つあるが、ANYはINと同値なのであまり使われない。
 
 下記はBクラスの東京在住の誰よりも若いAクラスの人を取得するSQL。
 しかし、class_bに`age`がNULLの東京在住の人がいた場合、このSQLの結果は問答無用で空になってしまう。
-```sql
+```sql:限定述語(ALL)
 SELECT *
 FROM class_a
 WHERE age < ALL (
@@ -370,11 +372,35 @@ WHERE age < ALL (
 );
 ```
 
+限定述語の代わりに極値関数(MIN, MAX)を使えば、上の問題は解決する(ことが多い)。
+しかし、class_bテーブルにデータが無い場合(空集合の場合)はデータが取得できない。
+(→ それで良い場合はいいが、そうでない場合は問題となるため、場合により判断が必要。)
+これはCOUNT以外の集約関数(AVGなど)でも同じ。
+```sql:極値関数
+SELECT *
+FROM class_a
+WHERE age < (
+  -- ここがNULLになる場合、主のWHERE句がunknownになる
+  SELECT MIN(age)
+  FROM class_b
+  WHERE city = '東京'
+);
+```
+
+#### (NULLを値に変換する方法)
+IFNULL と COALESCE という関数がある。
+どちらを使うか迷った場合、COALESCEを使う。
+- より型に厳しいため。
+- IFNULL以上に引数をとることができるため。
+https://note.mokuzine.net/sqlserver-isnull-coalesce/
 
 ---
 
-　Column 文字列とNULL
-　5　EXISTS述語の使い方
+## 5. EXISTS述語の使い方
+
+
+---
+
 　6　HAVING句の力
 　Column 関係除算
 　Column HAVING 句とウィンドウ関数
