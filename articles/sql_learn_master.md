@@ -397,6 +397,53 @@ https://note.mokuzine.net/sqlserver-isnull-coalesce/
 ---
 
 ## 5. EXISTS述語の使い方
+EXISTSは、**量化**という述語論理の機能を実現するためにSQLに取り入れられた**述語**。
+述語とは、**戻り値が真理値になる関数**。(=, <, >, BETWEEN, LIKE, EXISTS など)
+
+ただし、EXISTSは他の述語と**取る引数**が違う。
+- EXISTS以外 : **単一の値**(スカラ値, 1行)を引数に取る。 (例: x = y のxとyは単一の値)
+- EXISTS : **行の集合**を引数に取る。
+
+:::message
+他の述語のような`こういう性質を満たすかどうか`という条件設定ではなく、
+EXISTSは、`データが存在するか否か`という次数の1つ高い問題設定である。
+:::
+
+### シチュエーション: テーブルに存在しないデータを探す
+```sql:not exists
+SELECT DISTINCT -- 開催回と参加者の重複を排除
+  m1.meeting,
+  m2.person
+FROM
+  Meetings m1
+  CROSS JOIN Meetings m2 -- m1とm2の直積(全組み合わせ)
+-- 上の全組み合わせから、下（元のテーブル）の中に無いものをnot existsで取得
+WHERE
+  NOT EXISTS(
+    SELECT *
+    FROM
+      Meetings m3 -- 元のテーブル
+    WHERE
+      m1.meeting = m3.meeting
+    AND m2.person = m3.person
+  )
+;
+```
+
+同じことを、exceptを使って下記のように書くこともできる。(ただし、MySQLはexpectが無いため不可。)
+```sql:exept ver.
+SELECT m1.meeting, m2.person
+FROM
+  Meetings m1, Meetings m2 -- cross join
+  except(
+    SELECT
+      meeting, person
+    FROM
+      Meetings
+  )
+;
+```
+
 
 
 ---
