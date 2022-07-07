@@ -410,6 +410,9 @@ EXISTSは、`データが存在するか否か`という次数の1つ高い問�
 :::
 
 ### シチュエーション: テーブルに存在しないデータを探す
+| meeting(会議の開催回) | person(参加者) |
+| - | - |
+
 ```sql:not exists
 SELECT DISTINCT -- 開催回と参加者の重複を排除
   m1.meeting,
@@ -444,7 +447,50 @@ FROM
 ;
 ```
 
+### シチュエーション: 肯定 ⇔ 二重否定 の変換
+`全ての行において〜`という条件を `〜でない行が1つも無い`という二重否定に変換する技術が、EXISTS述語では重要になる。
 
+（例題）
+`全ての教科が50点以上である`生徒の成績を全て取得する。
+→ これは、`50点未満の教科が1つもない`と(二重否定に)変換できる。
+
+| student_id(生徒ID) | subject(教科) | score(点数) |
+| - | - | - |
+
+```sql
+SELECT *
+FROM TestScores ts1
+WHERE NOT EXISTS(
+    SELECT *
+    FROM TestScores ts2
+    WHERE ts1.student_id = ts2.student_id
+    AND ts2.score < 50
+  )
+;
+```
+
+（例題）
+`算数が80点以上かつ国語技術50点以上`の生徒を全て取得する。ただし、どちらかしかデータが無いものも含める。
+→ これは、`全ての成績データにおいて、算数ならば80点以上であり、国語ならば50点以上`となり、
+  `全ての成績データにおいて、算数ならば80点未満であり、国語ならば50点未満である成績が存在しない生徒`(二重否定)に変換できる。
+```sql
+SELECT student_id
+FROM TestScores ts1
+WHERE ts1.subject IN('算数', '国語') -- 他の教科は関係ないので2教科に絞る
+AND NOT EXISTS(
+  SELECT *
+  FROM TestScores ts2
+  WHERE ts1.student_id = ts2.student_id
+  AND 1 = CASE
+    WHEN ts2.subject = '算数' AND score < 80 THEN 1
+    WHEN ts2.subject = '国語' AND score < 50 THEN 1
+    ELSE 0
+  END
+)
+GROUP BY student_id
+HAVING COUNT(*) = 2
+;
+```
 
 ---
 
