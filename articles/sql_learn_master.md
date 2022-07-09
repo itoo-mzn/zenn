@@ -397,7 +397,11 @@ https://note.mokuzine.net/sqlserver-isnull-coalesce/
 ---
 
 ## 5. EXISTS述語の使い方
-EXISTSは、**量化**という述語論理の機能を実現するためにSQLに取り入れられた**述語**。
+EXISTSは、*量化*という述語論理の機能を実現するためにSQLに取り入れられた**述語**。
+:::message
+SQLには**全称量化**(「**全てのxが条件Pを満たす**」こと)に対応する演算子が無いので、NOT EXISTSで代用する。
+:::
+
 述語とは、**戻り値が真理値になる関数**。(=, <, >, BETWEEN, LIKE, EXISTS など)
 
 ただし、EXISTSは他の述語と**取る引数**が違う。
@@ -448,7 +452,7 @@ FROM
 ```
 
 ### シチュエーション: 肯定 ⇔ 二重否定 の変換
-`全ての行において〜`という条件を `〜でない行が1つも無い`という二重否定に変換する技術が、EXISTS述語では重要になる。
+`全ての行において〜`という条件(全称量化)を `〜でない行が1つも無い`という二重否定に変換する技術が、EXISTS述語では重要になる。
 
 （例題）
 `全ての教科が50点以上である`生徒の成績を全て取得する。
@@ -492,9 +496,90 @@ HAVING COUNT(*) = 2
 ;
 ```
 
+（例題）
+`工程No.2以降は待機状態であり、No.1までが完了しているプロジェクト`を取得する。
+→ これは、`工程が1以下なら完了で、1より大きければ待機であるプロジェクト`となり、
+  `工程が1以下なのに待機で、1より大きいのに完了であるレコード が存在しないプロジェクト`と(二重否定に)変換できる。
+
+| project_id(プロジェクトID) | step_nbr(工程No.) | status(待機or完了) |
+| - | - | - |
+
+```sql
+-- 注: 下記1, 2の通りに変えて、二重否定でなく肯定に変えても成立しない。
+--     工程No.0~2の内どれか1つでも条件に当てはまると取得する ようになってしまうため。
+SELECT *
+FROM Projects p1
+WHERE NOT EXISTS ( -- 1. ここをexistsに変更
+  SELECT *
+  FROM Projects p2
+  WHERE p1.project_id = p2.project_id
+  AND status <> CASE -- 2. ここを = に変更
+      WHEN step_nbr <= 1 THEN '完了'
+      ELSE '待機'
+    END
+);
+```
+
+（例題）
+valが全て1であるkey_colを取得する。
+| key_col (A~C) | i (1~10) | val (NULL or 数値) |
+| - | - | - |
+
+```sql:NOT EXISTSを使用
+SELECT DISTINCT key_col
+FROM ArrayTbl2 at2_1
+WHERE NOT EXISTS(
+  SELECT *
+  FROM ArrayTbl2 at2_2
+  WHERE at2_1.key_col = at2_2.key_col
+  AND coalesce(at2_2.val, 0) <> 1 -- NULL対策
+);
+```
+```sql:ALLを使用
+SELECT DISTINCT key_col
+FROM ArrayTbl2 at2_1
+WHERE 1 = ALL (
+  SELECT coalesce(at2_2.val, 0)
+  FROM ArrayTbl2 at2_2
+  WHERE at2_1.key_col = at2_2.key_col
+);
+```
+```sql:HAVINGを使用
+SELECT key_col
+FROM ArrayTbl2
+GROUP BY key_col
+HAVING SUM(
+  CASE
+    WHEN val = 1 THEN 1
+    ELSE 0
+  END
+) = 10 -- iの数(同じkey_colのi違いのレコード数)
+;
+```
+
+（例題）
+1~100の中の素数を求める。(seq = 1~100)
+```sql
+SELECT seq AS prime -- 素数
+FROM Sequence Dividend -- 被除数
+WHERE seq > 1 -- 素数は定義上、2以上である
+AND NOT EXISTS( -- 剰余が0のものが含まれない数値のみを取得
+  SELECT *
+  FROM Sequence Divisor -- 除数
+  WHERE Divisor.seq <= Dividend.seq / 2 -- 自分の1/2以上は約数になり得ない
+  AND Divisor.seq <> 1
+  AND Dividend.seq % Divisor.seq = 0
+)
+ORDER BY prime
+;
+```
+
 ---
 
-　6　HAVING句の力
+## 6. HAVING句の力
+
+---
+
 　Column 関係除算
 　Column HAVING 句とウィンドウ関数
 　7　ウィンドウ関数で行間比較を行なう
