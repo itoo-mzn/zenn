@@ -578,6 +578,88 @@ ORDER BY prime
 
 ## 6. HAVING句の力
 
+### シチュエーション: データの歯抜けを探す
+このデータの中に歯抜けがあるかどうかを探す。
+(seqには1以上の値が入ることとする。1が歯抜けの場合もある。)
+| seq |
+| - |
+| 2 |
+| 3 |
+| 5 |
+| 7 |
+
+
+データに歯抜けがあるかどうか(のみ)を取得する。
+```sql:歯抜けがあるかどうか
+SELECT '歯抜けあり' AS gap
+FROM SeqTbl
+-- レコード数と数値の最大値が等しいかどうかで、歯抜けかどうかを判定 (上の表でいうと、レコード数=4、数値の最大値=7)
+HAVING COUNT(*) <> MAX(seq)
+;
+```
+
+:::message
+今のSQLではHAVING句を(GROUP BY句無しで)単独で使える。つまり**テーブル全体を1つの集合と捉える**ということ。
+しかしその場合は、SELECT句で元のテーブルの列を参照できない。
+:::
+
+歯抜けの最小値を取得する。
+```sql:歯抜けの最小値
+SELECT
+  CASE WHEN COUNT(*) = 0 OR  MIN(seq) > 1 THEN 1 -- データが存在しないor下限が1でない場合(1が抜けている場合)、答えとして1を返す
+  ELSE(
+    SELECT MIN(seq + 1) -- 歯抜けの最小値
+    FROM SeqTbl s1
+    WHERE NOT EXISTS(
+      SELECT *
+      FROM SeqTbl s2
+      WHERE s2.seq = s1.seq + 1-- 探索する数値の次の数値 が存在するか
+    )
+  )
+  END
+FROM SeqTbl
+;
+```
+
+### シチュエーション: 最頻値を求める
+| name(人名) | income(収入額) |
+| - | - |
+
+```sql
+SELECT income, COUNT(*)
+FROM Graduates
+GROUP BY income
+HAVING COUNT(*) >= ALL (
+  SELECT COUNT(*)
+  FROM Graduates
+  GROUP BY income
+)
+;
+```
+
+### NULLを含まない集合を探す
+`COUNT(*)`は、**NULLを数える**が、
+`COUNT(列名)`は、他の集約関数と同じく、**NULLを数えない**(除外して集計する)。
+
+上の性質を利用して、NULLを含むかどうかが上手く判定できる。
+（例題）
+レポートを全て提出した学部を取得。
+
+| student_id(学生ID) | dpt(学部) | sbmt_date(レポート提出日 or NULL) |
+| - | - | - |
+
+```sql
+SELECT dpt
+FROM Students
+GROUP BY dpt
+-- NULLを含む数 と 含まない数が不一致であれば、提出されていないレポートがあるということ。
+HAVING COUNT(*) = COUNT(sbmt_date)
+;
+```
+
+:::message
+HAVING句で集合を切り分けて問題を考えるときは、ベン図が有効。
+:::
 ---
 
 　Column 関係除算
