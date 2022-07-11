@@ -7,6 +7,7 @@ published: false
 ---
 
 # 書籍
+下記書籍の要点をまとめた。(つまり、所々割愛している。)
 https://www.shoeisha.co.jp/book/detail/9784798157825
 
 ## サポートページ
@@ -454,6 +455,11 @@ FROM
 ### シチュエーション: 肯定 ⇔ 二重否定 の変換
 `全ての行において〜`という条件(全称量化)を `〜でない行が1つも無い`という二重否定に変換する技術が、EXISTS述語では重要になる。
 
+:::message alert
+二重否定するには、`NOT EXISTS( ~でないこと )`という文法になる。
+これを単純に肯定形`EXISTS( ~であること )`としてしまうと、どれか1つだけでも`~である`集合を取得してしまい、全く意味が違うため注意。
+:::
+
 （例題）
 `全ての教科が50点以上である`生徒の成績を全て取得する。
 → これは、`50点未満の教科が1つもない`と(二重否定に)変換できる。
@@ -637,7 +643,7 @@ HAVING COUNT(*) >= ALL (
 ;
 ```
 
-### NULLを含まない集合を探す
+### シチュエーション: NULLを含まない集合を探す
 `COUNT(*)`は、**NULLを数える**が、
 `COUNT(列名)`は、他の集約関数と同じく、**NULLを数えない**(除外して集計する)。
 
@@ -660,6 +666,128 @@ HAVING COUNT(*) = COUNT(sbmt_date)
 :::message
 HAVING句で集合を切り分けて問題を考えるときは、ベン図が有効。
 :::
+
+#### 特性関数の応用
+**CASE式**は、**各要素(行)が 特定の条件を満たす集合 に含まれるかどうか**を決める。
+(こういう関数を特性関数という。)
+
+（例題）
+| student_id | class | sex | score |
+| - | - | - | - |
+
+1. クラスの75%以上の生徒が80点以上の成績をとっているクラス。
+```sql
+SELECT　class
+FROM　TestResults tr1
+GROUP BY　class
+-- 80点以上をとった生徒が、クラスの人数の75%以上
+HAVING COUNT(student) * 0.75 <= SUM(
+  CASE
+    WHEN score >= 80 THEN 1
+    ELSE 0
+  END
+);
+```
+
+2. 50点以上をとった生徒のうち、男子の数が女子の数より多いクラス。
+```sql
+SELECT class
+FROM TestResults
+GROUP BY class
+HAVING SUM(
+  CASE WHEN score >= 50 AND sex = '男' THEN 1 ELSE 0 END -- 50点以上を取った男子生徒の数
+) > SUM(
+  CASE WHEN score >= 50 AND sex = '女' THEN 1 ELSE 0 END -- 50点以上を取った女子生徒の数
+);
+```
+
+```sql:私の別解
+SELECT class
+FROM TestResults
+GROUP BY class
+HAVING SUM(
+  -- 50点以上を取った男子は1、女子は-1として合計を求めることで、正の値であれば男子のほうが多い。
+  CASE
+    WHEN score >= 50 AND sex = '男' THEN 1
+    WHEN score >= 50 AND sex = '女' THEN - 1
+    ELSE 0
+  END
+) > 0
+;
+```
+
+3. 女子の平均点が男子より高いクラス。
+```sql
+SELECT class
+FROM TestResults
+GROUP BY class
+HAVING AVG(
+  CASE WHEN sex = '女' THEN score ELSE NULL END -- ELSE句で0でなくNULLを指定しているのは、空集合のケア。
+) > AVG(
+  CASE WHEN sex = '男' THEN score ELSE NULL END
+);
+```
+
+### シチュエーション: HAVING句で全称量化
+NOT EXISTSで全称量化(「全てのxが条件Pを満たす」こと)を表現するのは5.で行ったが、ここではHAVING句で行う。
+
+（例題）
+すぐ出動できる(=全員が待機状態)のチームを取得。
+
+| member | team_id | status (待機 or 休暇 or 出動中) |
+| - | - | - |
+
+```sql:NOT EXISTS
+SELECT * -- 元のカラムをすべて取得できる
+FROM Teams t1
+WHERE NOT EXISTS(
+  SELECT *
+  FROM Teams t2
+  WHERE t1.team_id = t2.team_id
+  AND status <> '待機'
+);
+```
+
+```sql:HAVING CASE
+SELECT team_id -- GROUP BYしているため、1つの値しか取得できない
+FROM Teams
+GROUP BY team_id
+-- チームの総数 と 待機状態の隊員の数 が等しいかどうか
+HAVING COUNT(*) = SUM( 
+  CASE WHEN status = '待機' THEN 1
+  ELSE 0
+  END
+);
+```
+
+```sql:HAVING ALL
+SELECT team_id
+FROM Teams t1
+GROUP BY team_id
+-- チームの隊員全員が待機状態 であるかどうか
+HAVING '待機' = ALL(
+  SELECT status
+  FROM Teams t2
+  WHERE t1.team_id = t2.team_id
+);
+```
+
+MAXとMINを使って、最も離れている存在(MAX, MIN)同士が等しいかどうか で判定することもできる。
+```sql:HAVING MAX,MIN
+SELECT team_id
+FROM Teams
+GROUP BY team_id
+HAVING MAX(status) = '待機' AND MIN(status) = '待機'
+;
+```
+
+:::message alert
+上のSQLにコメントで記載したが、
+- **NOT EXISTS**を使う場合は、**元のカラムをすべて取得できる**。また、比較的パフォーマンスが良い。
+- **HAVING**を使う場合は、**GROUP BYでまとめたカラムしか取得できない**。
+:::
+
+
 ---
 
 　Column 関係除算
