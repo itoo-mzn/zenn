@@ -787,12 +787,67 @@ HAVING MAX(status) = '待機' AND MIN(status) = '待機'
 - **HAVING**を使う場合は、**GROUP BYでまとめたカラムしか取得できない**。
 :::
 
+### シチュエーション: 関係除算でバスケット解析
+- 関係除算 : 
+- バスケット解析 : マーケティング分野における解析手法。頻繁に一緒に買われる商品の規則性を見つける。
+
+（例題）
+(Itemsに)登録している全ての商品を販売している店舗を取得。
+
+Itemsテーブル
+| item (商品) |
+| - |
+
+ShopItemsテーブル
+| shop (店舗) | item |
+| - | - |
+
+```sql
+SELECT shop
+FROM ShopItems s
+JOIN Items i -- inner joinで、Itemsに存在する商品 だけを含む集合を作る
+  ON s.item = i.item
+GROUP BY shop
+HAVING COUNT(*) = ( SELECT COUNT(*) FROM Items ) -- 後方のカッコ内の返り値はスカラ値なので、COUNT()と比較演算できる
+;
+```
+
+:::message
+- SQLを使う上で重要なのは、**レコード**単位でなく**集合**単位という観点で考えること。
+
+- HAVING句を使う上で重要なのは、**何をもって集合と見なすか**を考えること。
+  つまり、どういうグループで括って、それによりできた集合にどんな特性を求めるか。（集合群からどういう集合を選出するか。）
+
+  上の例でいうと、「店舗」で括った集合群（各店舗）の中から、登録している全ての商品を販売している集合を取得する ということ。
+:::
+
+### 集合の特性を調べるための条件
+| 式 | 用途 |
+| - | - |
+| COUNT(DISTINCT column) = COUNT(column) | columnの値が一意(ユニーク)である |
+| COUNT(*) = COUNT(column) | columnの値にNULLが存在しない |
+| COUNT(*) = MAX(column) | columnは歯抜けの無い連番である (開始値が`1`の場合) |
+| COUNT(*) = MAX(column) - MIN(column) - 1 | columnは歯抜けの無い連番である (開始値は任意の整数) |
+| MIN(column) = MAX(column) | columnの値が1つだけ or NULLである |
+| MIN(column) = MAX(column) | columnの値が1つだけ or NULLである |
+
+:::message
+### WHERE句とHAVING句の使い分け
+#### 用途
+- **WHERE句**は、**集合の要素**の特性を調べる道具。
+- **HAVING句**は、**集合自身**の特性を調べる道具。
+
+#### 使い分け
+検索対象となる**実体1つにつき**、
+- **1行**(要素)が対応している → WHERE句を使う。
+- **複数行**(集合)が対応している → HAVING句を使う。
+:::
 
 ---
 
-　Column 関係除算
-　Column HAVING 句とウィンドウ関数
-　7　ウィンドウ関数で行間比較を行なう
+## 7. ウィンドウ関数で行間比較を行なう
+
+---
 　8　外部結合の使い方
 　9　SQLで集合演算
 　10　SQLで数列を扱う
