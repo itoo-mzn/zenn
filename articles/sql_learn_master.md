@@ -867,7 +867,7 @@ FROM Sales s1
 WHERE sale = (
   SELECT sale
   FROM Sales s2
-  WHERE s1.YEAR = s2.YEAR + 1
+  WHERE s1.YEAR = s2.YEAR + 1 -- バインド条件 (s1集合とs2集合の結びつけ)
 );
 ```
 
@@ -948,7 +948,7 @@ FROM (
     sale AS current_sale, -- 基準年の売上
     SUM(sale) over(
       ORDER BY year -- 年で並べて 見る
-      RANGE BETWEEN 1 preceding AND 1 preceding -- 基準年の1つ前(前年)しか見ない
+      ROWS BETWEEN 1 preceding AND 1 preceding -- 基準年の1つ前(前年)しか見ない
     ) AS pre_sale -- 前年の売上
   FROM
     Sales
@@ -959,7 +959,59 @@ ORDER BY year
 ```
 
 ### ウィンドウ関数 vs 相関サブクエリ
+結論、ウィンドウ関数のほうが性能が良い。
+- ウィンドウ関数はサブクエリを使うが、**相関**サブクエリではない。(外側の値を内側で使わない。)
+  そのため、**サブクエリ単体で実行できる**。なので、可読性が高く、デバッグも容易。
+- テーブルへのスキャンが1度だけなので、パフォーマンスが良い。
+- **欲しい情報は**列に**追加**する形となり、レコードを集約しないため**元のテーブルの全ての列を取り出せる**(=情報保全性が働く)。
 
+### シチュエーション: オーバーラップする期間を調べる
+
+（例題）
+ダブルブッキングになっている客をリストアップ。
+
+| reserver (宿泊客) | start_date (宿泊開始日) | end_date (宿泊終了日) |
+| - | - | - |
+
+```sql:相関サブクエリ
+SELECT *
+FROM Reservations r1
+WHERE EXISTS(
+  SELECT *
+  FROM Reservations r2
+  -- 自分以外の宿泊客と比較 (自分を含めると、絶対に下記のダブルブッキング条件に含まれてしまう)
+  WHERE r1.reserver <> r2.reserver
+  -- ダブルブッキング = 開始日が他の期間内にある or 終了日が他の期間内にある
+  AND (
+    r1.start_date BETWEEN r2.start_date AND r2.end_date
+    OR  r1.end_date BETWEEN r2.start_date AND r2.end_date
+  )
+);
+```
+
+```sql:ウィンドウ関数
+SELECT *
+FROM (
+  SELECT
+    reserver,
+    start_date,
+    end_date,
+    -- 次の宿泊客の宿泊開始日
+    MAX(start_date) over(
+      ORDER BY
+        start_date rows BETWEEN 1 following AND 1 following
+    ) AS next_start_date,
+    -- 次の宿泊客の名前
+    MAX(reserver) over(
+      ORDER BY
+        start_date rows BETWEEN 1 following AND 1 following
+    ) AS next_reserver
+  FROM Reservations
+) AS tmp
+-- 次の宿泊客の宿泊開始日が、自分の宿泊期間内にあるかどうか
+WHERE next_start_date BETWEEN start_date AND end_date
+;
+```
 
 ---
 　8　外部結合の使い方
