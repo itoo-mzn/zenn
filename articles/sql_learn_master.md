@@ -244,15 +244,17 @@ SELECT
 <ウィンドウ関数> OVER (
   PARTITION BY <列> -- どういうグループ郡にするか
   ORDER BY <列>
-  ROWS <数値>　<PRECEDING or FOLLOWING> -- カレントレコードとその直近の?レコードを計算に使う
+  ROWS(やRANGEなど) <数値>　<PRECEDING or FOLLOWING> -- フレーム句。カレントレコードとその直近の?レコードを計算に使う
 )
 FROM テーブル名;
 ```
 `<ウィンドウ関数>`には、`RANK`などのウィンドウ専用関数と、`SUM`や`AVG`などの集約関数が入る。
 
-:::message alert
-MySQLは8.0以降しかウィンドウ関数は使えない。
-:::
+https://resanaplaza.com/2021/10/17/%E3%80%90%E3%81%B2%E3%81%9F%E3%81%99%E3%82%89%E5%9B%B3%E3%81%A7%E8%AA%AC%E6%98%8E%E3%80%91%E4%B8%80%E7%95%AA%E3%82%84%E3%81%95%E3%81%97%E3%81%84-sql-window-%E9%96%A2%E6%95%B0%EF%BC%88%E5%88%86/
+
+https://qiita.com/tlokweng/items/fc13dc30cc1aa28231c5
+
+https://zenn.dev/nanbunan/articles/ad96d04fb2e616
 
 ### シチュエーション: フレーム句を使って、違う行を自分の行に持ってくる
 | sample_date | ... |
@@ -846,6 +848,118 @@ HAVING COUNT(*) = ( SELECT COUNT(*) FROM Items ) -- 後方のカッコ内の返�
 ---
 
 ## 7. ウィンドウ関数で行間比較を行なう
+同じ行内の列同士の比較(例:`WHERE col1 = col2`)は簡単だが、異なる行同士での比較はそうではない。
+ウィンドウ関数を使うことで、簡潔なSQLで記述できる。
+(ウィンドウ関数が使えるようになるまでは、相関サブクエリを使っていた。)
+
+- 相関サブクエリ : WHERE句に外側のクエリの値をサブクエリ内で使用する。
+
+### シチュエーション: 成長・後退・現状維持
+（例題）
+前年と同じ売上の年を取得。
+
+| year (年度) | sale (売上) |
+| - | - |
+
+```sql:相関サブクエリ
+SELECT *
+FROM Sales s1
+WHERE sale = (
+  SELECT sale
+  FROM Sales s2
+  WHERE s1.YEAR = s2.YEAR + 1
+);
+```
+
+```sql:ウィンドウ関数
+SELECT year, current_sale
+FROM (
+  SELECT
+    year, -- 基準年
+    sale AS current_sale, -- 基準年の売上
+    SUM(sale) over(
+      ORDER BY year -- 年で並べて 見る
+      RANGE BETWEEN 1 preceding AND 1 preceding -- 基準年の1つ前(前年)しか見ない
+    ) AS pre_sale -- 前年の売上
+  FROM
+    Sales
+) tmp
+WHERE current_sale = pre_sale
+ORDER BY year
+;
+```
+
+（例題）
+前年と比べて成長・後退・現状維持したのかを判定。
+
+```sql
+SELECT
+  YEAR,
+  current_sale,
+  pre_sale,
+  CASE
+    WHEN current_sale = pre_sale THEN '→'
+    WHEN current_sale > pre_sale THEN '↑'
+    WHEN current_sale < pre_sale THEN '↓'
+    ELSE '-'
+  END AS var
+FROM
+  (
+    SELECT
+      YEAR,
+      sale AS current_sale,
+      SUM(sale) over(
+        ORDER BY
+          YEAR RANGE BETWEEN 1 preceding AND 1 preceding
+      ) AS pre_sale
+    FROM
+      Sales
+  ) tmp
+;
+```
+
+（例題）
+前年と同じ売上の年を取得。ただし、データに歯抜けがあり、年が連続していない場合。
+
+相関サブクエリだと、ネストが深くなってしまう。
+```sql:相関サブクエリ
+SELECT *
+FROM Sales2 s_a
+WHERE sale = (
+  SELECT sale
+  FROM Sales2 s_b
+  -- 基準年より過去の年の中で最大の年が、基準年と同じ売上かどうか
+  WHERE s_b.YEAR = (
+    SELECT MAX(YEAR)
+    FROM Sales2 s_c
+    WHERE s_a.YEAR > s_c.YEAR
+  )
+);
+```
+
+上で書いたウィンドウ関数のSQLの、`RANGE` を `ROWS` に変えるだけで良い。
+(`RANGE`は、今の位置から、指定された範囲内の**値**を見る。
+ `ROWS`は、今の位置から、指定された範囲内の**行**を見る。)
+```sql:ウィンドウ関数
+SELECT year, current_sale
+FROM (
+  SELECT
+    year, -- 基準年
+    sale AS current_sale, -- 基準年の売上
+    SUM(sale) over(
+      ORDER BY year -- 年で並べて 見る
+      RANGE BETWEEN 1 preceding AND 1 preceding -- 基準年の1つ前(前年)しか見ない
+    ) AS pre_sale -- 前年の売上
+  FROM
+    Sales
+) tmp
+WHERE current_sale = pre_sale
+ORDER BY year
+;
+```
+
+### ウィンドウ関数 vs 相関サブクエリ
+
 
 ---
 　8　外部結合の使い方
