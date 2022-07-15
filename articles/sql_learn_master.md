@@ -1,16 +1,19 @@
 ---
 title: "「達人に学ぶSQL徹底指南書」要点"
-emoji: "🐕"
+emoji: "📑"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["SQL"]
 published: false
 ---
 
-# 書籍
-下記書籍の要点をまとめた。(つまり、所々割愛している。)
+# 目的
+SQLを書く力、および基礎知識の理解度の向上のため、SQLを書きながら下記書籍にて学習。
+その要点をまとめた。(つまり、所々割愛している。)
+
+### 書籍
 https://www.shoeisha.co.jp/book/detail/9784798157825
 
-## サポートページ
+### サポートページ
 http://mickindex.sakura.ne.jp/database/db_support_sinan.html
 
 # 第1部　魔法のSQL
