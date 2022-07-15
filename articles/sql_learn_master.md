@@ -1014,7 +1014,86 @@ WHERE next_start_date BETWEEN start_date AND end_date
 ```
 
 ---
-　8　外部結合の使い方
+
+## 8. 外部結合の使い方
+SQLはデータ検索を目的に作られた言語だが、帳票やレポートを作成するためにも利用され、その力を発揮している。
+
+### JOINのおさらい
+- 内部結合 : **INNER JOIN** (= **JOIN**)
+    結合相手がいない場合、その行は削除される。
+    **積集合**。
+- 外部結合 : OUTER JOIN
+  - 左外部結合 : **LEFT OUTER JOIN** (= **LEFT JOIN**)
+    結合される側(`左`)の表は、結合する側(`右`)にデータが無くても全て残り、
+    結合する側(`右`)は、結合相手(`左`)がいない場合、削除される。
+  - 右外部結合 : **RIGHT OUTER JOIN** (= **RIGHT JOIN**)
+    LEFT OUTER JOINの逆。
+  - 完全外部結合 : **FULL OUTER JOIN** (= **FULL JOIN**)
+    結合相手がいなくても、結合される側(`左`)・結合する側(`右`)ともに全て残る。
+    **和集合**。
+    (MySQLでは使えないため、UNIONで代替する。)
+- クロス結合 : **CROSS JOIN**
+  全ての組み合わせが作られる。(直積)
+  そのため、結果の行数は、2つの表の行数の積。(例: 10レコード✗20レコード=200レコード)
+
+### シチュエーション: 外部結合で差集合を求める
+
+| id | name (学生の名前) |
+| - | - |
+
+#### A - B
+クラスAにしか存在しない(= クラスBには存在せず、クラスAに存在する)学生を探す。
+
+```sql:LEFT JOIN
+SELECT *
+FROM Class_A a
+  LEFT JOIN Class_B b
+  ON a.id = b.id
+WHERE b.id IS NULL
+;
+```
+
+これは実は`LEFT JOIN`の本来の使い方ではない。(本来は`NOT EXISTS`や`NOT IN`。)
+だが、場面によっては`LEFT JOIN`が最速の動作をする可能性が高い。
+
+```sql:NOT EXISTS
+SELECT *
+FROM Class_A a
+WHERE NOT EXISTS(
+  SELECT *
+  FROM Class_B b
+  WHERE a.id = b.id
+);
+```
+
+#### B - A
+```sql:RIGHT JOIN
+SELECT *
+FROM Class_A a
+  RIGHT JOIN Class_B b
+  ON a.id = b.id
+WHERE a.id IS NULL
+;
+```
+
+### シチュエーション: 外部結合で排他的集合(排他的論理和)を求める
+```sql:UNION (MySQLの場合)
+SELECT a.id id, a.name, b.name
+FROM Class_A a
+  LEFT JOIN Class_B b
+  ON a.id = b.id
+UNION
+SELECT b.id id, a.name, b.name
+FROM Class_B b
+  RIGHT JOIN Class_A a
+  ON a.id = b.id
+WHERE a.id IS NULL
+  OR b.id IS NULL
+;
+```
+
+---
+
 　9　SQLで集合演算
 　10　SQLで数列を扱う
 　11　SQLを速くするぞ
