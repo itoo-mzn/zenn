@@ -1137,6 +1137,72 @@ FROM (
 ```
 
 ---
+
+## 10. SQLで数列を扱う
+### シチュエーション: 3人なんですけど、座れますか？
+席が3人が並んで座れるような席があるかを調べる。
+
+| seat (席番号) | status (空 or 占) |
+| - | - |
+
+その範囲内の全てが空席である、始まり(1人目)の席位置〜終わり(3人目)の席位置の組み合わせ を取得する
+と考えて、下記のように書ける。
+```sql:NOT EXISTS
+SELECT s1.seat AS start_seat, '~', s2.seat AS end_seat
+FROM Seats s1, Seats s2
+-- 上で席の全て組み合わせを作っているため、そこから3人が並んで座る場合の1人目の席と3人目の席の組み合わせのみ絞る
+WHERE s2.seat = s1.seat + (3 - 1) -- 3人分
+-- 始まり(1人目)の位置〜終わり(3人目)の位置に対して、全て空席であること(→ 空席じゃない行が無いこと)
+AND NOT EXISTS(
+  SELECT *
+  FROM Seats s3
+  WHERE s3.seat BETWEEN s1.seat AND s2.seat
+  AND s3.status <> '空'
+)
+ORDER BY s1.seat, s2.seat
+;
+```
+
+また、3席連続で空いているということは、
+空席だけで絞りこんだ後の「ある席(seat)の2行後ろの席番号は seat+2」である
+というように考えることができる。
+それをウィンドウ関数で実現できる。
+```sql:ウィンドウ関数
+SELECT seat AS start_seat, '~', end_seat
+FROM
+  (
+    SELECT
+      seat,
+      MAX(seat) over(
+        ORDER BY seat
+        rows BETWEEN 2 following AND 2 following -- (3 - 1)とするとsyntaxエラー出た
+      ) AS end_seat
+    FROM Seats
+    WHERE status = '空'
+  ) tmp
+WHERE end_seat = seat + (3 - 1)
+;
+```
+
+```sql:HAVING
+SELECT s1.seat AS start_seat, '~', s2.seat AS end_seat
+-- s1とs2でシートの全組み合わせ(3席分)を作るため、
+-- s3はその3席分のステータスを保持するために直積を使っている
+FROM Seats s1, Seats s2, Seats s3
+WHERE s2.seat = s1.seat + (3 - 1) -- 3席分
+AND s3.seat BETWEEN s1.seat AND s2.seat -- 3席のステータス
+GROUP BY s1.seat, s2.seat
+-- その組み合わせの3席全てが空席であること
+HAVING COUNT(*) = SUM(
+  CASE
+    WHEN s3.status = '空' THEN 1
+    ELSE 0
+  END
+);
+```
+
+---
+
 　11　SQLを速くするぞ
 　12　SQLプログラミング作法
 
