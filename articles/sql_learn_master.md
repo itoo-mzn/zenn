@@ -1203,7 +1203,98 @@ HAVING COUNT(*) = SUM(
 
 ---
 
-　11　SQLを速くするぞ
+## 11. SQLを速くするぞ
+レスポンスが悪いのは、SQLだけでなく、システムの物理的な設計が原因であることもしばしば。
+- システムの物理的な設計
+  - メモリの配分が悪い
+  - ストレージ構成が不適切 など
+- SQL : 実行計画を見て判断することが必要
+
+そのため、本格的なパフォーマンスチューニングを行うためには、使用しているハードウェアやDBMSの機能や特徴についての知識が不可欠。
+
+ここでは、実装非依存でSQLを見直すだけで手軽にできるチューニング方法を記載。
+
+### 効率の良い検索を利用する
+#### 方法: サブクエリを引数に取る場合、INよりもEXISTSを使う
+```sql:IN 遅い
+SELECT *
+FROM Class_A
+WHERE id IN (
+  SELECT id
+  FROM Class_B
+);
+```
+```sql:EXISTS 速い
+SELECT *
+FROM Class_A A
+WHERE EXISTS (
+  SELECT id
+  FROM Class_B B
+  WHERE A.id = B.id
+);
+```
+1. **もし結合キー(この場合はid)にインデックスが張られている場合、Class_Bの実表は見に行かず、インデックスを参照するのみで済む。**
+  INの引数にサブクエリを与える場合、DBはまずサブクエリから実行し、その結果を一時的なワークテーブルに格納して、その後ビューを全件走査する。
+  多くの場合これは非常にコストがかかるし、一般にワークテーブルにはインデックスが張られない。
+  それに比べ、EXISTSはワークテーブルを作らない。そのためINよりもEXISTSのほうが速いと期待できる。
+2. **EXISTSは1行でも条件に合致する行を見つけたらそこで検索を打ち切るので、INのように全件検索する必要がない。**
+
+#### 方法: サブクエリを引数に取る場合、INよりも結合を使う
+```sql:JOIN 速い
+SELECT A.*
+FROM Class_A A
+JOIN Class_B B -- INNER JOIN
+  ON A.id = B.id
+;
+```
+1. 少なくともどちらかのテーブルのid列のインデックスが利用できる。
+2. サブクエリが無くなったのでワーキングテーブルも作られない。
+
+### ソートを回避する
+#### 方法: 集合演算子のALLオプションを上手く使う
+[9. SQLで集合演算 / 集合演算の注意点]で記載したように、UNIONなどの集合演算子にALLオプションを付けるとソートが行われないため、重複を気にしなくて良い場合はALLオプションを付けるほうが良い。
+
+#### 方法: DISTINCTをEXISTSで代用する
+DISTINCTも内部的にソートを行っているため、EXISTSで代用するほうが良い。
+```sql:DISTINCT ソート発生
+SELECT DISTINCT i.item
+FROM Items i
+  INNER JOIN SalesHistory sh
+  ON  i.item_no = sh.item_no
+;
+```
+
+```sql:EXISTS ソート発生しない
+SELECT DISTINCT i.item
+FROM Items i
+  INNER JOIN SalesHistory sh
+  ON  i.item_no = sh.item_no
+;
+```
+
+### WHERE句で書ける条件はHAVING句には書かない
+GROUP BYで集約する前に絞り込むほうが、それ以降に計算する行数が減らせる。
+
+```sql:HAVING句に条件を書く
+-- 集約した後にHAVING句でフィルタリング
+SELECT sale_date, SUM(quantity)
+FROM SalesHistory
+GROUP BY sale_date
+HAVING sale_date = "2007-10-01"
+;
+```
+
+```sql:HAVING句に条件を書く
+-- 集約する前にWHERE句でフィルタリング
+SELECT sale_date, SUM(quantity)
+FROM SalesHistory
+WHERE sale_date = "2007-10-01"
+GROUP BY sale_date
+;
+```
+
+---
+
 　12　SQLプログラミング作法
 
 # 第2部　リレーショナルデータベースの世界
