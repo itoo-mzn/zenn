@@ -1293,6 +1293,140 @@ GROUP BY sale_date
 ;
 ```
 
+### そのインデックス、本当に使われていますか？
+インデックスが使われない場合があるシチュエーションについてまとめる。
+
+#### シチュエーション: 索引列(インデックスが張られている列)に加工を行っている
+↓のSQLはcolumn_1に張られたインデックスを使用できていない。
+```sql:インデックスを使えていない
+SELECT *
+FROM SomeTable
+WHERE column_1 * 1.1 > 100
+;
+```
+代わりに、↓のようにすればインデックスが使用される。
+インデックスが張られている列に計算が行われないため。
+```sql:インデックスを使えている
+SELECT *
+FROM SomeTable
+WHERE column_1 > 100 / 1.1
+;
+```
+
+:::message
+**インデックスを使用するときは、列は裸にする**。
+:::
+
+#### シチュエーション: インデックス列にNULLが存在する
+NULLが多い列や、`IS NULL`や`IS NOT NULL`を使う場合に、インデックスが使われなかったりすることがある。(実装により異なる。)
+
+#### シチュエーション: 否定形を使っている
+`<>`, `!=`, `NOT IN`を使う場合はインデックスが使用できない。
+
+```sql
+SELECT *
+FROM SomeTable
+WHERE column_1 <> 200
+;
+```
+
+#### シチュエーション: ORを使っている
+- col_1, col_2にそれぞれ別々のインデックスが張られている場合
+- (col_1, col_2)に複合インデックスが張られている場合
+
+上記の場合、条件に`OR`を使うとインデックスが使用されなくなるか、使えたとしても`AND`より非効率な検索になる。
+
+```sql
+SELECT *
+FROM SomeTable
+WHERE column_1 > 300 OR column_2 = 'abc'
+;
+```
+
+#### シチュエーション: 複合インデックスに対して、列の順番を間違えている
+(col_1, col_2, col_3)と、この順で複合インデックスが張られている場合、列の順番が重要。
+- 必ず最初の列(col_1)を先頭に書かないといけない。
+- 間を飛ばす 等、順番を崩してはいけない。(例: col_1, col_3だけ使う)
+
+```sql:OK
+SELECT *
+FROM SomeTable
+WHERE column_1 = 100 AND column_2 = 200 AND column_3 = 300 -- 1, 2, 3を使用
+;
+
+SELECT *
+FROM SomeTable
+WHERE column_1 = 100 AND column_2 = 200 -- 1, 2だけ
+;
+```
+```sql:NG
+SELECT *
+FROM SomeTable
+WHERE column_2 = 200 AND column_3 = 300 -- 2, 3だけ
+;
+
+SELECT *
+FROM SomeTable
+WHERE column_1 = 100 AND column_3 = 300 -- 1, 3だけ
+;
+```
+
+#### シチュエーション: 後方一致or中間一致のLIKE述語を使っている
+**LIKE述語は、前方一致のみINDEXが使用される**。
+
+#### シチュエーション: 暗黙の型変換を行っている
+例えば、文字列型で定義された列に対しては下記のようになる。
+```sql:OK
+SELECT *
+FROM SomeTable
+WHERE column_1 = '100' -- 文字列
+;
+```
+```sql:NG
+SELECT *
+FROM SomeTable
+WHERE column_1 = 100 -- 数値 (暗黙的にキャストを指示)
+;
+```
+
+:::message alert
+暗黙の型変換は、オーバーヘッドを発生させるだけでなく、インデックスまで使用不可になる。
+:::
+
+### 中間テーブルを減らせ
+中間テーブルの問題点は、データを展開するためにメモリを消費すること。
+また、元テーブルに存在したインデックスを使うのが難しくなること。
+
+#### HAVING句を活用する
+集約した結果に対する条件は、HAVING句で設定するのが原則。
+(慣れていないエンジニアはWHERE句に頼ろうとする。)
+
+```sql:NG
+SELECT *
+FROM (
+  SELECT sale_date, MAX(quantity) as max_qty
+  FROM SomeTable
+  GROUP BY sale_date
+) tmp -- 無駄な中間テーブル
+WHERE max_qty > 100
+;
+```
+```sql:OK
+SELECT sale_date, MAX(quantity)
+FROM SomeTable
+GROUP BY sale_date
+HAVING max_qty > 100
+;
+```
+#### 集約よりも結合を先に行う
+集約よりも結合を先に行うことで、中間テーブルが省略(小さく)できる。
+
+:::message
+パフォーマンスチューニングにおいて大事なのは、**ボトルネックを見つけ、そこを重点的に解消すること**。
+DBとSQLにおいては最大のボトルネックは、ストレージへのアクセス。
+なのでDBのパフォーマンスチューニングの本質は、**低速ストレージへのアクセスを減らす**こと。
+:::
+
 ---
 
 　12　SQLプログラミング作法
