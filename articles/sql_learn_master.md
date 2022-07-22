@@ -2,13 +2,14 @@
 title: "「達人に学ぶSQL徹底指南書」要点"
 emoji: "📑"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["SQL"]
-published: false
+topics: ["SQL", "DB"]
+published: true
 ---
 
 # 目的
-SQLを書く力、および基礎知識の理解度の向上のため、SQLを書きながら下記書籍にて学習。
-その要点をまとめた。(つまり、所々割愛している。)
+目的はSQLを書く力、およびDB/SQLの基礎知識の理解度向上。
+
+下記書籍にて実際にSQLを書きながら学習。その要点をまとめた。(つまり、所々割愛している。)
 
 ### 書籍
 https://www.shoeisha.co.jp/book/detail/9784798157825
@@ -33,7 +34,6 @@ CASE式で**条件分岐**を記述できる。
 
 ```sql:全てのDBMSで使える
 SELECT
-  --
   CASE pref_name
     WHEN '徳島' THEN '四国'
     WHEN '愛媛' THEN '四国'
@@ -44,12 +44,9 @@ SELECT
     WHEN '長崎' THEN '九州'
     ELSE 'その他'
   END AS '地方名', -- 地方名を出力するためのCASE式
-  --
   SUM(population) AS '地方ごとの人口' -- 地方ごとの人口 (ほしいデータ)
-FROM
-  PopTbl
+FROM PopTbl
 GROUP BY
-  --
   CASE pref_name -- SELECT句と同じCASEを使う
     WHEN '徳島' THEN '四国'
     WHEN '愛媛' THEN '四国'
@@ -60,7 +57,6 @@ GROUP BY
     WHEN '長崎' THEN '九州'
     ELSE 'その他'
   END -- 県→地方という新しい体系に変換するためのGROUP BYに使うCASE式
-  --
 ;
 ```
 MySQL, PostgreSQLは列を先に計算するため、同じことを下記SQLでスッキリ書くことができる。
@@ -77,10 +73,8 @@ SELECT
     ELSE 'その他'
   END AS '地方名',
   SUM(population) AS '地方ごとの人口'
-FROM
-  PopTbl
-GROUP BY
-  地方名 -- 'シングルクォーテーション'をつけるとエラー発生した
+FROM PopTbl
+GROUP BY 地方名 -- 'シングルクォーテーション'をつけるとエラー発生した
 ;
 ```
 
@@ -100,10 +94,8 @@ SELECT
   -- 男性の場合・女性の場合の2つの情報のうち、男性の情報以外を0にして、男性の場合の数(人口)を求める
   SUM(CASE sex WHEN 1 THEN population ELSE 0 END) AS '男性', 
   SUM(CASE sex WHEN 2 THEN population ELSE 0 END) AS '女性'
-FROM
-  `PopTbl2`
-GROUP BY
-  pref_name -- これによって1つの県レコードに、男性・女性の2つの情報がぶら下がる
+FROM PopTbl2
+GROUP BY pref_name -- これによって1つの県レコードに、男性・女性の2つの情報がぶら下がる
 ;
 ```
 1つのSQLであるため、2回SQLを発行してアプリケーションで展開する or UNIONする よりもパフォーマンスが良い。
@@ -126,27 +118,23 @@ SELECT
     END
     ELSE 0
   END
-FROM
-  PopTbl2
+FROM PopTbl2
 ;
 ```
 
 ### シチュエーション: 条件を分岐してUPDATEする
 30万以上の社員は10%減給して、20万以上30万未満の社員は20%昇給する といった要件の場合、
-UPDATE文を2回実行すると不整合が起きてしまう。
-CASE式を使って1回のUPDATEにできる。
+UPDATE文を2回実行すると不整合が起きてしまうが、
+CASE式を使うと、1回のUPDATEにできる。
 ```sql
-UPDATE
-  TestSal
-SET
-  salary = (
-    CASE
-      WHEN salary >= 300000 THEN salary * (1 - 0.1) -- 30万以上の社員は10%減給
-      WHEN salary >= 200000 AND salary < 300000 THEN salary * (1 + 0.2) -- 20万以上30万未満の社員は20%昇給
-      ELSE salary
-    END
-  )
-;
+UPDATE TestSal
+SET salary = (
+  CASE
+    WHEN salary >= 300000 THEN salary * (1 - 0.1) -- 30万以上の社員は10%減給
+    WHEN salary >= 200000 AND salary < 300000 THEN salary * (1 + 0.2) -- 20万以上30万未満の社員は20%昇給
+    ELSE salary
+  END
+);
 ```
 
 ### シチュエーション: 2つのテーブル間でのマッチング
@@ -168,42 +156,32 @@ SELECT
   course_name,
   CASE
     WHEN EXISTS(
-      SELECT
-        course_id
-      FROM
-        `OpenCourses` oc
-      WHERE
-        oc.course_id = cm.course_id
+      SELECT course_id
+      FROM OpenCourses oc
+      WHERE oc.course_id = cm.course_id
       AND MONTH = 200706
     ) THEN "◯"
     ELSE "✕"
   END AS "6月",
   CASE
     WHEN EXISTS(
-      SELECT
-        course_id
-      FROM
-        `OpenCourses` oc
-      WHERE
-        oc.course_id = cm.course_id
+      SELECT course_id
+      FROM OpenCourses oc
+      WHERE oc.course_id = cm.course_id
       AND MONTH = 200707
     ) THEN "◯"
     ELSE "✕"
   END AS "7月",
   CASE
     WHEN EXISTS(
-      SELECT
-        course_id
-      FROM
-        `OpenCourses` oc
-      WHERE
-        oc.course_id = cm.course_id
+      SELECT course_id
+      FROM OpenCourses oc
+      WHERE oc.course_id = cm.course_id
       AND MONTH = 200708
     ) THEN "◯"
     ELSE "✕"
   END AS "8月"
-FROM
-  `CourseMaster` cm
+FROM CourseMaster cm
 ;
 ```
 
@@ -277,8 +255,7 @@ SELECT
       sample_date ASC -- sample_dateの昇順で並べて
     rows BETWEEN 1 preceding AND 1 preceding -- カレントレコードの1つ前の日付のみを選ぶ (範囲に指定する)
   ) AS latest_date
-FROM
-  `LoadSample`
+FROM LoadSample
 ;
 ```
 
@@ -295,8 +272,7 @@ FROM
 SELECT
   p1.name AS p1_name,
   p2.name AS p2_name
-FROM
-  Products p1
+FROM Products p1
   INNER JOIN Products p2 -- 自己結合
   ON  p1.name > p2.name -- 非順序対にする : (りんご, みかん), (みかん, りんご)のような重複を削除できる
 ;
@@ -307,8 +283,7 @@ FROM
 SELECT DISTINCT
   p1.name,
   p1.price
-FROM
-  Products p1
+FROM Products p1
   INNER JOIN Products p2
   ON  p1.price = p2.price
 ;
@@ -427,27 +402,23 @@ EXISTSは、`データが存在するか否か`という次数の1つ高い問�
 SELECT DISTINCT -- 開催回と参加者の重複を排除
   m1.meeting,
   m2.person
-FROM
-  Meetings m1
+FROM Meetings m1
   CROSS JOIN Meetings m2 -- m1とm2の直積(全組み合わせ)
 -- 上の全組み合わせから、下（元のテーブル）の中に無いものをnot existsで取得
-WHERE
-  NOT EXISTS(
-    SELECT *
-    FROM
-      Meetings m3 -- 元のテーブル
-    WHERE
-      m1.meeting = m3.meeting
-    AND m2.person = m3.person
-  )
-;
+WHERE NOT EXISTS(
+  SELECT *
+  FROM
+    Meetings m3 -- 元のテーブル
+  WHERE
+    m1.meeting = m3.meeting
+  AND m2.person = m3.person
+);
 ```
 
 同じことを、exceptを使って下記のように書くこともできる。(ただし、MySQLはexpectが無いため不可。)
 ```sql:exept ver.
 SELECT m1.meeting, m2.person
-FROM
-  Meetings m1, Meetings m2 -- cross join
+FROM Meetings m1, Meetings m2 -- cross join
   except(
     SELECT
       meeting, person
@@ -476,12 +447,11 @@ FROM
 SELECT *
 FROM TestScores ts1
 WHERE NOT EXISTS(
-    SELECT *
-    FROM TestScores ts2
-    WHERE ts1.student_id = ts2.student_id
-    AND ts2.score < 50
-  )
-;
+  SELECT *
+  FROM TestScores ts2
+  WHERE ts1.student_id = ts2.student_id
+  AND ts2.score < 50
+);
 ```
 
 （例題）
@@ -793,7 +763,6 @@ HAVING MAX(status) = '待機' AND MIN(status) = '待機'
 :::
 
 ### シチュエーション: 関係除算でバスケット解析
-- 関係除算 : 
 - バスケット解析 : マーケティング分野における解析手法。頻繁に一緒に買われる商品の規則性を見つける。
 
 （例題）
@@ -1496,15 +1465,56 @@ RDBとは異なるアーキテクチャやデータモデルに基づくデー�
 
 ---
 
-　15　関係に始まり関係に終わる
-　16　アドレス、この巨大な怪物
-　17　順序をめぐる冒険
-　18　GROUP BYとPARTITION BY
-　19　手続き型から宣言型・集合指向へ頭を切り替える7箇条
-　20　神のいない論理
-　21　SQLと再帰集合
-　22　NULL撲滅委員会
-　23　SQLにおける存在の階層
+## 22. NULL撲滅委員会
+
+### NULLが悪い理由
+- 人間の直感に反する3値論理を考慮しないといけない。
+- `IS NULL`, `IS NOT NULL`を指定すると、インデックスの利用に制限が入りパフォーマンスが悪くなる。
+- `ORDER BY`句によるソート時に、ルールを意識する必要がある。
+  （ルール = NULLは一般的には最大値or最小値と扱われるが、その環境ではどういう挙動になるのか）
+- 四則演算やSQL関数の引数にNULLが入ると、**NULLの伝搬**が起こる。
+```
+  1 + NULL = NULL
+  NULL / 0 = NULL
+```
+
+### 撲滅するための指針
+1. まずデフォルト値を入れられないか 検討する。
+2. どうしようもない場合のみ、`NULL`を許可する。
+
+#### シチュエーション: コード
+コード列は数値が入るとしても、**数値型でなく文字列型にすべき**。
+`NULL`の代わりに、不明な(未知の)コードを表すコードとして(その時点で)ありえないと思われる数値を設定しても、以降その数値が正規の数値として出現する可能性があるため。
+また、コードは多くの場合桁数が固定で、前ゼロが入るため。(`001`など)
+
+#### シチュエーション: 名前
+`NULL`の代わりに、不明であることを表す値として、チームで共通了解を得られた値を設定するほうが良い。(`不明`や`UNKNOWN`など)
+
+#### シチュエーション: 数値
+`NULL`の代わりに、`0`とする。
+ただし、どうしても`0`と`NULL`を区別する必要があるならNULLを許可する。
+
+#### シチュエーション: 日付
+日付の場合は、NULLの持つ意味合いが多岐に渡るため、それぞれの状況に応じた判断が必要。
+開始日や終了日などの期限を表す場合は、`0001-01-01`や`9999-12-31`のように登録可能な最小・最大値にすることで対応できる。
+
+---
+
+## 記載を省略した章
+
+14. なぜ“関係”モデルという名前なの？
+15. 関係に始まり関係に終わる
+16. アドレス、この巨大な怪物
+17. 順序をめぐる冒険
+18. GROUP BYとPARTITION BY
+19. 手続き型から宣言型・集合指向へ頭を切り替える7箇条
+20. 神のいない論理
+21. SQLと再帰集合
+23. SQLにおける存在の階層
+
+---
+
+以上
 
 <!-- 課題 -->
 <!-- 1. 確実に遅くなる悪い例を３つ -->
