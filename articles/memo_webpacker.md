@@ -16,7 +16,10 @@ published: false
 
 ## アセットパイプライン(Asset Pipeline)とは
 JavaScriptやCSSを最小化や圧縮して連結するフレームワークです。
-アセットパイプラインの実体はSprocketsミドルウェアです。
+
+<!-- ここどっちが正しいか不明 -->
+Rails6から、Sprocketsに代わってWebpack（er）がRailsアプリケーションでJavaScriptを書くための新しい標準となりました。
+(RailsにはSprocketsも同梱されています。SprocketsもWebpackerと同様のアセットパッケージングツールで、Webpackerと機能が重複しています。)
 
 特徴としては下記です。
 - ファイルのミニファイ : スペースや改行を詰めてサイズを減らすこと。
@@ -64,11 +67,11 @@ $ RAILS_ENV=production bin/rails assets:precompile
 
 そのため、**プリコンパイルするたびにファイル名にフィンガープリントが付与されます**。
 
-
+## Babel
+すべてのブラウザがES6を理解できるとは限らないため、ES6のJavaScriptがどんなブラウザでも動くようにするには、ES6のJavaScriptコードを読み取って旧来のES5 JavaScriptに変換するツールが必要になります。Babelはそのための変換を行うコンパイラです。
 
 
 # Webpack
-
 
 # Webpacker
 アセットファイルはassetsディレクトリ
@@ -101,7 +104,7 @@ config/webpacker.yml
   cache_path: tmp/cache/webpacker
 config/
 
-dev_serverとは
+# dev_server
 https://webpack.js.org/configuration/dev-server/
 
 
@@ -109,8 +112,39 @@ https://webpack.js.org/configuration/dev-server/
 asset_syncを利用してCloudFront + S3からアセットファイルを配信
 S3に配置されるアセットファイルはassetsディレクトリのみで、Webpackerでビルドされたファイルの出力先であるpacksは含まれていません。
 
+asset_syncを導入すると**assets:precompile実行後にアセットファイルの同期処理が走ります**。
+その結果、プロジェクトに存在するアセットファイルが外部リソースに配置されます。
+
+しかし、『assets:precompile』後に行われる同期対象のファイルはSprocketsのビルド出力先（public/assets/）のみで、Webpackerのビルド出力先（public/packs/）は対象外です。
+
+今のcmapは、
+ファルダ → S3
+`app/assets/stylesheets` → 
+`app/webpacker/packs` → 
+`public/assets` → ?
+
+新cmap.devは、
+ファルダ → S3
+`app/assets/stylesheets` → 
+`app/webpacker/packs` → 
+`public/assets` → s3には無い or `assets`にちゃんとsyncされている
+
+public/assets/smart_phone/title_activity-54d4a58a65bdeb4b231296fe0adc51005246a94db8ca823023c1efbae98d57e8.png
+↓
+assets/smart_phone/title_activity-54d4a58a65bdeb4b231296fe0adc51005246a94db8ca823023c1efbae98d57e8.png
+
+
+
+# s3
+## アクセス許可
+### オブジェクト所有者
+他の AWS アカウントからこのバケットに書き込まれたオブジェクトの所有権と、アクセスコントロールリスト (ACL) の使用を管理します。
+オブジェクトの所有権は、オブジェクトへのアクセスを指定できるユーザーを決定します。
+
 
 
 # 参考サイト
 https://blog.mothule.com/ruby/rails/ruby-rails-assets-pipeline-use
 https://numb86-tech.hatenablog.com/entry/2018/11/10/002439
+https://techracho.bpsinc.jp/hachi8833/2021_05_13/85940
+https://railsguides.jp/webpacker.html
