@@ -15,8 +15,9 @@ published: false
 # 確実に遅くなるSQL
 
 ## <インデックスが使われていない>
-### 1. インデックスが貼られている列に加工を行っているSQL
-インデックスを貼っている列に対して加工をして絞り込むと、せっかく用意したインデックスが使われなくなってしまう。
+### 1. 加工をしているSQL
+インデックスを貼っている列に対して加工をして絞り込むと、せっかく用意したインデックスが使われなくなってしまう。(加工 : 計算、文字列の追加など)
+逆に言うと、**インデックスを使用するにはその列を裸で使う**こと。
 
 下記SQLのように、WHERE句を3パターン用意して検証。
 - <1> : 通常はインデックスが使われていることを確認するために用意。(msg_typeにはインデックスが貼られている。)
@@ -40,6 +41,7 @@ where msg_type = 50 -- <1>
 <3> : インデックスが使われるように改善された。
 ![](/images/sql_bad_practice/manu_index_3.png)
 
+
 :::message
 ## EXPLAINについて
 ### 使い方
@@ -61,55 +63,46 @@ where msg_type = 50 -- <1>
 :::
 
 
-<!-- インデックス列にNULLが存在する -->
-NULLが多い列や、`IS NULL`や`IS NOT NULL`を使う場合に、インデックスが使われなかったりすることがある。(実装により異なる。)
-
-再現できなかった。
-cmapで良い例のテーブルがないので、自分で作るorローカルのcmapのuserdataテーブルのcorporation_name1をほとんどnullにするか。で試す。
-```sql
-SELECT 
-id,
-corporation_name1
-FROM userdata
-where corporation_name1 is null
-;
-```
-
-
-### 否定形を使っている
+### 2. 否定形を使っているSQL
 `<>`, `!=`, `NOT IN`を使う場合はインデックスが使用できない。
 
 ```sql
-explain
 SELECT *
 FROM messages
--- where msg_type = 50
-where msg_type <> 50
+WHERE msg_type = 50 -- <1>
+-- WHERE msg_type <> 50 -- <2>
 ;
 ```
 
+#### EXPLAIN実行結果
+<1> : 通常はインデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_4.png)
+<2> : インデックスを貼っている列に、否定(`<>`)することでインデックスが使われなくなった。
+![](/images/sql_bad_practice/manu_index_5.png)
 
-### ORを使っている
-- col_1, col_2にそれぞれ別々のインデックスが張られている場合
-- (col_1, col_2)に複合インデックスが張られている場合
+
+### 3. ORを使っている
+- (column_1, column_2)に複合インデックスが貼られている場合
+- column_1, column_2にそれぞれ別々のインデックスが貼られている場合
 
 上記の場合、条件に`OR`を使うとインデックスが使用されなくなるか、使えたとしても`AND`より非効率な検索になる。
 
+msg_typeとuser_toで複合インデックスを成しているテーブルにて検証。
 ```sql
-explain
-select *
-from messages
-where msg_type = 50
--- and user_to = 1000
-or user_to = 1000
+SELECT *
+FROM messages
+WHERE msg_type = 50
+AND user_to = 1000 -- <1>
+-- OR  user_to = 1000 -- <2>
 ;
 ```
 
+#### EXPLAIN実行結果
+<1> : 複合インデックスを成す列同士を`AND`条件で絞る際はインデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_6.png)
+<2> : 複合インデックスを成す列同士を`OR`条件で指定すると、インデックスが使われなくなることが確認できた。
+![](/images/sql_bad_practice/manu_index_7.png)
 
-### 複合インデックスに対して、列の順番を間違えている
-(col_1, col_2, col_3)と、この順で複合インデックスが張られている場合、列の順番が重要。
-- 必ず最初の列(col_1)を先頭に書かないといけない。
-- 間を飛ばす 等、順番を崩してはいけない。(例: col_1, col_3だけ使う)
 
 と聞いていたが、最初の列(col_1)を最後尾につけても問題なかった。（オプティマイザがよしなにやってくれた？のかと思う）
 当然だが、3つで1つの複合キーの最初のカラム(msg_type)を条件に含めないとインデックス効かなかった。
@@ -135,7 +128,7 @@ and group_number = 100
 ```
 
 
-### 後方一致or中間一致のLIKE述語を使っている
+### 5. 後方一致or中間一致のLIKE述語を使っている
 **LIKE述語は、前方一致のみINDEXが使用される**。
 
 ```sql
@@ -148,7 +141,7 @@ where email like '%cmap%'
 ```
 
 
-### 暗黙の型変換を行っている
+### 6. 暗黙の型変換を行っている
 オーバーヘッドを発生させるだけでなく、インデックスまで使用不可になる。
 
 ```sql
@@ -159,6 +152,26 @@ from userdata
 where school_name2 = 222 -- 文字列型で定義された列
 ;
 ```
+
+
+
+
+<!-- インデックス列にNULLが存在する -->
+NULLが多い列や、`IS NULL`や`IS NOT NULL`を使う場合に、インデックスが使われなかったりすることがある。(実装により異なる。)
+
+再現できなかった。
+cmapで良い例のテーブルがないので、自分で作るorローカルのcmapのuserdataテーブルのcorporation_name1をほとんどnullにするか。で試す。
+```sql
+SELECT 
+id,
+corporation_name1
+FROM userdata
+where corporation_name1 is null
+;
+```
+
+
+
 
 
 ## <無駄にソートする>
