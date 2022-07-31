@@ -15,7 +15,7 @@ published: false
 # 確実に遅くなるSQL
 
 ## <インデックスが使われていない>
-### 1. 加工をしているSQL
+### 1. インデックス列に加工をしているSQL
 インデックスを貼っている列に対して加工をして絞り込むと、せっかく用意したインデックスが使われなくなってしまう。(加工 : 計算、文字列の追加など)
 逆に言うと、**インデックスを使用するにはその列を裸で使う**こと。
 
@@ -63,7 +63,7 @@ where msg_type = 50 -- <1>
 :::
 
 
-### 2. 否定形を使っているSQL
+### 2. インデックス列に否定形を使っているSQL
 `<>`, `!=`, `NOT IN`を使う場合はインデックスが使用できない。
 
 ```sql
@@ -81,7 +81,7 @@ WHERE msg_type = 50 -- <1>
 ![](/images/sql_bad_practice/manu_index_5.png)
 
 
-### 3. ORを使っている
+### 3. インデックス列にORを使っているSQL
 - (column_1, column_2)に複合インデックスが貼られている場合
 - column_1, column_2にそれぞれ別々のインデックスが貼られている場合
 
@@ -104,41 +104,75 @@ AND user_to = 1000 -- <1>
 ![](/images/sql_bad_practice/manu_index_7.png)
 
 
-と聞いていたが、最初の列(col_1)を最後尾につけても問題なかった。（オプティマイザがよしなにやってくれた？のかと思う）
-当然だが、3つで1つの複合キーの最初のカラム(msg_type)を条件に含めないとインデックス効かなかった。
+### 4. 複合インデックスが使えていないSQL
+複合インデックスはcolumn_1から順に整列されてインデックスが形成されている。
+そのため、「column_1, column_2, column_3」の順で複合インデックスが貼られている場合、
+[column_1, column_3だけ使う], [column_2, column_3だけ使う]ような指定では複合インデックスが使えない。
 
-```sql
-explain
-select *
-from messages
-where 1=1
-and msg_type = 50
-and group_type = 2
-and group_number = 100
+```sql:<1> 全てのカラムを指定
+SELECT *
+FROM messages
+WHERE 1 = 1
+AND msg_type = 50 -- column_1
+AND group_type = 2 -- column_2
+AND group_number = 100 -- column_3
 ;
-
-explain
-select *
-from messages
-where 1=1
--- and msg_type = 50
-and group_type = 2
-and group_number = 100
+```
+```sql:<2> column_1, column_2だけを指定
+SELECT *
+FROM messages
+WHERE 1 = 1
+AND msg_type = 50
+AND group_type = 2
+-- AND group_number = 100
+;
+```
+```sql:<3> column_1, column_3だけを指定
+SELECT *
+FROM messages
+WHERE 1 = 1
+AND msg_type = 50
+-- AND group_type = 2
+AND group_number = 100
+;
+```
+```sql:<4> column_2, column_3だけを指定
+SELECT *
+FROM messages
+WHERE 1 = 1
+-- AND msg_type = 50
+AND group_type = 2
+AND group_number = 100
 ;
 ```
 
+#### EXPLAIN実行結果
+<1> : 複合インデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_8.png)
+<2> : 複合インデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_9.png)
+<3> : 本来使いたい複合インデックスは使われなかった。(それとは別の、column_1にだけ有効なインデックスを使っている。)
+![](/images/sql_bad_practice/manu_index_10.png)
+<4> : 複合インデックスは使われなかった。
+![](/images/sql_bad_practice/manu_index_11.png)
 
-### 5. 後方一致or中間一致のLIKE述語を使っている
+
+### 5. インデックス列に後方一致or中間一致のLIKE述語を使っている
 **LIKE述語は、前方一致のみINDEXが使用される**。
 
 ```sql
-explain
-select *
-from users
--- where email like 'cmap%'
-where email like '%cmap%'
+SELECT *
+FROM users
+WHERE email LIKE 'hoge%' -- <1>
+-- WHERE email LIKE '%hoge%' -- <2>
 ;
 ```
+
+#### EXPLAIN実行結果
+<1> : 前方一致のLIKE検索では、インデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_12.png)
+<2> : 中間一致のLIKE検索では、インデックスが使われなくなった。
+![](/images/sql_bad_practice/manu_index_13.png)
 
 
 ### 6. 暗黙の型変換を行っている
