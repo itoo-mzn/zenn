@@ -15,6 +15,7 @@ published: false
 # 確実に遅くなるSQL
 
 ## <インデックスが使われていない>
+
 ### 1. インデックス列に加工をしているSQL
 インデックスを貼っている列に対して加工をして絞り込むと、せっかく用意したインデックスが使われなくなってしまう。(加工 : 計算、文字列の追加など)
 逆に言うと、**インデックスを使用するにはその列を裸で使う**こと。
@@ -44,11 +45,13 @@ where msg_type = 50 -- <1>
 
 :::message
 ## EXPLAINについて
+
 ### 使い方
 - 実行したいSQLの先頭に`EXPLAIN`を付けて実行。
 - テーブルのレコード数が比較的少なかったり、実行結果がそのテーブルの大多数を占めるSQLに対してEXPLAINすると、インデックス(key)を使用しない場合がある。インデックスを使用せずテーブルをフルスキャンした方が効率的だとオプティマイザが判断して最適化するため。(実際に今回の検証で起きた。)
   - 参考記事 : [MySQLチューニング基礎](https://downloads.mysql.com/presentations/20151208_02_MySQL_Tuning_for_Beginners.pdf)の71ページ目, [Qiita](https://qiita.com/kouki_o9/items/b1d9181e3f9d072a3cdb), [teratail回答](https://teratail.com/questions/81089)
 <!-- msg_typeを3に設定したら<3>でもインデックス効かなかった。おそらく該当行数が多すぎたため。50にしたらkeyを使うようになった。 -->
+
 ### 結果の見方
 | 項目 | 説明 |
 | - | - |
@@ -157,8 +160,8 @@ AND group_number = 100
 ![](/images/sql_bad_practice/manu_index_11.png)
 
 
-### 5. インデックス列に後方一致or中間一致のLIKE述語を使っている
-**LIKE述語は、前方一致のみINDEXが使用される**。
+### 5. インデックス列に後方一致or中間一致のLIKE述語を使っているSQL
+**LIKE述語は、前方一致のみインデックスが使用される**。
 
 ```sql
 SELECT *
@@ -175,42 +178,68 @@ WHERE email LIKE 'hoge%' -- <1>
 ![](/images/sql_bad_practice/manu_index_13.png)
 
 
-### 6. 暗黙の型変換を行っている
-オーバーヘッドを発生させるだけでなく、インデックスまで使用不可になる。
+### 6. インデックス列に暗黙の型変換を行っているSQL
+暗黙の型変換を行うと、インデックスが使用不可になる。
 
+文字列型で定義された列に対して、数値と比較して検証。
 ```sql
-explain
-select *
-from userdata
--- where school_name2 = '222'
-where school_name2 = 222 -- 文字列型で定義された列
-;
-```
-
-
-
-
-<!-- インデックス列にNULLが存在する -->
-NULLが多い列や、`IS NULL`や`IS NOT NULL`を使う場合に、インデックスが使われなかったりすることがある。(実装により異なる。)
-
-再現できなかった。
-cmapで良い例のテーブルがないので、自分で作るorローカルのcmapのuserdataテーブルのcorporation_name1をほとんどnullにするか。で試す。
-```sql
-SELECT 
-id,
-corporation_name1
+SELECT *
 FROM userdata
-where corporation_name1 is null
+WHERE school_name2 = '222' -- <1: 文字列型 = 文字列 >
+-- WHERE school_name2 = 222 -- <2: 文字列型 = 数値 >
 ;
 ```
 
+#### EXPLAIN実行結果
+<1> : 前方一致のLIKE検索では、インデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_14.png)
+<2> : 中間一致のLIKE検索では、インデックスが使われなくなった。
+![](/images/sql_bad_practice/manu_index_15.png)
+
+参考記事 : [記事](https://use-the-index-luke.com/ja/sql/where-clause/obfuscation/numeric-strings)
 
 
+### 7. インデックス列にNULLが存在する
+NULLが多い列に`IS NULL`や`IS NOT NULL`を使う場合に、インデックスが使われなかったりすることがある。(実装により異なる。)
+
+インデックス列(msg_type)がNULLであるレコードが1件しかなかったため、検証用に全2,778,844レコード中、812,078レコードをNULLにsetしたテーブルを用意。
+```sql
+SELECT *
+FROM messages
+WHERE msg_type = 50 -- <1>
+-- WHERE msg_type = 51 -- <2>
+-- WHERE msg_type is null -- <3>
+-- WHERE msg_type is not null -- <4>
+-- WHERE msg_type = 3 -- <5>
+;
+```
+
+#### EXPLAIN実行結果
+<1> : 通常はインデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_19.png)
+<2> : 通常はインデックスが使われていることが確認できた。
+![](/images/sql_bad_practice/manu_index_20.png)
+<3> : NULLが多い列に対して`IS NULL`を使うと、インデックスが使われなかった。
+![](/images/sql_bad_practice/manu_index_16.png)
+<4> : NULLが多い列に対して`IS NOT NULL`を使うと、インデックスが使われなかった。
+![](/images/sql_bad_practice/manu_index_17.png)
+<5> : インデックスが使われなかった。
+![](/images/sql_bad_practice/manu_index_18.png)
+
+| msg_type | レコード数 | 検証No. | インデックスの使用 | 考察 |
+| :-: | -: | - | - | - |
+| 50 | 32,125 | <1> | 使った | - |
+| 51 | 1 | <2> | 使った | - |
+| NULL | 812,078 | <3>, <4> | 使わなかった<br>(`IS NULL`、`IS NOT NULL`ともに) | ちなみにNULLのレコードが1件ときの実行結果は、`IS NULL`はインデックスを使い、`IS NOT NULL`は使わなかった(1件以外はnot nullなのでフルスキャン)。 |
+| 3 | 1,882,560 | <5> | 使わなかった | テーブルの大多数のためフルスキャンした方が良いと判断したと思われる。 |
+| (その他) | 52,080 | - | - | - |
+| (合計) | 2,778,844 | - | - | - |
 
 
 ## <無駄にソートする>
-### 1. 重複を残しても良い場面で、UNIONにALLオプションを付けない
-ALLオプションを付けないと、暗黙的にソートが行われてパフォーマンスが悪くなる。
+
+### 8. 重複を残しても良い場面で、UNIONにALLオプションを付けていないSQL
+`ALL`オプションを付けないと、暗黙的にソートが行われてパフォーマンスが悪くなる。
 
 :::message
 `UNION`は重複を排除する。
@@ -218,7 +247,7 @@ ALLオプションを付けないと、暗黙的にソートが行われてパ�
 :::
 
 | ALLオプション | 実行時間 (n=5平均) |
-| - | - |
+| :-: | -: |
 | 無し | 150.6 ms |
 | 有り | 73.1 ms |
 
