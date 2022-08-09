@@ -65,22 +65,10 @@ WITH RECURSIVE
     再帰項（自身を参照・条件設定して抽出されたレコード）
   )
 -- 以下、メインクエリ。メインクエリ内で仮想テーブルを呼び出すことができる
-SELECT * FROM SampleTable
+SELECT ... FROM ... WHERE ... GROUP BY ...
 ```
 
 ## 使用例
-【例】
-
-```sql:WITH RECURSIVE句 例
-WITH RECURSIVE 
-  cte (n) AS (
-    SELECT 1
-    UNION ALL
-    SELECT n + 1 FROM cte WHERE n < 5
-  )
-SELECT * FROM cte;
-```
-
 【例】織田家を1代目から順に取得。(家系図的に)
 ```sql:WITH RECURSIVE句 例
 WITH RECURSIVE
@@ -116,21 +104,74 @@ GROUP BY boss
 ;
 ```
 
+
 # WITH RECURSIVEを使わない場合
 1. レコードを1件ずつ取得して、アプリ側でマージする。
 件数分のクエリの発行・ループ内処理が発生する。
 2. 外部結合（LEFT JOIN）を利用して、id と parent_id を紐づける。
 親子以下の階層(孫階層)は取得できない。
+もし孫階層を取得しようと思うと下記のようなSQLになる。つまり、それより下の階層になるとJOINとそれをUNIONする回数が比例して増える。
+
+```sql:孫階層を取得
+-- 親
+SELECT id, last_name, first_name, parent_id
+FROM Family
+WHERE last_name = '織田' AND parent_id IS NULL
+
+UNION ALL
+
+-- 子
+SELECT f.id, f.last_name, f.first_name, f.parent_id
+FROM Family f
+JOIN (
+  SELECT
+    *
+  FROM
+    Family
+  WHERE
+    last_name = '織田'
+  AND parent_id IS NULL
+) f1
+ON  f.parent_id = f1.id
+
+UNION ALL
+
+-- 孫
+SELECT f.id, f.last_name, f.first_name, f.parent_id
+FROM Family f
+JOIN (
+  SELECT f.id, f.last_name, f.first_name, f.parent_id
+  FROM Family f
+  JOIN (
+    SELECT *
+    FROM Family
+    WHERE last_name = '織田' AND parent_id IS NULL
+  ) f1
+  ON  f.parent_id = f1.id
+) f2
+ON  f.parent_id = f2.id
+;
+```
+
 3. ルートノードからの経路を記録したカラム（pathカラム）を利用する。
 テーブル定義の変更、および経路情報のINSERTが必要となる。
 
-いずれも欠点が大きいため、階層構造（グラフ構造）データを格納するのにはWITH RECURSIVEを使うのが良いと考える。
+いずれも欠点が大きいため、階層構造（グラフ構造）データを格納するのにはWITH RECURSIVE句を使うのが良い。
+
+
+# 使うと良い場面、使ってはいけない場面
+## 使うと良い場面
+
+
+## 使ってはいけない場面
+
 
 # 情報
 [MySQLリファレンスマニュアル](https://dev.mysql.com/doc/refman/8.0/ja/with.html)
 [記事1](https://style.potepan.com/articles/26192.html)
 [記事2](https://blog.s-style.co.jp/2017/07/884/)
 [記事3](https://qiita.com/Shoyu_N/items/f1786f99545fa5053b75)
+
 
 以上
 <!-- 2. WITH RECURSIVE 構文を使うと良い時, 使ってはイケナイ時の説明 -->
