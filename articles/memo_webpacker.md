@@ -66,6 +66,7 @@ $ RAILS_ENV=production bin/rails assets:precompile
 なぜなら、キャッシュはパスで管理されるが、アセットに変更が加わってもマスターファイルのパスは変わらないので、キャッシュ有効と誤って判断されます。
 
 そのため、**プリコンパイルするたびにファイル名にフィンガープリントが付与されます**。
+フィンガープリントは、ファイルの内容が変わると変わる。
 
 ## Babel
 すべてのブラウザがES6を理解できるとは限らないため、ES6のJavaScriptがどんなブラウザでも動くようにするには、ES6のJavaScriptコードを読み取って旧来のES5 JavaScriptに変換するツールが必要になります。Babelはそのための変換を行うコンパイラです。
@@ -148,3 +149,4 @@ https://blog.mothule.com/ruby/rails/ruby-rails-assets-pipeline-use
 https://numb86-tech.hatenablog.com/entry/2018/11/10/002439
 https://techracho.bpsinc.jp/hachi8833/2021_05_13/85940
 https://railsguides.jp/webpacker.html
+https://zenn.dev/ysi831/books/66ba06d6a4a1d4/viewer/2e0c7f
