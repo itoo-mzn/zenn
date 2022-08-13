@@ -15,6 +15,8 @@ published: false
 # MacにUbuntuを入れてデュアルブート起動させる手順
 
 https://sy-base.com/myrobotics/mac/mac_ubuntu/
+https://sy-base.com/myrobotics/mac/ubuntu_bootusb/
+https://support.apple.com/ja-jp/HT208198
 
 1. ハードディスクのパーティションを作成する。
 ハードディスクを分割して、Ubuntuを使用する専用スペースを作成します。
@@ -22,5 +24,10 @@ https://sy-base.com/myrobotics/mac/mac_ubuntu/
 Ubuntuをインストールするための専用のUSBを作成します。
 3. ブータブルUSBを用いてUbuntuをインストール
 2.で作成したブータブルUSBを用いてUbuntuをインストールします。
+
+ここで問題が発生。
+BIOS画面でUSBを選択してEnterを押した後、画面が真っ黒のまま動かない。
+
+
 4. rEFIndをインストール
 rEFIndというOSのセレクタを導入することで、起動時にUbuntuのディスクが見えるようにします。
