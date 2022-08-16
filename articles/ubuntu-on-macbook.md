@@ -28,6 +28,13 @@ Ubuntuをインストールするための専用のUSBを作成します。
 ここで問題が発生。
 BIOS画面でUSBを選択してEnterを押した後、画面が真っ黒のまま動かない。
 
+このPCはもうメインとしては使わない予定なので、出荷前状態に戻すことにした。
+https://support.apple.com/ja-jp/HT201065
+
+その前に、MacOSが古くてiCloudからサインアウトできないという現象が起きたためOSを更新。
+その後、HDを消去。
+https://support.apple.com/ja-jp/HT208496
+
 
 4. rEFIndをインストール
 rEFIndというOSのセレクタを導入することで、起動時にUbuntuのディスクが見えるようにします。
