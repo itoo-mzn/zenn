@@ -34,6 +34,32 @@ Nginxのディレクティブには大きくわけて２種類あります。
 #### コンテキストとは
 スコープ型ディレクトリの**範囲**のこと。
 原則として、ディレクティブはコンテキストの中に記述しなければいけません。
+
+ディレクティブには記述できるコンテキストが決まっている
+例えば、serverディレクティブはhttpコンテキストの中に書かなければいけません。
+```
+http {
+	sendfile on;
+	tcp_nopush on;
+	tcp_nodelay on;
+	keepalive_timeout 65;
+	types_hash_max_size 2048;
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+	ssl_prefer_server_ciphers on;
+ 
+	access_log /var/log/nginx/access.log;
+	error_log /var/log/nginx/error.log;
+ 
+    server {
+        listen 80;
+        server_name localhost;
+        location / {
+            try_files $uri $uri/ =404;
+        }
+    }
+}
+```
+
 ## 設定ファイルが読み込まれる順番
 Nginxの設定ファイルはデフォルトで２つあり、以下の順番で読み込まれます。
 1. /etc/nginx/nginx.conf
@@ -121,6 +147,20 @@ bind "unix://#{Rails.root}/tmp/sockets/puma.sock"
 # Puma.rbに下記1行を追記
 daemonize true
 ```
+
+## 設定ファイルの作成
+アプリごとの設定ファイルは「/etc/nginx/conf.d/」の下に新規で作成し、Nginx全体に関わる設定は「/etc/nginx/nginx.conf」を編集するようにします。
+
+
+
+実際にサーバー構築して実践・学習すること！
+
+
+
 # 参考サイト
+https://nginx.org/en/docs/
+https://qiita.com/riita10069/items/5d36dfeb756e3b6c4978
 https://kitsune.blog/engineer/nginx
 https://shiro-secret-base.com/?p=436
+https://qiita.com/takahiro1127/items/fcb81753eaf381b4b33c
+https://zenn.dev/machamp/articles/rails-puma-nginx
