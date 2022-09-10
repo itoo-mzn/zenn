@@ -9,6 +9,65 @@ published: false
 # 目的
 AWSにおいて備忘録を残す。
 
+---
+
+
+# IAM
+
+## アクセスキー
+ルートユーザー or IAMユーザー の長期的な認証情報。
+アクセスキーID + シークレットアクセスキー で構成される。
+**アクセスキーを使うことで、外部からAWSのサービスへプログラムアクセスができる**。
+
+## ポリシー
+`IAMユーザ、IAMグループ、IAMロール`、`AWSリソース`に関連づけることによってアクセス許可を定義することができるオブジェクト。
+
+ポリシーには色々な種類（ポリシータイプ）がある。
+- アイデンティティベースのポリシー
+  - 管理ポリシー
+    - **AWS管理ポリシー**
+      AWSにより事前定義された管理ポリシーで、編集不可。
+      複数のIAMユーザー、IAMグループ、IAMロールに関連付けできる。
+    - **カスタマー管理ポリシー**
+      AWS管理ポリシーでは要件を満たせない場合等に、自分で定義するポリシー。
+  - **インラインポリシー**
+    1つのIAMエンティティ (IAMユーザー、IAMグループ、IAMロール)に直接埋め込まれるポリシー。
+    インラインポリシーより、カスタマー管理ポリシーを使うことが推奨されている。（1つ1つのインラインポリシーを管理するのでなく、1つのカスタマー管理ポリシーで管理するほうが良いため。）
+- リソースベースのポリシー
+  - AWS IAMロールの信頼ポリシー、Amazon S3のバケットポリシー、Amazon SNSトピックのアクセス許可、Amazon SQSキューのアクセス許可
+- パーミッションバウンダリー
+  - AWS IAMアクセス許可の境界、AWS Organizationsサービスコントロールポリシー (SCP)
+- **アクセスコントロールポリシー** (**ACL**)
+  - Amazon S3のバケットのACL、Amazon VPCのサブネットのACL
+- セッションポリシー
+
+## IAMグループ
+IAMユーザーの集合。
+**IAMグループに関連付けられたIAMポリシーは所属するIAMユーザーに継承される**。
+
+## IAMロール
+**AWSリソースの操作権限を付与**するための仕組み。
+AWSサービスやアプリケーション等のエンティティに対して、「**一時的なセキュリティ認証情報**」を渡す。
+
+:::message
+#### 一時的なセキュリティ認証情報 (temporary security credentials)
+有効期限付きのアクセスキーID + シークレットアクセスキー + セキュリティトークン で構成される。
+
+#### AWS Security Token Service (STS)
+一時的なセキュリティ認証情報を生成するサービス。
+
+##### AssumeRole 
+STSで利用できるAPI Actionの1つ。
+既存のIAMユーザーの認証情報を用いて、IAMロールの「一時的なセキュリティ認証情報」を取得する。
+:::
+
+https://d1.awsstatic.com/webinars/jp/pdf/services/20190129_AWS-BlackBelt_IAM_Part1.pdf
+https://d1.awsstatic.com/webinars/jp/pdf/services/20190130_AWS-BlackBelt_IAM_Part2.pdf
+
+
+---
+
+
 # エッジサービス
 AWSのエッジロケーションから提供されるサービス群。AWSサービスをユーザーに近い場所から提供。
 （Route53やCloudFront、WAFなど）
@@ -127,3 +186,24 @@ https://qiita.com/yu-yama-sra/items/7ab3e6fdb2d3b73925d8
 ホストポート：ホスト（コンテナを利用する側）のポート。
 
 https://docs.docker.jp/engine/userguide/networking/default_network/binding.html
+
+
+---
+
+
+# AWS WAF
+
+:::message
+## WAF (Web Application Firewall)とは
+ウェブアプリケーションの**通信内容を検査**し、**不正なアクセスを遮断するルールセット**を持つセキュリティ対策。
+ウェブアプリケーションの脆弱性を悪用した攻撃などからウェブアプリケーションを保護することが目的。
+（軽減するだけで、根本対策ではない。）
+:::
+
+AWS WAFでは、
+1. 悪意のあるリクエストのブロック
+2. カスタムルールに基づいたWebトラフィックのフィルタ
+3. モニタリングとチューニング
+ができる。
+
+https://www.slideshare.net/AmazonWebServicesJapan/20171122-aws-blackbeltawswafowasptop10
