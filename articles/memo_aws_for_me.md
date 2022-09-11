@@ -91,6 +91,9 @@ CDNとは、オリジンサーバーからウェブコンテンツのコピー�
 URLパスごとのキャッシュ動作(Behavior)。
 
 
+---
+
+
 # VPC
 
 
@@ -105,6 +108,9 @@ https://aws.amazon.com/jp/premiumsupport/knowledge-center/public-load-balancer-p
 注意点
 インバウンド：未設定の場合通信は全て遮断し、許可した通信のみを通過させます。 ＊デフォルトですべて拒否
 アウトバウンド：自動的にデフォルトのセキュリティグループが適用されます。 ＊デフォルトですべて許可
+
+
+---
 
 
 # CodePipeline
@@ -149,6 +155,9 @@ CodeBuildはソースコードを受け取り、それを仕様書（buildspec.y
 CodeDeploy があなたの EC2 インスタンス（EC2とは限らないが）に対して、Amazon S3 または GitHub にあるアプリケーションのリビジョンをどのようにインストールするか決定する、YAML フォーマットのファイルです。また同様に、デプロイの様々なライフサイクルイベントをフックして処理を実行するか決定します。
 
 
+---
+
+
 # ELB
 
 ## リスナー
@@ -169,9 +178,16 @@ CodeDeploy があなたの EC2 インスタンス（EC2とは限らないが）�
 ターゲットとターゲットグループが問題なく起動できるように、定義された周期ごとにターゲットとターゲットグループの状態を確認する動作。
 
 
+---
+
+
 # ECS
 https://qiita.com/NewGyu/items/9597ed2eda763bd504d7
 https://nishinatoshiharu.com/ecs-codedeploy/
+
+
+---
+
 
 # ALB, ECS ポート周り
 ## ALBについて
@@ -183,10 +199,30 @@ https://qiita.com/yu-yama-sra/items/7ab3e6fdb2d3b73925d8
 
 ## ECSについて
 コンテナポート：（使われる側の）コンテナのポート。
-ホストポート：ホスト（コンテナを利用する側）のポート。
+ホストポート：**ホスト**（**コンテナを利用する側**）のポート。
+
+:::message
+#### ホストとは
+いつも忘れる。いつもクライアント・ゲスト側と思い違いしてしまう。
+https://wa3.i-3-i.info/diff389computer.html
+:::
 
 https://docs.docker.jp/engine/userguide/networking/default_network/binding.html
 
+
+
+## Fargate
+
+### Fargate のメリット
+Fargate利用により以下全てをAWS側にアウトソースできる。
+- EC2 インスタンスのプロビジョニングや管理
+  - 脆弱性対応のためのパッチ当てや OS アップグレード
+  - EC2 インスタンス上で動くエージェント類のアップグレード
+  - クラスタ内の EC2 インスタンス群それぞれの上で動くエージェント類やソフトウェアバージョンの整合性維持
+  などなど…
+- 状態異常が発生した EC2 インスタンスの再起動や入れ替え
+
+https://d1.awsstatic.com/webinars/jp/pdf/services/20190925_AWS-BlackBelt_AWSFargate.pdf
 
 ---
 
@@ -207,3 +243,5 @@ AWS WAFでは、
 ができる。
 
 https://www.slideshare.net/AmazonWebServicesJapan/20171122-aws-blackbeltawswafowasptop10
+
+以上
