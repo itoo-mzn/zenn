@@ -181,6 +181,32 @@ CodeDeploy があなたの EC2 インスタンス（EC2とは限らないが）�
 ---
 
 
+# Docker
+https://d1.awsstatic.com/webinars/jp/pdf/services/202109_AWS_Black_Belt_Container142_Docker.pdf
+
+## Docker のデータ管理
+- デフォルトでは、コンテナ内で作成されたすべてのファイルは、書き込み可能な*コンテナレイヤー*に保存される。コンテナレイヤーは、コンテナの停⽌と共に無くなる。
+- **Dockerボリューム**を使うことでデータの永続化が可能。
+
+### Dockerボリューム
+- **bind**マウント
+  ホストの任意のディレクトリをマウント可能。
+  （例: ホスト上のファイルを参照、依存させる場合）
+- **volume** (推奨)
+  ホスト（マシン）側のDockerの管理領域配下にディレクトリが⽣成される。( Linuxの場合 `/var/lib/docker/volumes/` )
+  複数のコンテナ間のデータ共有も可能。
+- tmpfs マウント
+  メモリ領域を使⽤、データの*永続化は出来ない*。
+  （例: 秘密情報など⼀時的な展開領域、⾼いIO処理）
+- named pipes
+  コンテナからDocker Engineにアクセスする時に使⽤。(Windowsのみ)
+
+#### docker-compose.ymlでのvolume部分の書き方（抜粋）
+```
+volumes:
+  - ./host_dir:/container_volume_dir
+```
+
 # ECS
 https://qiita.com/NewGyu/items/9597ed2eda763bd504d7
 https://nishinatoshiharu.com/ecs-codedeploy/
