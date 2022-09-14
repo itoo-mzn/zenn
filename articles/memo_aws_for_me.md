@@ -213,6 +213,23 @@ https://qiita.com/NewGyu/items/9597ed2eda763bd504d7
 https://nishinatoshiharu.com/ecs-codedeploy/
 
 
+## Fargate
+
+### Fargate のメリット
+Fargate利用により以下全てをAWS側にアウトソースできる。
+- EC2 インスタンスのプロビジョニングや管理
+  - 脆弱性対応のためのパッチ当てや OS アップグレード
+  - EC2 インスタンス上で動くエージェント類のアップグレード
+  - クラスタ内の EC2 インスタンス群それぞれの上で動くエージェント類やソフトウェアバージョンの整合性維持
+  などなど…
+- 状態異常が発生した EC2 インスタンスの再起動や入れ替え
+
+https://d1.awsstatic.com/webinars/jp/pdf/services/202108_AWS_Black_Belt_Containers201-ECS.pdf
+https://d1.awsstatic.com/webinars/jp/pdf/services/202108_AWS_Black_Belt_Containers202-ECSFargate.pdf
+https://d1.awsstatic.com/webinars/jp/pdf/services/20190925_AWS-BlackBelt_AWSFargate.pdf
+
+
+
 ---
 
 
