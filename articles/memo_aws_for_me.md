@@ -47,7 +47,8 @@ IAMユーザーの集合。
 
 ## IAMロール
 **AWSリソースの操作権限を付与**するための仕組み。
-AWSサービスやアプリケーション等のエンティティに対して、「**一時的なセキュリティ認証情報**」を渡す。
+**AWSサービスやアプリケーション等のエンティティに対して**、「**一時的なセキュリティ認証情報**」を渡す。
+簡単に言うと、あるAWSサービス（リソース）に対してアタッチしたいIAMポリシーを1つにまとめたもの（集合、塊）。
 
 :::message
 #### 一時的なセキュリティ認証情報 (temporary security credentials)
@@ -57,8 +58,8 @@ AWSサービスやアプリケーション等のエンティティに対して�
 一時的なセキュリティ認証情報を生成するサービス。
 
 ##### AssumeRole 
-STSで利用できるAPI Actionの1つ。
-既存のIAMユーザーの認証情報を用いて、IAMロールの「一時的なセキュリティ認証情報」を取得する。
+**STSで利用できるAPI Actionの1つ**。
+**既存のIAMユーザーの認証情報を用いて、IAMロールの「一時的なセキュリティ認証情報」を取得する**。
 :::
 
 https://d1.awsstatic.com/webinars/jp/pdf/services/20190129_AWS-BlackBelt_IAM_Part1.pdf
@@ -153,6 +154,9 @@ CodeBuildはソースコードを受け取り、それを仕様書（buildspec.y
 # CodeDeploy
 ## AppSpec file
 CodeDeploy があなたの EC2 インスタンス（EC2とは限らないが）に対して、Amazon S3 または GitHub にあるアプリケーションのリビジョンをどのようにインストールするか決定する、YAML フォーマットのファイルです。また同様に、デプロイの様々なライフサイクルイベントをフックして処理を実行するか決定します。
+
+
+https://d1.awsstatic.com/webinars/jp/pdf/services/20201111_BlackBelt_AWS%20CodeStar_AWS_CodePipeline.pdf
 
 
 ---
