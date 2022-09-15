@@ -234,6 +234,34 @@ https://d1.awsstatic.com/webinars/jp/pdf/services/20190925_AWS-BlackBelt_AWSFarg
 
 
 
+## ECSのログ
+
+### ログの目的
+- 保管
+  障害時の調査に活用する。
+- 分析
+  分析レポートの作成に活用する。
+- 監視
+  異常を検知してアラートを投げるのに活用する。
+  サービスの状態をダッシュボードで確認するのに活用する。
+
+### ECSのログドライバー
+ECSのログドライバーには、下記が使用できる。
+- awslogs
+- fluentd
+- gelf
+- json-file
+- journald
+- logentries
+- splunk
+- syslog
+- awsfirelens
+
+#### awslogs
+1つのタスクにつき、CloudWatchLogsの1つのログストリームに ログ（STDOUT）を保存できる。
+
+https://d1.awsstatic.com/webinars/jp/pdf/services/202109_AWS_Black_Belt-Container246_log.pdf
+
 ---
 
 
