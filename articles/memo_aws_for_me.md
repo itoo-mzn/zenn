@@ -262,6 +262,30 @@ ECSのログドライバーには、下記が使用できる。
 
 https://d1.awsstatic.com/webinars/jp/pdf/services/202109_AWS_Black_Belt-Container246_log.pdf
 
+
+# AWS Firelens
+
+https://zenn.dev/knjname/articles/2dc6c5ca520006e1e0ee
+https://engineering.dena.com/blog/2022/08/firelens/
+https://dev.classmethod.jp/articles/ecs-firelens/
+https://dev.classmethod.jp/articles/terraform-ecs-fargate-firelens-log-output/
+https://dev.classmethod.jp/articles/fargate-fiirelens-fluentbit/
+https://qiita.com/charon/items/727251f8ce1412a864ab
+
+# Kinesis
+ストリームデータを収集・処理するためのフルマネージドサービス。
+種類は下記。
+- Amazon Kinesis Streams
+  ストリームデータを処理するためのアプリケーションを独自に構築。
+- Amazon Kinesis **Firehose**
+  ストリームデータを**S3, Redshift, ESへ**簡単に配信。
+- Amazon Kinesis Analytics
+  ストリームデータを標準的なSQLクエリでリアルタイムに分析。
+
+
+https://d1.awsstatic.com/webinars/jp/pdf/services/20180110_AWS-BlackBelt-Kinesis.pdf
+
+
 ---
 
 
