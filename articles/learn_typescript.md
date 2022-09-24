@@ -465,5 +465,48 @@ let box: Box = { width: 1080, height: 720 };
 ```
 複数のオブジェクトに同じ型を適用する場合は、型エイリアスを使ったほうが良い。
 
+オブジェクトにおいても型推論は行われる。
+```ts
+let box = { width: 1080, height: 720 };
+// こう定義すると、{ width: number, height: number }と型推論される。
+```
+
+#### メソッドの型注釈
+:::message alert
+関数のことを学んでから、ここの内容は戻ってきて学ぶこと。
+https://typescriptbook.jp/reference/values-types-variables/object/type-annotation-of-objects#%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%81%AE%E5%9E%8B%E6%B3%A8%E9%87%88
+:::
+
+### < readonlyプロパティ >
+オブジェクトのプロパティの前に`readonly`を付けることで、それを**読み取り専用**にすることができる。
+```ts
+let object: { 
+  readonly key1: string; // 読み取り専用
+  key2: string;
+};
+```
+ただし、オブジェクトが入れ子になっている場合は、子のオブジェクトまで再帰的にreadonlyになる訳ではない。そういうことがしたい場合、子や孫のプロパティすべてにreadonlyを付ける必要がある。
+
+:::message
+#### constとreadonlyの違い
+**constが禁止するのは、変数への代入**。
+しかし、変数の中身がオブジェクトの場合、当然そのオブジェクト自体を変更（= 変数への代入）することはできないが、そのオブジェクトの*プロパティを変更することはできる*。
+```ts:const
+const x = { a: 1 };
+x = { a: 2 }; // これはできない（変数への代入）
+x.a = 3; // これはできる（プロパティへの代入）
+```
+**readonlyが禁止するのは、プロパティへの代入**。
+しかし、変数自体は変更できる。
+```ts:readonly
+let x: { readonly a: number } = { a: 1 };
+x = { a: 2 }; // これはできる（変数への代入）
+x.a = 3; // これはできない（プロパティへの代入）
+```
+`const`と`readonly`を組み合わせると、変数自体とオブジェクトのプロパティの両方を変更不能なオブジェクトを作ることができる。
+:::
+
+
+
 # 参考情報
 https://typescriptbook.jp/
