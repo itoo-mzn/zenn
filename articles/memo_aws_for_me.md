@@ -64,6 +64,7 @@ IAMユーザーの集合。
 
 https://d1.awsstatic.com/webinars/jp/pdf/services/20190129_AWS-BlackBelt_IAM_Part1.pdf
 https://d1.awsstatic.com/webinars/jp/pdf/services/20190130_AWS-BlackBelt_IAM_Part2.pdf
+https://qiita.com/Batchi/items/a2dde3d2df27568cc078
 
 
 ---
@@ -275,15 +276,43 @@ https://qiita.com/charon/items/727251f8ce1412a864ab
 # Kinesis
 ストリームデータを収集・処理するためのフルマネージドサービス。
 種類は下記。
-- Amazon Kinesis Streams
+- Amazon Kinesis Data Streams
   ストリームデータを処理するためのアプリケーションを独自に構築。
-- Amazon Kinesis **Firehose**
+- Amazon Kinesis Data **Firehose**
   ストリームデータを**S3, Redshift, ESへ**簡単に配信。
-- Amazon Kinesis Analytics
+- Amazon Kinesis Data Analytics
   ストリームデータを標準的なSQLクエリでリアルタイムに分析。
 
 
 https://d1.awsstatic.com/webinars/jp/pdf/services/20180110_AWS-BlackBelt-Kinesis.pdf
+
+:::message
+- **Kinesis**とは
+  ストリームデータを収集・処理するためのAWSフルマネージドサービス。
+  - **Streams**とは
+    Kinesis Data Streams。
+    ストリームデータを**受ける**AWSサービス。
+  - **Firehose**とは
+    Kinesis Data Firehose。
+    ストリームデータをS3やRedshiftなどに**送る**(流す)AWSサービス。
+- **Firelens**とは
+  AWS Firelens。
+  **ECSで出力するログファイルを指定した場所に送信し、保存**してくれるサービス。
+  AWS FireLensから下記のサービスに転送することができる。
+    - Amazon CloudWatch Logs
+    - Amazon Kinesis Data Streams
+    - Amazon Kinesis Data Firehose
+    - 別のFluentdやFluent Bit
+  
+  **FireLensそのものは**、Amazon ECSのコンテナログを同タスク定義内の**サイドカーとして配置されたFluentdまたはFluent Bitに転送することができる仕組み**。（つまり、ログ収集などの実働を行うのはFluentd or FluentBit。）
+- Fluentd、FluentBitとは
+  - **Fluentd**
+    データログ収集ツール。
+  - **Fluent Bit**
+    Fluentd傘下で開発された軽量なログルータであり、Fluentdのアーキテクチャを踏まえて構築されています。
+    （Fluentdとは同じ階層にあるもの。）
+    https://docs.fluentbit.io/manual/about/fluentd-and-fluent-bit
+:::
 
 
 ---
