@@ -553,5 +553,44 @@ let object: Record<string, number>;
 
 プリミティブ型も代入できてしまうため、`Object`型は使うべきでない。オブジェクト型ならなんでも代入可にしたい場合は、代わりに`object`型を検討すべき。
 
+### < オブジェクトの分割代入 >
+プロパティ名と同じ名前で変数を定義する場合、下記のように書ける。
+```ts
+const item = { price: 100, amount: 5 };
+
+// < 普通にプロパティを参照して、それを変数に格納する方法 >
+const price = item.price;
+const amount = item.amount;
+
+// < 分割代入する方法 >
+const { price, amount } = item;
+
+// いずれの方法でも、変数priceに100が、変数amountに5が入る。
+```
+
+新たに定義する変数に別名を付けるには、`:`の後に指定する。
+また、デフォルト値は`=`のあとに指定する。
+```ts
+const item = { price: 100, amount: 5 };
+
+const { price: item_price, amount: item_amount = 3 } = item;
+console.log(item_price); // 100
+```
+
+### < オプショナルチェーン >
+オプショナルチェーン`?`を付けることで、存在しないプロパティにアクセスしてもエラーを避けることができる。存在しない場合は`undefined`が返る。
+
+また、NULL合体演算子`??`と組み合わせると、オプショナルチェーンで`undefined`になった場合のデフォルト値が設定できる。
+```ts
+let a: undefined | { title: string };
+const b = a?.title;
+console.log(b); // undefined
+
+// < デフォルト値を設定した場合 >
+const b = a?.title ?? "デフォルト";
+console.log(b); // "デフォルト"
+```
+
+
 # 参考情報
 https://typescriptbook.jp/
