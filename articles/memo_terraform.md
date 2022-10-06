@@ -33,3 +33,30 @@ published: false
     │   └── variables.tf
 （以下略）
 ```
+
+- terraform workspace list
+- terraform fmt
+ファイルをフォーマット
+- terraform init
+  - -migrate-state
+  - -upgrade
+- terraform plan
+- terraform apply
+  リソースの作成・変更を実施。（tfstateファイルが更新される）
+  - -auto-approve	作成予定のリソース表示や実行確認 yes を省略する
+
+https://qiita.com/HirokiSakonju/items/79d4d950b0732f757eef
+https://www.terraform.io/cli/commands/init
+https://qiita.com/takkii1010/items/082c0854fd41bc0b26c3
+
+
+
+「リソースを作るか作らないか」を条件によって分岐したいとき、下記のようにcountプロパティで制御できる。
+```
+resource "aws_ecs_service" "hoge" {
+  count = is_require ? 1 : 0
+}
+```
+
+
+
