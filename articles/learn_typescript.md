@@ -591,6 +591,97 @@ const b = a?.title ?? "デフォルト";
 console.log(b); // "デフォルト"
 ```
 
+---
+
+# プログラム問題でよく使うもの
+
+## 標準入力を受け取る
+```js:javascript
+process.stdin.resume();
+process.stdin.setEncoding('utf8');
+
+var lines = [];
+var reader = require('readline').createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+reader.on('line', (line) => {
+  lines.push(line);
+});
+reader.on('close', () => {
+  // ここにロジックを書く。(標準入力を受け取った後に行うことを記述する場所)
+  console.log(lines); // 標準入力で受け取った値が配列で格納されている
+}
+```
+
+### 標準入力を文字列→整数に変換する
+(例 : `5 2 4` → `[5, 2, 4]`)
+```js
+input = lines[0].split(' ').map(str => (parseInt(str, 10)) );
+```
+
+## 条件分岐
+```js
+// if
+if (a % b === 0) {
+  // ...
+}
+
+// if文は1行にもできる
+if (a % b === 0) { console.log("hoge"); }
+
+// unless
+// jsにunlessが無いので、条件を否定したものをifで判定
+if (!(a % b === 0)) {
+  // ...
+}
+```
+
+## ループ
+forはできるだけ使わないようにする。
+https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
+```js:filter
+// 数値が並ぶ配列の中で、後ろの数値のほうが大きい要素(整列していない数値)のみを取得
+const not_sorted_numbers = num_array.filter((num, index) => num > num_array[index+1]);
+```
+
+```js:for(仕方ない場合)
+for(let count = 0; count < peopleSum; count++) {
+  // ...
+}
+```
+
+## 配列の中の数値を合計
+```js
+const sum = nums_array.reduce( (sum, i) => sum + i, 0);
+```
+
+## 配列の中の数値の最大値、最小値を取得
+```js
+Math.min(...array)
+```
+
+:::message
+#### スプレッド構文 (`...`)
+https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Operators/Spread_syntax
+:::
+
+## ソート
+javascriptの`sort()`は、()内で関数を実行してその返り値が0より大きいか/小さいか/等しいかによって並べ替えをコントロールできる。
+https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+
+```js
+// < 降順(大→小)にソートする例 >
+numbers_array.sort(function(first, second){
+  if (first > second) {
+    return -1; // 次の要素(second)より大きいfirstは、secondの前に整列
+  } else if (first < second) {
+    return 1; // secondより小さいfirstは、secondの後ろに整列
+  } else {
+    return 0; // 順序はそのまま
+  }
+});
+```
 
 # 参考情報
 https://typescriptbook.jp/
