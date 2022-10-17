@@ -617,8 +617,10 @@ reader.on('close', () => {
 ### 標準入力を文字列→整数に変換する
 (例 : `5 2 4` → `[5, 2, 4]`)
 ```js
-input = lines[0].split(' ').map(str => (parseInt(str, 10)) );
+const input = lines[0].split(' ').map(str => (parseInt(str, 10)) );
 ```
+
+50 * 80 - 1000 - 1000*3
 
 ## 条件分岐
 ```js
@@ -640,6 +642,7 @@ if (!(a % b === 0)) {
 ## ループ
 forはできるだけ使わないようにする。
 https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
+
 ```js:filter
 // 数値が並ぶ配列の中で、後ろの数値のほうが大きい要素(整列していない数値)のみを取得
 const not_sorted_numbers = num_array.filter((num, index) => num > num_array[index+1]);
@@ -663,6 +666,8 @@ Math.min(...array)
 
 :::message
 #### スプレッド構文 (`...`)
+配列や文字列などを展開することができる。
+→ 配列では渡せないメソッドの引数に`...array`とかで渡せるようになる。
 https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Operators/Spread_syntax
 :::
 
