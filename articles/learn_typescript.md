@@ -591,6 +591,23 @@ const b = a?.title ?? "デフォルト";
 console.log(b); // "デフォルト"
 ```
 
+### <オブジェクトをループする方法>
+```ts:Object.entries + for of文
+type SampleObject = { [key: string]: number };
+const object: SampleObject = { a: 1, b: 2 };
+
+// Object.entries + for of文
+for (const [key, value] of Object.entries(object)) {
+  console.log(key, value);
+}
+```
+
+keyだけループしたい場合は`Object.keys`、値だけの場合は`Object.values`で可能。
+
+:::message alert
+for-in文ではhasOwnPropertyを使わないといけないので、for-of文が良いかと思う。
+:::
+
 ---
 
 # プログラム問題でよく使うもの
