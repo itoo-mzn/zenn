@@ -608,6 +608,30 @@ keyだけループしたい場合は`Object.keys`、値だけの場合は`Object
 for-in文ではhasOwnPropertyを使わないといけないので、for-of文が良いかと思う。
 :::
 
+## 配列
+- 配列はオブジェクトなので、同じ中身でも`===`でtrueにならない。
+- 100個も要素がないstringが格納されている配列に`array[100]`とする 等、存在しない配列の要素にアクセスすると`undefined`が返ってくるが、それはTypescriptでは発見できない。
+  これを注意してもらうためにはコンパイラーオプションの`noUncheckedIndexedAccess`を有効にする。（推奨）
+
+### < 型注釈 >
+配列の型注釈は、下記2パターンどっちでも良い。（プロジェクト内で統一しておくこと。）
+```ts
+let array1: number[];
+array1 = [1, 2, 3];
+
+let array2: Array<number>;
+array2 = [1, 2, 3];
+```
+
+読み取り専用の配列は下記。
+```ts:読み取り専用の配列
+const nums1: readonly number[] = [1, 2, 3];
+
+const nums2: ReadonlyArray<number> = [1, 2, 3];
+```
+
+
+
 ---
 
 # プログラム問題でよく使うもの
