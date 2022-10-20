@@ -630,9 +630,28 @@ const nums1: readonly number[] = [1, 2, 3];
 const nums2: ReadonlyArray<number> = [1, 2, 3];
 ```
 
+### < 分割代入 >
+```ts
+const oneToFive = [1, 2, 3, 4, 5];
+
+const [one, two, three] = oneToFive; // 1, 2, 3
+
+// 途中から取得するにはコンマを入れる
+const [, , , four, five] = oneToFive; // 4, 5
+
+// 「残り」を取得するには、残余パターン[...]を使う
+const [one, ...other] = oneToFive; // 1, [2, 3, 4, 5]
+```
+```ts:ネストした配列から取得
+const nestArray = [[1, 2], [3, 4]];
+const [[one, two], [three]] = nestArray;
+```
+
 
 
 ---
+
+:::details プログラム問題でよく使うもの
 
 # プログラム問題でよく使うもの
 
@@ -705,13 +724,6 @@ const sum = nums_array.reduce( (sum, i) => sum + i, 0);
 Math.min(...array)
 ```
 
-:::message
-#### スプレッド構文 (`...`)
-配列や文字列などを展開することができる。
-→ 配列では渡せないメソッドの引数に`...array`とかで渡せるようになる。
-https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Operators/Spread_syntax
-:::
-
 ## ソート
 javascriptの`sort()`は、()内で関数を実行してその返り値が0より大きいか/小さいか/等しいかによって並べ替えをコントロールできる。
 https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
@@ -728,6 +740,8 @@ numbers_array.sort(function(first, second){
   }
 });
 ```
+
+:::
 
 # 参考情報
 https://typescriptbook.jp/
