@@ -744,6 +744,56 @@ for (const value of array) {
   ```
 
 
+## タブル
+TypeScriptには**複数の型の値を保持できる型**があり、タプル型という。（配列型とは異なりはするが酷似しており（おそらく）同じように使える。）
+```ts
+const array: number[] = [1, 2, 3]; // 配列
+const tuple: [string, number] = ["hoge", 1]; // タプル
+```
+
+
+## 列挙型 (enum)
+enumはJavaScriptには無く、TypeScript独自のもの。
+```ts:列挙型
+enum UserType {
+  student,
+  school,
+  corporation,
+}
+
+console.log(UserType.student); // 0
+console.log(UserType.school); // 1
+console.log(UserType.corporation); // 2
+```
+数値列挙型 (numeric enum)もある。メンバーに値を代入でき、それに続くメンバーはそれにも代入をしない限り連番になる。
+```ts:数値列挙型
+enum UserType {
+  student = 10,
+  school,
+  corporation,
+}
+
+console.log(UserType.student); // 10
+console.log(UserType.school); // 11
+console.log(UserType.corporation); // 12
+
+console.log(UserType[10]); // student
+console.log(UserType[11]); // school
+```
+文字列列挙型 (string enum)もある。
+```ts
+enum UserType {
+  student = "学生",
+  school = "学校",
+  corporation = "企業",
+}
+
+console.log(UserType.student); // 学生
+console.log(UserType.school); // 学校
+console.log(UserType.corporation); // 企業
+```
+
+https://typescriptbook.jp/reference/values-types-variables/enum/enum-problems-and-alternatives-to-enums
 
 ---
 
