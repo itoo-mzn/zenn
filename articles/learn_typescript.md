@@ -804,7 +804,19 @@ https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
 const not_sorted_numbers = num_array.filter((num, index) => num > num_array[index+1]);
 ```
 
-```js:for(仕方ない場合)
+```js:for of文
+for (const result of results) {
+  // ...
+}
+
+// インデックスも欲しい場合
+for (const [index, result] of results.entries()) {
+  // ...
+}
+```
+
+
+```js:for文 (仕方ない場合)
 for(let count = 0; count < peopleSum; count++) {
   // ...
 }
