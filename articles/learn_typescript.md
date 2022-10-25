@@ -795,6 +795,60 @@ console.log(UserType.corporation); // 企業
 
 https://typescriptbook.jp/reference/values-types-variables/enum/enum-problems-and-alternatives-to-enums
 
+
+## ユニオン型
+*いずれか* を表す型。
+```ts
+type numberOrString: number | string;
+
+type numberOrStringList: (number | string)[]; // 配列の場合
+```
+
+ユニオン型の中身を判定するには、if文でtypeofをチェックする方法がある。
+```ts
+if (typeof numberOrString === "string") {
+  // ↑のチェックが無いとエラーになり代入できない
+  const comment: string = numberOrString;
+}
+```
+
+### < 判別可能なユニオン型 (discriminated union) >
+ディスクリミネータという、オブジェクト型を判別するためのしるしを持ったユニオン型のこと。
+ある型でしか持たないプロパティがある等、通常のユニオン型では実装が面倒な場面で有効。
+```ts
+type UploadStatus = InProgress | Success | Failure;
+// typeプロパティ : ディスクリミネータ
+type InProgress = { type: "InProgress"; progress: number};
+type Success = { type: "Success" };
+type Failure = { type: "Failure"; error: Error };
+
+function printStatus(status: UploadStatus) {
+  switch (status.type) {
+    case "InProgress":
+      console.log(`アップロード中:${status.progress}`);
+      break;
+    case "Success":
+      console.log("アップロード成功");
+      break;
+    case "Failure":
+      console.log(`アップロード失敗:${status.error.message}`);
+      break;
+    default:
+      console.log("不正なステータス", status);
+  }
+}
+```
+
+:::message
+#### in演算子
+オブジェクトの中に指定したプロパティが存在するかどうか判定する。
+```ts
+const car = { make: 'Honda', model: 'Accord', year: 1998 };
+console.log('make' in car); // true
+```
+:::
+
+
 ---
 
 :::details プログラム問題でよく使うもの
