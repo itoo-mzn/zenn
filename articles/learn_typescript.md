@@ -328,7 +328,7 @@ JavaScriptのデータ型は、「プリミティブ型」と「オブジェク�
       (5).toString(); // OK
       ```
     - JavaScriptの数値型には、`NaN`と`Infinity`という特殊な値がある。
-      - `NaN` : 処理の結果、数値にならない場合に`NaN`を返す。`NaN`かどうかは、`Number.isNaN()`でしか判定できない。（等号は常にfalseになる。）
+      - `NaN (Not-A-Number)` : 処理の結果、数値にならない場合に`NaN`を返す。つまり、数値ではない。`NaN`かどうかは、`Number.isNaN()`でしか判定できない。（等号は常にfalseになる。）
       - `Infinity` : 無限大を表す。
     :::message alert
     #### JavaScriptに限らず、小数計算の誤差は生じる
@@ -848,6 +848,83 @@ console.log('make' in car); // true
 ```
 :::
 
+
+## インターセクション型
+ユニオン型（**いずれか**）とは逆で、**いずれも**を示す。
+インターセクション型はオブジェクト同士を`&`で列挙する。
+```ts
+type XY = {
+  x: number;
+  y: number;
+}
+
+type Z = {
+  z: number;
+}
+
+// インターセクション型
+type XYZ = XY & Z;
+
+const p: XYZ = {
+  x: 0,
+  y: 1,
+  z: 2
+}
+```
+
+
+## 型エイリアス
+型に別名をつけたものを指す。`type`で定義する。
+```ts
+type StringOrNumber = string | number;
+```
+
+
+## 型アサーション
+コンパイラによる型推論でなく、自分でコンパイラに型を伝える方法。
+*型アサーションよりも型推論のほうが安全なため、どうしようもないとき以外は使わないこと。*
+
+as構文とアングルブラケット構文があるが、アングルブラケット構文はJSX（HTML風に書けるJSの拡張構文）と見分けがつかない場合があるため、as構文のほうがいい。
+```ts
+const value: string | number = "this is string";
+// as構文
+const strLength: number = (value as string).length;
+// アングルブラケット構文
+const strLength: number = (<string>value).length;
+```
+
+## constアサーション
+オブジェクトリテラルの末尾に`as const`を記述すると、`readonly`なオブジェクトになる。
+（`readonly`はそのプロパティ1つのみ。`as const`はオブジェクトのすべてのプロパティが対象。）
+```ts
+const user = {
+  name: "山田",
+  age: 25
+} as const;
+```
+
+## typeof演算子
+値の型を調べることができる。
+```ts
+console.log( typeof "hoge" ); // string
+console.log( typeof undefined ); // undefined
+console.log( typeof Symbol() ); // symbol
+console.log( typeof { a: 1, b: 2 } ); // object
+console.log( typeof (() => {}) ); // function
+
+console.log( typeof null ); // object !!
+
+console.log( typeof [1, 2, 3] ); // object !!
+console.log( Array.isArray([1, 2, 3]) ); // true
+```
+
+:::message alert
+#### null はobject
+`typeof null`は`object`なので、「オブジェクトかどうか」判定する際には、その値が「nullでないこと」も判定する必要がある。
+
+#### 配列[] はobject
+`typeof []`も`object`なので、配列かどうかを判定するには、専用のメソッド`Array.isArray()`を使う。
+:::
 
 ---
 
