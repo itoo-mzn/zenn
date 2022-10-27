@@ -426,6 +426,8 @@ str.toUpperCase(); // メソッド呼び出し
 プリミティブ型の代わりに、ラッパーオブジェクト型を型注釈に使う利点は無いので、**型注釈にはプリミティブ型を使うこと**。
 :::
 
+---
+
 ## オブジェクト
 プリミティブ型以外の全てはオブジェクト。（クラス、インスタンス、配列、正規表現...）
 
@@ -608,6 +610,8 @@ keyだけループしたい場合は`Object.keys`、値だけの場合は`Object
 for-in文ではhasOwnPropertyを使わないといけないので、for-of文が良いかと思う。
 :::
 
+---
+
 ## 配列
 - 配列はオブジェクトなので、同じ中身でも`===`でtrueにならない。
 - 100個も要素がないstringが格納されている配列に`array[100]`とする 等、存在しない配列の要素にアクセスすると`undefined`が返ってくるが、それはTypescriptでは発見できない。
@@ -743,6 +747,7 @@ for (const value of array) {
   Math.min(...array);
   ```
 
+---
 
 ## タブル
 TypeScriptには**複数の型の値を保持できる型**があり、タプル型という。（配列型とは異なりはするが酷似しており（おそらく）同じように使える。）
@@ -926,6 +931,55 @@ console.log( Array.isArray([1, 2, 3]) ); // true
 `typeof []`も`object`なので、配列かどうかを判定するには、専用のメソッド`Array.isArray()`を使う。
 :::
 
+
+## 等価演算子
+**基本的には厳密等価演算子`===`を使うこと**。
+`null` or `undefined`であることを確認したい場合のみ、`== null`を使う。
+
+```ts
+// @ts-ignore
+console.log( 0 === "0" ); // false
+// @ts-ignore
+console.log( 0 == "0" ); // castしてから判定するので、true
+```
+
+```ts:== null
+const x = null;
+console.log( x == null ); // true
+
+const y = undefined;
+console.log( y == null ); // true。undefinedも弾きたいときに有用
+console.log( y === null ); // false
+```
+
+### < NaNの判定 >
+`Number.isNaN()`で判定すること。
+
+### < object型、symbol型の判定 >
+同じ値であっても、同じ変数を参照しない限り`false`となる。
+```ts
+// @ts-ignore
+console.log({ age: 18 } == { age: 18 }); // 異なる参照なので、false
+
+const obj1 = { age: 18 };
+const obj2 = { age: 18 };
+const obj3 = obj1;
+console.log(obj1 === obj1); // 同じ参照なので、true
+console.log(obj1 === obj2); // 異なる参照なので、false
+console.log(obj1 === obj3); // 同じ参照なので、true
+```
+
+:::message
+比較は、**参照**に対して行われる。
+:::
+
+
+## truthyな値、falsyな値
+if文などでの判定に使えるのはboolean型だけではなく、**true, falseのような値**を使える。
+**falsyな値は限りられていて、それ以外がtruthy**。なので下記のfalsyだけ覚えればいい。
+- falsy : `false`, `0`, `NaN`, `""`, `null`, `undefined`
+
+---
 ---
 
 :::details プログラム問題でよく使うもの
