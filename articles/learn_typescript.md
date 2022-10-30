@@ -364,8 +364,8 @@ JavaScriptのデータ型は、「プリミティブ型」と「オブジェク�
       5..toString(); // OK
       (5).toString(); // OK
       ```
-    - JavaScriptの数値型には、`NaN`と`Infinity`という特殊な値がある。
-      - `NaN (Not-A-Number)` : 処理の結果、数値にならない場合に`NaN`を返す。つまり、数値ではない。`NaN`かどうかは、`Number.isNaN()`でしか判定できない。（等号は常にfalseになる。）
+    - JavaScriptの**数値型には、`NaN`と`Infinity`という特殊な値がある**。
+      - `NaN (Not-A-Number)` : 処理の結果、数値にならない場合に`NaN`を返す。つまり、数値ではない。**`NaN`かどうかは、`Number.isNaN()`でしか判定できない**。（等号は常にfalseになる。）
       - `Infinity` : 無限大を表す。
     :::message alert
     #### JavaScriptに限らず、小数計算の誤差は生じる
@@ -386,13 +386,16 @@ JavaScriptのデータ型は、「プリミティブ型」と「オブジェク�
       :::
 
 4. undefined型 `undefined`
-    - 値が未定義であることを表す型。
-      変数に値がセットされていないとき、戻り値が無い関数、オブジェクトに存在しないプロパティにアクセスしたとき、配列に存在しないインデックスでアクセスしたときなどに現れる。
-    - TypeScriptで戻り値なしを型注釈で表現する場合は、`undefined`でなく`void`を使う。
+    - 値が**未定義**であることを表す型。
+      下記の状況で現れる。
+      - 変数に値がセットされていないとき
+      - オブジェクトに存在しないプロパティにアクセスしたとき
+      - 配列に存在しないインデックスでアクセスしたとき　等
+    - TypeScriptで**戻り値なしを型注釈で表現する場合は、`undefined`でなく`void`を使う**。
 
 5. null型 `null`
     - 値がないことを表す型。
-    - 値の型を調べる`typeof`演算子は、`null`を渡すと`"object"`が返るので要注意。
+    - **`typeof`演算子に`null`を渡すと`"object"`が返るので要注意**。
     :::message
     #### undefinedとnullの違い
     - undefinedは「値が代入されていないため、値がない」。
@@ -435,8 +438,21 @@ JavaScriptのデータ型は、「プリミティブ型」と「オブジェク�
   let y: true = true; // trueしか代入できない変数に、trueを代入している
   let z: "foo" = "foo"; // 文字列fooしか代入できない変数に、fooを代入している
   ```
-- any型
+- **`any`型**
   **どんな型でも代入を許す**型。
+  つまり、**型のチェックを放棄**した型。
+
+- **`unknown`型**
+  **型が何か分からないときに使う**型。
+  「型安全なany型」と言われる。
+  **unknownの値はそのままでは使えない。型ガードで型を絞り込むと、それ以降はその型として扱える**。
+
+| 項目 | any型 | unknnown型 |
+| - | - | - |
+| その型への代入 | any型へはどんな値でも代入できる | unknnown型へはどんな値でも代入できる |
+| 別の型への代入 | 別の型に代入できる | 別の型に代入できない |
+| プロパティへのアクセス<br>メソッド呼び出し | できる | できない |
+
 
 :::message
 #### ボックス化・ラッパーオブジェクト
@@ -1051,6 +1067,103 @@ if (!(a % b === 0)) {
 ```ts:三項演算子
 const result = value === 0 ? "OK" : "NG";
 ```
+
+### < switch >
+**各分岐に`break;`が必要**なので書き忘れに要注意。
+```ts
+switch (lang) {
+  case "js":
+  case "ts": // case は連続して記述可能
+    console.log("フロント");
+    break;
+  case "ruby":
+  case "java":
+    console.log("サーバサイド");
+    break;
+  default:
+    console.log("デフォ");
+    break;
+}
+```
+
+case節の中で変数を定義したい場合、複数のcaseで同じ名前の変数を定義するとエラーになる。
+caseを中カッコ`{ }`で囲むと、case毎に変数スコープが作れるので定義できる。
+```ts:中カッコあり
+switch (lang) {
+  case "js": {
+    const val = "JS"; // 
+    break;
+  }
+  case "ts": {
+    const val = "TS"; // 同じ名前の変数
+    break;
+  }
+}
+```
+
+### < 例外処理 >
+```ts
+try {
+
+  if (word === "何かの処理に失敗") {
+    throw new Error("これは例外");
+  }
+  console.log("通常は行われる処理");
+
+} catch (e: any) {
+
+  // エラーの種類で例外処理を分ける場合はこんな感じでif文で分岐する
+  if (e instanceof TypeError) {
+    // TypeError に対する処理
+  } else if (e instanceof RangeError) {
+    // RangeError に対する処理
+  } else {
+    // ...
+  }
+
+} finally {
+  // 例外が発生してもしなくても、必ず実行される
+}
+```
+
+#### never型
+「値を持たない」という意味の特別な型。
+
+必ず例外を発生させる関数の戻り値は絶対に取れないため、never型になる。
+```ts
+function throwError(): never {
+  throw new Error();
+}
+```
+
+### < 制御フロー分析 >
+コードが実行されるタイミングでの型の可能性を判断してくれるTypeScriptの機能。
+
+下記のコードの最後の`console.log`が実行できるのは、制御フローにより`val`は`number`であるはずと判断されているため。
+```ts
+function returnNumber(val: string | number) {
+  if (typeof val === "string") { // 型ガード
+    console.log(val.length);
+    return; // この早期リターンが無いと、下のコードはエラーになる
+  }
+  
+  console.log(val.toString); // numberの場合しか実行できないメソッドを使用
+}
+```
+
+### < 型ガード >
+上記のコードにおける`if (typeof val === "string")`のような、型チェックのコードのこと。
+
+- **typeof**
+  指定の型かどうか。
+- **instanceof**
+  指定したクラスのインスタンスかどうか。
+- **in**
+  オブジェクトが指定したプロパティを持つかどうか。
+
+
+
+
 
 
 
