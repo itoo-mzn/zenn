@@ -1162,8 +1162,87 @@ function returnNumber(val: string | number) {
   オブジェクトが指定したプロパティを持つかどうか。
 
 
+## 関数
+- 引数の型注釈を省略すると`any`になる。
+- 戻り値の型注釈を省略すると、コンパイラがコードから型推論する。
 
+```ts:関数宣言
+function increment(num: number): number {
+  return num + 1;
+}
+```
+```ts:関数式
+const increment = function (num: number): number {
+  return num + 1;
+};
+```
+```ts:アロー関数
+// ブロック文体
+const increment = (num: number): number => {
+  return num + 1;
+};
 
+// 簡潔文体 = {}とreturnを省略 (関数内のコードが式1つだけの場合に使用可)
+const increment = (num: number): number => num + 1;
+```
+
+:::message alert
+**アロー関数は引数が1つだけの場合にカッコ`()`が省略できる**が、**その場合は引数と戻り値のどちらも型注釈を書けない**。
+```ts:アロー関数　カッコ省略
+const increment = num => { // 型注釈できない
+  return num + 1;
+};
+```
+:::
+
+### < 関数の型宣言 >
+関数の型宣言とは、関数の実装を示さずに、関数のインターフェースを定義すること。
+```ts:構文
+type 型の名前 = (引数名: 引数の型) => 戻り値の型;
+```
+
+`関数式`、`アロー関数`には使えるが、**`関数宣言`の型注釈には使えない**。
+```ts:例
+type Increment = (num: number) => number;
+
+// 関数式 に適用
+const increment: Increment = function (num: number): number {
+  return num + 1;
+};
+
+// アロー関数 に適用
+const increment: Increment = (num: number): number => num + 1;
+```
+
+関数の型宣言を使った場合、（実装側の）関数の型注釈は省略できる。（実際は省力形で書くのが一般的）
+```ts
+const increment: Increment = (num) => num + 1;
+```
+
+関数（の実装）から関数の型を宣言できる。（関数→型宣言を抽出するイメージ）
+```ts
+function increment(num: number): number {
+  return num + 1;
+}
+// typeofで関数から型宣言を抽出
+type Increment = typeof increment; // (num: number) => number
+```
+
+### < 関数の巻き上げ >
+`関数宣言`では巻き上げがあり、`関数式`には巻き上げがない。
+```ts
+hello();
+
+// 関数宣言 : 呼び出し時点では未定義だが、巻き上げがあるため実行できる
+function hello() {
+  console.log("hello world!");
+}
+
+// 関数式 : 呼び出し時点では未定義なので、実行できない
+const hello = function () {
+  console.log("hello world!");
+};
+```
 
 
 
