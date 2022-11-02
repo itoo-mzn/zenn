@@ -1333,6 +1333,53 @@ function func(...params: number[]) {
 func(1, 2, 3);
 ```
 
+### < this引数 >
+*TODO: よく分からなかったので後回し*。
+https://typescriptbook.jp/reference/functions/this-parameters
+
+### < 分割代入引数 >
+```ts:オブジェクトの分割代入引数
+function foo({ a, b }: { a: number; b: number }) {
+  console.log(a, b);
+}
+foo({ a: 1, b: 2 }); // 1 2
+```
+```ts:配列の分割代入引数
+function bar([a, b]: [number, number]) {
+  console.log(a, b);
+}
+bar([1, 2]); // 1 2
+```
+```ts:オプション引数+デフォルト引数を使う場合
+function foo({ a = 0, b = 0 }: { a?: number, b?: number } = {}) {
+  console.log(a, b);
+}
+foo(); // 0 0
+foo({ a: 1 }); // 1 0
+foo({ a: 1, b: 2}); // 1 2
+```
+
+### < キーワード引数 と OprionsObjectパターン >
+JavaScriptにはRubyやPythonにあるキーワード引数が無い。
+だが、OprionsObjectパターンを使うことで同じことが実現できる。
+
+```ts:普通の関数
+function normal(a: number, b: number, c: number) {
+  console.log(a, b, c);
+}
+// 渡す引数の順番に、a, b, cに代入される
+// → 引数の順番をミスできない
+normal(1, 2, 3); // 1 2 3
+```
+```ts:OprionsObjectパターンでキーワード引数を実現
+// 引数にオブジェクトを渡す
+function optionsObjectPattern({a, b, c}: { a: number, b: number, c: number}) {
+  console.log(a, b, c);
+}
+// 引数の順番は関係ない（= キーワード引数）
+optionsObjectPattern({c: 3, b: 2, a: 1 }); // 1 2 3
+```
+
 
 
 ---
