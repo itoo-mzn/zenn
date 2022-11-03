@@ -1418,6 +1418,37 @@ hello(["taro", "hanako"]); // Hello, taro,hanako
 
 ---
 
+<!-- ここまでは完了している。時間がないので、次項以降は飛ばし飛ばしで進める。 -->
+
+## Promise / async / await
+
+未。
+
+
+```ts
+async function take3Sec(): Promise<string> {
+  return "3秒かかる";
+}
+async function take5Sec(): Promise<number> {
+  return 1;
+}
+
+const tuple: [string, number] = await Promise.all([
+  take3Sec(), // 返り値はstring
+  take5Sec(), // 返り値はnumber
+]);
+// ↓
+// 2つの関数の呼び出し順序を入れ替えたい
+// → この場合、タプルの定義もその順序に入れ替える必要がある
+//   [string, number] → [number, string]
+const tuple: [number, string] = await Promise.all([
+  take5Sec(), // 入れ替えた
+  take3Sec(),
+]);
+```
+
+
+
 ---
 
 ## オブジェクト指向
@@ -1617,6 +1648,69 @@ class Meat extends Food {
 ```
 
 
+### < インターフェース >
+- インターフェースとは、**クラスが実装すべきフィールドやメソッドを定義**した型。
+　(ちなみに、クラスだけでなく、単なるオブジェクトにも型注釈として適用できる。)
+- JavaScriptには無い。
+- インターフェースを別のインターフェースに継承できる。
+
+```ts
+interface Human {
+  name: string;
+  think(): void;
+}
+
+interface Programmer {
+  writeCode(): void;
+}
+
+class Developer implements Human, Programmer {
+  name: string = "太郎";
+
+  think(): void {
+    console.log("どういう実装にしようかな");
+  }
+
+  writeCode(): void {
+    console.log("カタカタ");
+  }
+}
+```
+
+<!-- ここで一度TypeScriptの座学は終わる。
+短期指標であるデザインパターンの適用案を考えるほうに移行する。
+次回、TypeScriptを実務で使うときは、やり残しの項を勉強すること。 -->
+
+---
+
+## 組み込みAPI
+未。
+
+---
+
+## import、export、require
+未。
+
+---
+
+## シングルプロセス・シングルスレッドとコールバック
+未。
+
+---
+
+## 型の再利用
+未。
+
+---
+
+## ジェネリクス
+未。
+
+---
+
+## Tips
+未。
+
 ---
 
 :::details プログラム問題でよく使うもの
@@ -1624,7 +1718,7 @@ class Meat extends Food {
 # プログラム問題でよく使うもの
 
 ## 標準入力を受け取る
-```js:javascript
+```js:javascript パターン1
 process.stdin.resume();
 process.stdin.setEncoding('utf8');
 
@@ -1641,14 +1735,19 @@ reader.on('close', () => {
   console.log(lines); // 標準入力で受け取った値が配列で格納されている
 }
 ```
+```js:javascript パターン2
+function Main(input) {
+  console.log(input);
+}
+
+Main(require("fs").readFileSync("/dev/stdin", "utf8"));
+```
 
 ### 標準入力を文字列→整数に変換する
 (例 : `5 2 4` → `[5, 2, 4]`)
 ```js
 const input = lines[0].split(' ').map(str => (parseInt(str, 10)) );
 ```
-
-50 * 80 - 1000 - 1000*3
 
 
 ## ループ
