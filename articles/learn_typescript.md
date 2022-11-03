@@ -1380,6 +1380,241 @@ function optionsObjectPattern({a, b, c}: { a: number, b: number, c: number}) {
 optionsObjectPattern({c: 3, b: 2, a: 1 }); // 1 2 3
 ```
 
+### < 型ガード関数 >
+TypeScriptに元々用意されている型ガードとしては`typeof`や`instanceof`があるが、下記のように独自に型ガードを定義できる。
+```ts
+function isDuck(animal: Animal): animal is Duck {
+  // ここがtrueの場合、animalはAnimal型でなく、Duck型と解釈される
+  return animal instanceof Duck;
+}
+
+if (isDuck(animal)) {
+  // ここでは、animalはDuck型 だと解釈される
+}
+```
+
+### < オーバーロード関数 >
+異なる引数+戻り値のパターンがいくつかある関数のこと。
+「関数シグネチャ（それぞれのパターンの列挙）」と「その実装」で構成される。
+（シグネチャ = 署名。プログラミングにおいては、関数を識別するための情報。）
+```ts
+// 関数シグネチャ（取りうるパターンをすべて書く）
+function hello(person: string): void; // シグネチャ1
+function hello(person: string[]): void; // シグネチャ2
+
+// 実装
+function hello(person: string | string[]): void {
+  // if文で、どのシグネチャなのか（どのパターンか）の判定が必要
+  if (typeof person === "string") {
+    console.log(`Hello, ${person}`);
+  } else {
+    console.log(`Hello, ${person.join(",")}`);
+  }
+}
+
+hello("taro"); // Hello, taro
+hello(["taro", "hanako"]); // Hello, taro,hanako
+```
+
+---
+
+---
+
+## オブジェクト指向
+
+### < クラス >
+- クラスはオブジェクト。
+
+```ts
+// クラス定義
+class Person {
+  // フィールド
+  name: string;
+  age: number | undefined; // コンストラクタで定義していないので、undefinedの可能性がある
+  type: string = "ヒト科"; // stringなのは自明なため、型注釈の省略も可能
+
+  // コンストラクタ
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  // メソッド
+  someMethod(name: string): string {
+    return `Hello, ${name}!`;
+  }
+}
+
+// インスタンス生成
+const person: Person = new Person("太郎");
+console.log(person.name); // 太郎
+
+person.age = 27;
+console.log(person.age); // 27
+
+console.log(person.someMethod("花子")); // Hello, 花子!
+
+console.log(person.type); // ヒト科
+```
+
+#### アクセス修飾子
+
+| アクセス修飾子 | 説明 | 用途 |
+| - | - | - |
+| (宣言なし) | publicと同じ | - |
+| public | どこからでもアクセス可 | - |
+| protected | 自身のクラスとサブクラス（子クラス）からのみアクセス可 | インスタンスからはアクセス禁止にする場合。<br>詳細の実装はサブクラスに任せる場合。 |
+| private | 自身のクラスからのみアクセス可 | メソッドを切り分けて自身のクラスの中でのみ呼び出す場合。 |
+
+#### readonly修飾子
+そのフィールドを読み取り専用にできる。
+
+#### 静的フィールド (static)
+通常のフィールドはインスタンスのプロパティだが、静的フィールドは**クラスのプロパティ**。（*Rubyでいうところのクラス変数みたいなもの*。）
+`static`で宣言する。
+```ts
+class Person {
+  // type: string = "ヒト科";
+  public static type: string = "ヒト科";
+}
+
+// const person: Person = new Person();
+// console.log(person.type); // personインスタンスに対してアクセス
+
+console.log(Person.type); // Personクラスに対してアクセス
+```
+
+#### 静的メソッド
+*Rubyでいうところのクラスメソッド*。
+`static`で宣言する。
+
+#### メソッド戻り値のthis と メソッドチェーン
+メソッドの戻り値にthisを指定することで、メソッドチェーンが実現できる。
+```ts
+class Operator {
+  protected value: number;
+  public constructor(value: number) {
+    this.value = value;
+  }
+
+  // 加算
+  // public sum(value: number): void { // voidを返すこのメソッドではメソッドチェーンにできない
+  //   this.value += value;
+  // }
+  public sum(value: number): this { // 戻り値にthisを指定することでメソッドチェーンにできる
+    this.value += value;
+    return this;
+  }
+
+  // 減算
+  // public subtract(value: number): void {
+  //   this.value -= value;
+  // }
+  public subtract(value: number): this {
+    this.value -= value;
+    return this;
+  }
+
+  // 乗算
+  // public multiply(value: number): void {
+  //   this.value *= value;
+  // }
+  public multiply(value: number): this {
+    this.value *= value;
+    return this;
+  }
+
+  // 除算
+  // public divide(value: number): void {
+  //   this.value /= value;
+  // }
+  public divide(value: number): this {
+    this.value /= value;
+    return this;
+  }
+}
+
+const op: Operator = new Operator(0);
+
+// メソッドの戻り値がthisでなくvoidだったときは、下記のように演算ごとに1行ずつ書かないといけない。
+// op.sum(5); // 5
+// op.subtract(3); // 2
+// op.multiply(6); // 12
+// op.divide(3); // 4
+
+// メソッドチェーンが実現
+op.sum(5).subtract(3).multiply(6).divide(3);
+console.log(op); // Operator { value: 4 }
+
+// サブクラス（子クラス）
+class NewOperator extends Operator {
+  public constructor(value: number) {
+    super(value);
+  }
+
+  // べき乗
+  public power(value: number): this {
+    this.value **= value;
+    return this;
+  }
+}
+
+const newOp: NewOperator = new NewOperator(2);
+// メソッドの返り値を具体的なクラス名でなくthisにすることで、サブクラスにおいても同じようにメソッドチェーンで繋げることができる
+newOp.power(3).multiply(2).power(3);
+console.log(newOp); // NewOperator { value: 4096 }
+```
+
+#### クラスの継承
+- 上のコード（NewOperatorクラス）にもあるように、`extends`で継承ができる。
+
+- サブクラス（子クラス）に**コンストラクタを書く場合**は、**スーパークラス（親クラス）のコンストラクタを必ず呼び出す必要がある**。
+  `super()`でスーパークラスのコンストラクタを呼び出す。
+  ```ts
+  class NewOperator extends Operator {
+    public constructor(value: number) {
+      super(value);
+    }
+    // ... 略
+  ```
+
+- `instanceof`で継承関係のチェックができる。
+  ```ts
+  class Parent {}
+  class Child extends Parent {}
+
+  const parent = new Parent();
+  const child = new Child();
+
+  console.log(parent instanceof Parent); // true
+  console.log(parent instanceof Child); // false
+
+  console.log(child instanceof Parent); // true → 子クラスのインスタンスだがtrueになる
+  console.log(child instanceof Child); // true
+  ```
+
+#### 抽象クラス (abstract class)
+- 抽象クラスとは、**直接インスタンスを作れないクラス**のこと。
+  つまり、**必ずスーパークラス（親クラス）として利用されることが保証される**。
+
+- JavaScriptでは定義できないが、TypeScriptではクラスに`abstract`修飾子を付けることで実現できる。
+
+- メソッドにも`abstract`を付けて抽象メソッドを作れる。
+  **`interface`と同じく、サブクラス（子クラス）は抽象メソッドを実装する必要がある**。
+
+```ts
+// 抽象クラス
+abstract class Food {
+  // 抽象メソッド
+  abstract canEat(): boolean;
+}
+
+class Meat extends Food {
+  // 抽象メソッドの実装
+  canEat(): boolean {
+    return true;
+  }
+}
+```
 
 
 ---
@@ -1446,6 +1681,11 @@ for(let count = 0; count < peopleSum; count++) {
 ## 配列の中の数値を合計
 ```js
 const sum = nums_array.reduce( (sum, i) => sum + i, 0);
+
+// 入力値までの総和が欲しい場合（num=10の場合、1+2+3+... = 55）
+const sum = [...Array(num)].reduce(function(sum, _, i) {
+    return sum + i + 1 
+  } , 0);
 ```
 
 ## 配列の中の数値の最大値、最小値を取得
@@ -1472,5 +1712,9 @@ numbers_array.sort(function(first, second){
 
 :::
 
-# 参考情報
+
+# 参考文献
 https://typescriptbook.jp/
+
+### 便利そうなのでインデックスしておくページ
+https://typescriptbook.jp/symbols-and-keywords
