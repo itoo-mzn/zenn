@@ -1677,6 +1677,7 @@ class Developer implements Human, Programmer {
 }
 ```
 
+
 <!-- ここで一度TypeScriptの座学は終わる。
 短期指標であるデザインパターンの適用案を考えるほうに移行する。
 次回、TypeScriptを実務で使うときは、やり残しの項を勉強すること。 -->
@@ -1775,6 +1776,11 @@ for (const [index, result] of results.entries()) {
 for(let count = 0; count < peopleSum; count++) {
   // ...
 }
+```
+
+## 連番の配列を作る
+```js
+const arr = Array.from({ length: 5 }).map( (v, k) => k+1); // [1, 2, 3, 4, 5]
 ```
 
 ## 配列の中の数値を合計
