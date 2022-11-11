@@ -237,31 +237,58 @@ https://d1.awsstatic.com/webinars/jp/pdf/services/20190925_AWS-BlackBelt_AWSFarg
 
 ## ECSのログ
 
-### ログの目的
-- 保管
-  障害時の調査に活用する。
-- 分析
-  分析レポートの作成に活用する。
-- 監視
-  異常を検知してアラートを投げるのに活用する。
-  サービスの状態をダッシュボードで確認するのに活用する。
-
-### ECSのログドライバー
-ECSのログドライバーには、下記が使用できる。
-- awslogs
-- fluentd
-- gelf
-- json-file
-- journald
-- logentries
-- splunk
-- syslog
-- awsfirelens
-
-#### awslogs
-1つのタスクにつき、CloudWatchLogsの1つのログストリームに ログ（STDOUT）を保存できる。
-
+#### 「AWS ログ入門」のスライド
 https://d1.awsstatic.com/webinars/jp/pdf/services/202109_AWS_Black_Belt-Container246_log.pdf
+
+### < ログの目的 >
+- 保管 : 障害時の調査に活用する。
+- 分析 : 分析レポートの作成に活用する。
+- 監視 : 異常を検知してアラートを投げるのに活用する。サービスの状態をダッシュボードで確認するのに活用する。
+
+### < ECSのログドライバー >
+:::message
+#### ログドライバーとは 
+そもそも、Dockerのログ処理は「コンテナで標準出力/標準エラー出力に吐かれたログを、設定してるログドライバが処理する」というもの。
+https://zenn.dev/onigiri_w2/articles/e40c5873f7f453
+:::
+
+ECSのログドライバーには、下記が使用できる。
+| ログドライバー | 説明 |
+| - | - |
+| **awslogs** | **CloudWatchLogs**の1つのログストリーム**に ログ（STDOUT）を保存できる**。 |
+| fluentd | - |
+| gelf | **Logstash**などの「Graylog Extended Log Format（GELF）」をサポートするログ管理システムにログメッセージを出力。 |
+| **json-file** | JSON形式でファイルに保存（Dockerのデフォルト） |
+| journald | - |
+| logentries | - |
+| splunk | - |
+| syslog | - |
+| **awsfirelens** | 下記。 |
+
+### < AWS Firelens >
+AWS ECSで使えるログルーター（特定のログを別のサービスなどに転送する機能）。
+
+タスク定義の中に含めてサイドカー（firelensコンテナ）として配置。
+他のコンテナ（例：Railsコンテナ）からはログドライバーとしてfirelensコンテナを使用する。
+（つまり、Railsコンテナの`logDriver`は`awsfirelens`（firelensコンテナをログドライバーに指定）で、firelensコンテナの`logDriver`は`awslogs`とかにして、配信がコケたらCloudWatchLogsに記録。）
+
+**FireLensそのものは**、Amazon ECSのコンテナログを同タスク定義内の**サイドカーとして配置されたFluentdまたはFluent Bitに転送することができる仕組み**。（つまり、ログ収集などの実働を行うのはFluentd or FluentBit。）
+なので、**Firelensコンテナの中で動いているのはFluentd or FluentBit**。（Fluentd or FluentBitのイメージを使う。）
+（ただ、もう[Fluentdは非推奨にする予定](https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/monitoring/Container-Insights-setup-logs.html)みたいなので、FluentBit一択の様子。）
+
+:::message
+#### Fluentd、FluentBitとは
+- **Fluentd**
+  データログ収集ツール。
+- **Fluent Bit**
+  Fluentdの軽量版。https://docs.fluentbit.io/manual/about/fluentd-and-fluent-bit
+:::
+
+AWS FireLensから下記のサービスに転送することができる。
+  - Amazon CloudWatch Logs
+  - Amazon Kinesis Data Streams
+  - Amazon Kinesis Data Firehose
+  - 別のFluentdやFluent Bit
 
 
 # AWS Firelens
@@ -272,47 +299,26 @@ https://dev.classmethod.jp/articles/ecs-firelens/
 https://dev.classmethod.jp/articles/terraform-ecs-fargate-firelens-log-output/
 https://dev.classmethod.jp/articles/fargate-fiirelens-fluentbit/
 https://qiita.com/charon/items/727251f8ce1412a864ab
+[https://twitter.com/integrated1453/status/1590341343821565953]
 
 # Kinesis
 ストリームデータを収集・処理するためのフルマネージドサービス。
+
 種類は下記。
 - Amazon Kinesis Data Streams
   ストリームデータを処理するためのアプリケーションを独自に構築。
+  ストリームデータを**受ける**AWSサービス。
 - Amazon Kinesis Data **Firehose**
   ストリームデータを**S3, Redshift, ESへ**簡単に配信。
+  ストリームデータをS3やRedshiftなどに**送る**(流す)AWSサービス。
 - Amazon Kinesis Data Analytics
   ストリームデータを標準的なSQLクエリでリアルタイムに分析。
 
-
 https://d1.awsstatic.com/webinars/jp/pdf/services/20180110_AWS-BlackBelt-Kinesis.pdf
 
-:::message
-- **Kinesis**とは
-  ストリームデータを収集・処理するためのAWSフルマネージドサービス。
-  - **Streams**とは
-    Kinesis Data Streams。
-    ストリームデータを**受ける**AWSサービス。
-  - **Firehose**とは
-    Kinesis Data Firehose。
-    ストリームデータをS3やRedshiftなどに**送る**(流す)AWSサービス。
-- **Firelens**とは
-  AWS Firelens。
-  **ECSで出力するログファイルを指定した場所に送信し、保存**してくれるサービス。
-  AWS FireLensから下記のサービスに転送することができる。
-    - Amazon CloudWatch Logs
-    - Amazon Kinesis Data Streams
-    - Amazon Kinesis Data Firehose
-    - 別のFluentdやFluent Bit
-  
-  **FireLensそのものは**、Amazon ECSのコンテナログを同タスク定義内の**サイドカーとして配置されたFluentdまたはFluent Bitに転送することができる仕組み**。（つまり、ログ収集などの実働を行うのはFluentd or FluentBit。）
-- Fluentd、FluentBitとは
-  - **Fluentd**
-    データログ収集ツール。
-  - **Fluent Bit**
-    Fluentd傘下で開発された軽量なログルータであり、Fluentdのアーキテクチャを踏まえて構築されています。
-    （Fluentdとは同じ階層にあるもの。）
-    https://docs.fluentbit.io/manual/about/fluentd-and-fluent-bit
-:::
+
+### ログ分析
+AWS Athena
 
 
 ---
@@ -326,8 +332,8 @@ https://qiita.com/yu-yama-sra/items/7ab3e6fdb2d3b73925d8
 ターゲットグループに設定するポートというのは、ターゲット（ECS）に対するポート。
 
 #### ECSについて
-コンテナポート：（使われる側の）コンテナのポート。
 ホストポート：**ホスト**（**コンテナを利用する側**）のポート。
+コンテナポート：（使われる側の）コンテナのポート。
 
 ```
 docker run --rm -p 8080:80 ~~~
