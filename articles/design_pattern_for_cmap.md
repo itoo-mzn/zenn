@@ -26,17 +26,19 @@ published: false
 ## 生成に関するパターン
 オブジェクトを生成する仕組みに関するもの。
 
+※ なお、下表内で パターン名がリンクになっているもの についてはTypeScriptでサンプルコードを写経。
+
 | パターン名 | 概要・何が嬉しいのか |
 | :-: | - |
-| Factory Method<br>（工場） | **生成するオブジェクト**(`製品`)**に依存しない、オブジェクト生成のインタフェース**(`工場`の持つ`生産メソッド`)**を提供する**。<br>つまり、色々な種類がある製品のどれを作るときでも、それを作る工場に共通の生産メソッドで依頼すれば作ってくれる。<br>（`Template Method`のインスタンス生成特化ver.）<br><br>乗用車工場にもトラック工場にも`createCar()`と依頼すればそれぞれの製品を作ってくれる。そして作られた車には各製品で異なるビジネスロジックであっても、共通して`deliver("東京")`と依頼できる。<br>こうなると、新たにタクシーを作る必要が出ても、生産メソッドやその製品のできること（メソッド）が他の製品と同じなので、**簡単に製品を追加できる**。 |
-| [Abstract Factory](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/abstract_factory/sample.ts)<br>(抽象的な工場) |  |
-| [Builder](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/builder/sample.ts)<br>(構築者) |  |
+| [Factory Method](https://github.com/ito0804takuya/design-pattern_typescript/blob/main/src/factory/sample.ts)<br>（工場） | **生成するオブジェクト**(`製品`)**に依存しない、オブジェクト生成のインタフェース**(`工場`の持つ`生産メソッド`)**を提供する**。<br>つまり、色々な種類がある製品のどれを作るときでも、それを作る工場に共通の生産メソッドで依頼すれば作ってくれる。<br>（`Template Method`のインスタンス生成特化ver.）<br><br>乗用車工場にもトラック工場にも`createCar()`と依頼すればそれぞれの製品を作ってくれる。そして作られた車には各製品で異なるビジネスロジックであっても、共通して`deliver("東京")`と依頼できる。<br>こうなると、新たにタクシーを作る必要が出ても、生産メソッドやその製品のできること（メソッド）が他の製品と同じなので、**簡単に製品を追加できる**。 |
+| [Abstract Factory](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/abstract_factory/sample.ts)<br>(抽象的な工場) | 詳細は次項に記載。 |
+| [Builder](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/builder/sample.ts)<br>(構築者) | 生成過程を隠蔽することで、同じ過程で異なる内容のオブジェクトを生成できる。<br><br>オブジェクトのフィールドとその作り方を持つ`Builder`を定義。<br>`Director`には、Builderを使ってどうやって組み立てるか という生成過程を定義。<br><br>同じDirectorが、砂糖水Builderと食塩水Builderを使えば、同じ生成過程を経た砂糖水と食塩水が作れる。<br>この例でいうと、Biulderは「溶媒に水、溶質に砂糖を使うこと」、Directorは「それらを何gずつ混ぜるか 等」を決定する役割を持つ。 |
 | Prototype<br>（原型） | 原型となるオブジェクトを元に複製する。つまり、**原型となるオブジェクト(のみ)が自身の複製方法を知っている**。<br><br>自分のクローンを作るメソッド`clone()`をPrototypeインターフェースに用意しておく。<br>そのインターフェースを実装するPrototypeクラスには、自身のインスタンスを複製するのに必要な手続きを`clone()`に実装する。<br><br>別のオブジェクトがオブジェクトを複製しようとする場合、その複製するオブジェクトのことをよく知っていないといけないため、そこに依存関係が生まれる。複製されるオブジェクト自身が複製方法を持つことで、その依存関係を解消できる。 |
 | Singleton<br>(一人っ子) | クラスが**1つのインスタンスしか持たない**ことを保証する。<br><br>インスタンス生成の方法を外部に公開してはいけないため、コンストラクタをprivateにする。インスタンス生成時に既にインスタンスが存在しているのかチェックする。 |
 
 
 ## 構造に関するパターン
-  クラスの構造に関するもの。
+  **クラスの構造**に関するもの。
 
 | パターン名 | 概要・何が嬉しいのか |
 | :-: | - |
@@ -67,59 +69,74 @@ published: false
 | Visitor<br>（訪問者） | データ構造を表すクラス（受け入れ側。これが本体。）と、それに対する処理を行うクラス（Visitor）を分離する。<br><br>**本体クラスのメソッドの引数にVisitorを渡す形にして、そのメソッドの中でVisitorに実装した処理を実行させる**ことで、**本体クラスの中でVisitorが仕事をする**仕組みにできる。<br>そうなると、Visitorを変更することで、**本体クラスにほとんど変更せずに機能を追加・変更できる**。 |
 
 
-
-## 生成に関するパターン (5個)
-### Abstract Factory（抽象的な工場）パターン
-  互いに関連する一連のオブジェクト郡を、その具象クラスに依存しないで生成するためのインタフェースを提供します。
-
-  https://xtech.nikkei.com/it/article/COLUMN/20051202/225609/?i_cid=nbpnxt_reco_atype
-  
-  **候補**
-  **募集のエントリー、企業実習のエントリー、説明会のエントリーをしたときに生成されてほしいエントリー、メッセージ、活動記録が異なるはずなので、こういう感じで使えそう。**
-
-### Builder（構築者）パターン
-  複合化されたオブジェクトについて、その生成過程を隠蔽することにより、同じ過程で異なる内部形式のオブジェクトを生成できます。
-
-  生成時の状態（オブジェクトが持つフィールドの初期値）が異なるオブジェクトを生成する「ビルダクラス」と「ディレクタクラス」を用意。
-  ビルダクラスは職人で、ディレクタクラスは現場監督。
-
-  **候補**
-  **募集のエントリー、企業実習のエントリー、説明会のエントリーをしたときに生成されてほしいエントリー、メッセージ、活動記録が異なるはずなので、こういう感じで使えそう。**
-  **↑のAbstract Factoryとどちらかを使うことになりそう。どっち使えばいいかわからん。**
-
----
-
-## 構造に関するパターン (7個)
-### Decorator（装飾者）パターン
-  ある核(コア)となるオブジェクトに、動的な機能追加を提供します。
-
-  継承を使わずとも、既存クラスのメソッド+αの機能を持ったメソッドを実装できる。
-  新しいクラスのメソッドの中から、その既存クラスのメソッドを呼び出すことで実現。
-
-  **候補**
-  **メッセージ、メール、slack通知の組み合わせを自在に作れそう**
-
-### Facade（見かけ）パターン
-  複数のサブシステムの統一窓口となる高レベルなインタフェースを提供します。
-  
-  複数のクラスのメソッドを使って1つの機能が実現されている。
-  その機能を使う側のクラスにその複数のクラスを呼び出させるのでなく、複数のクラスを呼び出す役割のFacadeクラスを作って、それを使うようにする。
-
-  **候補**
-  **これは便利。確定かな**
-
----
-
-
 # CareerMapに適用すると良さそうなパターン 3個
-  あるオブジェクトへのアクセスを制御するため、共通のインタフェースを持つオブジェクトが代理をします。
 
-  Proxy（代理人）パターンは、オブジェクトに送られるメッセージ（メソッド呼び出し）をフック（横取り）して任意の処理を挿入するための工夫。
+## Abstract Factory（抽象的な工場）
+  互いに関連する一連のオブジェクト郡を、その具象クラスに依存しないで生成するためのインタフェースを提供します。
   
-  （どういう構造なのかは分かったが、どう使うのかが分からなかった）
+```ts
+interface EntryFactory {
+  createEntry(): Entry;
+  createMessage(): Message;
+  createActivity(): Activity;
+}
+// 募集情報へのエントリー
+class JobEntryFactory implements EntryFactory {
+  public createEntry(): Entry {
+    return new Entry("job");
+  }
+  public createMessage(): Message {
+    return new Message("job");
+  }
+  public createActivity(): Activity {
+    return new Activity("job");
+  }
+}
+// 説明会へのエントリー
+class CorporationEventEntryFactory implements EntryFactory {
+  public createEntry(): Entry {
+    return new Entry("internship");
+  }
+  public createMessage(): Message {
+    return new Message("internship");
+  }
+  public createActivity(): Activity {
+    return new Activity("internship");
+  }
+}
 
-  **候補**
-  **これは便利。確定かな**
+class Entry  {
+  protected entry_target: string;
+  public constructor(value: string) {
+    this.entry_target = value;
+  }
+  // ...
+}
+class Message {
+  // ...
+}
+class Activity{
+  // ...
+}
+
+// <使い方>
+function jobEntry() {
+  const factory = new JobEntryFactory();
+  const entry = factory.createEntry();
+  const message = factory.createMessage();
+  const activity = factory.createActivity();
+  // 以降、募集へのエントリーならではのビジネスロジック
+}
+
+function corporationEventEntry() {
+  const factory = new CorporationEventEntryFactory();
+  const entry = factory.createEntry();
+  const message = factory.createMessage();
+  const activity = factory.createActivity();
+  // 以降、説明会へのエントリーならではのビジネスロジック
+}
+```
+
 
 ## Facade（見かけ）
 複数のサブシステムの統一窓口となる高レベルなインタフェースを提供します。
@@ -161,10 +178,10 @@ class SlackNotifier {
 
 // <使い方>
 // この2つのクラスの機能(メソッド)を使って、1つの処理を行いたい
-const subsystem1 = new Entry();
-const subsystem2 = new SlackNotifier();
+const entry = new Entry();
+const slackNotifier = new SlackNotifier();
 // ここで2つのクラスのメソッドを呼び出すのでなく、行いたい1つの処理を登録したFacadeに処理を依頼
-const facade = new EntryNotifier(subsystem1, subsystem2);
+const facade = new EntryNotifier(entry, slackNotifier);
 console.log(facade.operation());
 ```
 
