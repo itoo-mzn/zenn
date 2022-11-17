@@ -32,7 +32,7 @@ published: false
 | :-: | - |
 | [Factory Method](https://github.com/ito0804takuya/design-pattern_typescript/blob/main/src/factory/sample.ts)<br>（工場） | **生成するオブジェクト**(`製品`)**に依存しない、オブジェクト生成のインタフェース**(`工場`の持つ`生産メソッド`)**を提供する**。<br>つまり、色々な種類がある製品のどれを作るときでも、それを作る工場に共通の生産メソッドで依頼すれば作ってくれる。<br>（`Template Method`のインスタンス生成特化ver.）<br><br>乗用車工場にもトラック工場にも`createCar()`と依頼すればそれぞれの製品を作ってくれる。そして作られた車には各製品で異なるビジネスロジックであっても、共通して`deliver("東京")`と依頼できる。<br>こうなると、新たにタクシーを作る必要が出ても、生産メソッドやその製品のできること（メソッド）が他の製品と同じなので、**簡単に製品を追加できる**。 |
 | [Abstract Factory](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/abstract_factory/sample.ts)<br>(抽象的な工場) | 詳細は次項に記載。 |
-| [Builder](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/builder/sample.ts)<br>(構築者) | 生成過程を隠蔽することで、同じ過程で異なる内容のオブジェクトを生成できる。<br><br>オブジェクトのフィールドとその作り方を持つ`Builder`を定義。<br>`Director`には、Builderを使ってどうやって組み立てるか という生成過程を定義。<br><br>同じDirectorが、砂糖水Builderと食塩水Builderを使えば、同じ生成過程を経た砂糖水と食塩水が作れる。<br>この例でいうと、Biulderは「溶媒に水、溶質に砂糖を使うこと」、Directorは「それらを何gずつ混ぜるか 等」を決定する役割を持つ。 |
+| [Builder](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/builder/sample.ts)<br>(構築者) | 生成過程を隠蔽することで、同じ過程で異なる内容のオブジェクトを生成できる。<br><br>オブジェクトのフィールドとその作り方を持つ`Builder`を定義。<br>`Director`には、Builderを使ってどうやって組み立てるか という生成過程を定義。<br><br>``同じDirector``が、`砂糖水Builder`と`食塩水Builder`を使えば、同じ生成過程を経た砂糖水と食塩水が作れる。<br>この例でいうと、Biulderは「溶媒に水、溶質に砂糖を使うこと」、Directorは「それらを何gずつ混ぜるか 等」を決定する役割を持つ。 |
 | Prototype<br>（原型） | 原型となるオブジェクトを元に複製する。つまり、**原型となるオブジェクト(のみ)が自身の複製方法を知っている**。<br><br>自分のクローンを作るメソッド`clone()`をPrototypeインターフェースに用意しておく。<br>そのインターフェースを実装するPrototypeクラスには、自身のインスタンスを複製するのに必要な手続きを`clone()`に実装する。<br><br>別のオブジェクトがオブジェクトを複製しようとする場合、その複製するオブジェクトのことをよく知っていないといけないため、そこに依存関係が生まれる。複製されるオブジェクト自身が複製方法を持つことで、その依存関係を解消できる。 |
 | Singleton<br>(一人っ子) | クラスが**1つのインスタンスしか持たない**ことを保証する。<br><br>インスタンス生成の方法を外部に公開してはいけないため、コンストラクタをprivateにする。インスタンス生成時に既にインスタンスが存在しているのかチェックする。 |
 
@@ -45,14 +45,14 @@ published: false
 | Adapter<br>(接続装置) | **互換性のないインタフェースを持つクラス同士の接続を可能にする**。<br><br>クライアントが使う側のクラスのインターフェースに合わせたアダプターを作る。もう片方のクラスとうまく変換できるように、アダプター内でそのインターフェースに合わせて実装する。 |
 | Bridge<br>（橋） | あるクラスにおける**抽象部と実装部を分離**することで、管理・拡張しやすくする。<br><br>組み合わせて使用される2つのオブジェクト（例：リモコンとデバイス）が現状1つの一枚岩クラスになっているとして、それら各々に多彩な種類がある場合、それらの組み合わせは膨大に膨れ上がる。そういったときの拡張（組み合わせ）をどう実現するかという話。<br>1つになっているクラスをリモコン（抽象化層）とデバイス（実装）に分ける。リモコンクラスにデバイスを参照するフィールドを設けて、デバイスにはインターフェースを用意することで、リモコン・デバイスがそれぞれ独自に多品種開発できる。 |
 | Composite<br>コンポジット<br>（合成物） | **個々のオブジェクト と それら複数から成る階層構造を持ったオブジェクト を同一視**することにより、**再帰的な構造を表現する**。<br><br>オブジェクト単体では、単に自己完結型で処理を行うよう実装。<br>合成オブジェクトでは、単体オブジェクトにメソッドを実行させて、その後、次に処理すべきオブジェクトがあれば再帰的にメソッドを呼び出す。<br><br>このオブジェクトを使う側は、それが多くの階層を持っているのか、それとも下階層が無い単一のものなのかを気にせず呼び出せる。 |
-| [Decorator](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/decorator/sample.ts)<br>（装飾者） |  |
-| [Facade](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/facade/sample.ts)<br>ファサード<br>（見かけ） |  |
+| [Decorator](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/decorator/sample.ts)<br>（装飾者） | ある核(コア)となるオブジェクトに、**機能を後から任意で追加できる**（マトリョーシカのようにコアの人形の上から何個も被せることができる）構成を提供する。<br>継承を使って**サブクラスを大量に作らずに**、Decoratorの組み合わせにより、**既存クラスのメソッド+αの機能を持った色々なパターンのメソッドを実現できる**。 |
+| [Facade](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/facade/sample.ts)<br>ファサード<br>（見かけ） | 詳細は次項に記載。 |
 | Flyweight<br>（軽量級） | 多数のオブジェクトの中で同じものと見なせるオブジェクトを共有し、オブジェクトの構築のための負荷を減らす。 <br>要は、**キャッシュしたいプロパティはFlyweightクラスとして保持**しておいて、**頻繁に（動的に）変化するプロパティはContextクラスとして切り出し**、全体での**メモリ（RAM）使用量を減らそう**という試み。 |
-| [Proxy](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/proxy/sample.ts)<br>（代理人） |  |
+| [Proxy](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/proxy/sample.ts)<br>（代理人） | オブジェクトに送られるメッセージを、共通のインタフェースを持つ**Proxyオブジェクトがフック（横取り）して代理として働く**。<br>Proxyオブジェクトが間に存在することで、（プロキシサーバーのように）その**メッセージの前後に任意の処理を挿入することができる**。 |
 
 
 ## 振る舞いに関するパターン
-  オブジェクト感の責任の分担に関するもの。
+  オブジェクト間の**責任の分担**に関するもの。
 
 | パターン名 | 概要・何が嬉しいのか |
 | :-: | - |
@@ -63,7 +63,7 @@ published: false
 | Mediator<br>（調停者） | **オブジェクト同士が**互いに参照し合うことがないように、**共同作業する際は仲介役となるオブジェクトを介することを強制**する。<br><br>プログラムは複数のオブジェクトを組み合わせて機能を作るという性質上、オブジェクト間の関連がゴチャゴチャになる問題がある。オブジェクトA, B, C, Dが互いに関連を持っている（= 他のオブジェクトの持つメソッドを呼び出している）とき、どれかを改造しようとしたら他に影響を与えてしまうため、変更が困難になる。<br>オブジェクト同士が互いに参照し合うことがないように、仲介役となるオブジェクトを介して制御することで、オブジェクト同士の関連を整理できる。オブジェクトA~Dは、他のオブジェクトを参照するとき、それらの調停者（仲介役）となるオブジェクトMを介して参照するようにする。そうすることで、A~Dに発生した変更の影響はMだけで済む。 |
 | Memento<br>（形見） | データ構造に対する操作内容・状態を記録しておき、**以前の状態の復帰、操作の再実行を行える**ようにする。<br><br>Mementoオブジェクトがスナップショットとして機能する値オブジェクト。<br>（Railsで言うと[`XXX_was`, `XXX_changeメソッド`](https://morizyun.github.io/ruby/active-record-attribute-was-change.html)がしていることのイメージ。） |
 | Observer<br>（観察者） | **あるオブジェクトの変化を、それに依存するオブジェクトに自動的に知らせる**仕組みを提供する。<br><br>通知先のオブジェクトに、通知を送信するメソッドの実装をインターフェースによって強制する。<br>通知元クラスは、通知先が複数あろうが、通知先を格納した配列にそのメソッドをループ処理すれば、複数の通知先に簡単に通知できる。<br>(Railsで言うと、`after_save`とかのイメージ。) |
-| [State](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/state/sample.ts)<br>（状態）|  |
+| [State](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/state/sample.ts)<br>（状態）| 状態を表すStateオブジェクトを用意し、あるオブジェクトは内包するStateオブジェクトを切り替えることによって、処理内容(振る舞い)を変えられるようにする。<br>（状態を表すクラスは、その状態ごとに1つずつ作る。）<br><br>状態を判定する条件分岐を大量に書かなくてよくなる。 |
 | [Strategy](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/strategy/sample.ts)<br>（戦略）| 一連のアルゴリズム(戦略)をカプセル化(部品化)し、動的なアルゴリズムの切替えを可能とします。<br>あることをするのに、いくつかの方法（ロジック）がある場合、その方法クラスを複数作り、それを行うクラスはその方法クラスを選択することでアルゴリズムを切り替えできる。 |
 | [Template Method](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/template_method/sample.ts)<br>（ひな型） | 詳細は次項に記載。 |
 | Visitor<br>（訪問者） | データ構造を表すクラス（受け入れ側。これが本体。）と、それに対する処理を行うクラス（Visitor）を分離する。<br><br>**本体クラスのメソッドの引数にVisitorを渡す形にして、そのメソッドの中でVisitorに実装した処理を実行させる**ことで、**本体クラスの中でVisitorが仕事をする**仕組みにできる。<br>そうなると、Visitorを変更することで、**本体クラスにほとんど変更せずに機能を追加・変更できる**。 |
