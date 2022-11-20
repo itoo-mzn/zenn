@@ -9,7 +9,7 @@ published: false
 <!-- GOFのデザインパターン23種類の中からCareerMapに適用すると良さそうなパターンを例として3つ上げる				 -->
 
 # デザインパターンとは
-ソフトウェアの設計をする上でよく起きる問題の典型的な解決方法。
+**ソフトウェアの設計**をする上で**よく起きる問題の典型的な解決方法**。
 先人が見つけた良い方法を整理したパターン集。
 
 一番代表的なものが、GoFの23個のデザインパターン。(GoF = Gang of Four : 著者の4人)
@@ -18,9 +18,9 @@ published: false
 
 # GoFのデザインパターン
 全23パターンあるが、それらは大きく3つの分類に分けられる。
-- 生成に関するパターン (5個)
-- 構造に関するパターン (7個)
-- 振る舞いに関するパターン (11個)
+- **生成**に関するパターン (5個)
+- **構造**に関するパターン (7個)
+- **振る舞い**に関するパターン (11個)
 
 
 ## 生成に関するパターン
@@ -31,8 +31,8 @@ published: false
 | パターン名 | 概要・何が嬉しいのか |
 | :-: | - |
 | [Factory Method](https://github.com/ito0804takuya/design-pattern_typescript/blob/main/src/factory/sample.ts)<br>（工場） | **生成するオブジェクト**(`製品`)**に依存しない、オブジェクト生成のインタフェース**(`工場`の持つ`生産メソッド`)**を提供する**。<br>つまり、色々な種類がある製品のどれを作るときでも、それを作る工場に共通の生産メソッドで依頼すれば作ってくれる。<br>（`Template Method`のインスタンス生成特化ver.）<br><br>乗用車工場にもトラック工場にも`createCar()`と依頼すればそれぞれの製品を作ってくれる。そして作られた車には各製品で異なるビジネスロジックであっても、共通して`deliver("東京")`と依頼できる。<br>こうなると、新たにタクシーを作る必要が出ても、生産メソッドやその製品のできること（メソッド）が他の製品と同じなので、**簡単に製品を追加できる**。 |
-| **[Abstract Factory](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/abstract_factory/sample.ts)**<br>(抽象的な工場) | 詳細は次項に記載。 |
-| [Builder](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/builder/sample.ts)<br>(構築者) | 生成過程を隠蔽することで、同じ過程で異なる内容のオブジェクトを生成できる。<br><br>オブジェクトのフィールドとその作り方を持つ`Builder`を定義。<br>`Director`には、Builderを使ってどうやって組み立てるか という生成過程を定義。<br><br>``同じDirector``が、`砂糖水Builder`と`食塩水Builder`を使えば、同じ生成過程を経た砂糖水と食塩水が作れる。<br>この例でいうと、Biulderは「溶媒に水、溶質に砂糖を使うこと」、Directorは「それらを何gずつ混ぜるか 等」を決定する役割を持つ。 |
+| **[Abstract Factory](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/abstract_factory/sample.ts)**<br>(抽象的な工場) | **関連するオブジェクト郡を**、その具象クラスを指定することなく**生成するためのインタフェース**を提供する。<br><br>使用例コードを次項に記載。 |
+| [Builder](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/builder/sample.ts)<br>(構築者) | **生成過程を隠蔽**することで、**同じ過程で異なる内容のオブジェクトを生成**できる。<br><br>オブジェクトのフィールドとその作り方を持つ`Builder`を定義。<br>`Director`には、Builderを使ってどうやって組み立てるか という生成過程を定義。<br><br>``同じDirector``が、`砂糖水Builder`と`食塩水Builder`を使えば、同じ生成過程を経た砂糖水と食塩水が作れる。<br>この例でいうと、Biulderは「溶媒に水、溶質に砂糖を使うこと」、Directorは「それらを何gずつ混ぜるか 等」を決定する役割を持つ。 |
 | Prototype<br>（原型） | 原型となるオブジェクトを元に複製する。つまり、**原型となるオブジェクト(のみ)が自身の複製方法を知っている**。<br><br>自分のクローンを作るメソッド`clone()`をPrototypeインターフェースに用意しておく。<br>そのインターフェースを実装するPrototypeクラスには、自身のインスタンスを複製するのに必要な手続きを`clone()`に実装する。<br><br>別のオブジェクトがオブジェクトを複製しようとする場合、その複製するオブジェクトのことをよく知っていないといけないため、そこに依存関係が生まれる。複製されるオブジェクト自身が複製方法を持つことで、その依存関係を解消できる。 |
 | Singleton<br>(一人っ子) | クラスが**1つのインスタンスしか持たない**ことを保証する。<br><br>インスタンス生成の方法を外部に公開してはいけないため、コンストラクタをprivateにする。インスタンス生成時に既にインスタンスが存在しているのかチェックする。 |
 
@@ -63,9 +63,9 @@ published: false
 | Mediator<br>（調停者） | **オブジェクト同士が**互いに参照し合うことがないように、**共同作業する際は仲介役となるオブジェクトを介することを強制**する。<br><br>プログラムは複数のオブジェクトを組み合わせて機能を作るという性質上、オブジェクト間の関連がゴチャゴチャになる問題がある。オブジェクトA, B, C, Dが互いに関連を持っている（= 他のオブジェクトの持つメソッドを呼び出している）とき、どれかを改造しようとしたら他に影響を与えてしまうため、変更が困難になる。<br>オブジェクト同士が互いに参照し合うことがないように、仲介役となるオブジェクトを介して制御することで、オブジェクト同士の関連を整理できる。オブジェクトA~Dは、他のオブジェクトを参照するとき、それらの調停者（仲介役）となるオブジェクトMを介して参照するようにする。そうすることで、A~Dに発生した変更の影響はMだけで済む。 |
 | Memento<br>（形見） | データ構造に対する操作内容・状態を記録しておき、**以前の状態の復帰、操作の再実行を行える**ようにする。<br><br>Mementoオブジェクトがスナップショットとして機能する値オブジェクト。<br>（Railsで言うと[`XXX_was`, `XXX_changeメソッド`](https://morizyun.github.io/ruby/active-record-attribute-was-change.html)がしていることのイメージ。） |
 | Observer<br>（観察者） | **あるオブジェクトの変化を、それに依存するオブジェクトに自動的に知らせる**仕組みを提供する。<br><br>通知先のオブジェクトに、通知を送信するメソッドの実装をインターフェースによって強制する。<br>通知元クラスは、通知先が複数あろうが、通知先を格納した配列にそのメソッドをループ処理すれば、複数の通知先に簡単に通知できる。<br>(Railsで言うと、`after_save`とかのイメージ。) |
-| [State](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/state/sample.ts)<br>（状態）| 状態を表すStateオブジェクトを用意し、あるオブジェクトは内包するStateオブジェクトを切り替えることによって、処理内容(振る舞い)を変えられるようにする。<br>（状態を表すクラスは、その状態ごとに1つずつ作る。）<br><br>状態を判定する条件分岐を大量に書かなくてよくなる。 |
-| [Strategy](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/strategy/sample.ts)<br>（戦略）| 一連のアルゴリズム(戦略)をカプセル化(部品化)し、動的なアルゴリズムの切替えを可能とします。<br>あることをするのに、いくつかの方法（ロジック）がある場合、その方法クラスを複数作り、それを行うクラスはその方法クラスを選択することでアルゴリズムを切り替えできる。 |
-| **[Template Method](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/template_method/sample.ts)**<br>（ひな型） | スーパークラスで処理の流れを定義し、その処理の詳細はサブクラスで定義することで、その処理の流れをテンプレート化できる。<br><br>いくつかのメソッド（処理）を呼び出すメソッド（処理の流れを定義）を、ひな型として定義したクラスを作成。<br>それを継承したクラスでその処理の流れを定義したメソッドの具体的な内容を実装する。<br><br>詳細は次項に記載。 |
+| [State](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/state/sample.ts)<br>（状態）| 状態を表すStateオブジェクトを用意し、**あるオブジェクトは内包するStateオブジェクトを切り替えることによって、処理内容(振る舞い)を変えられる**ようにする。<br>（状態を表すクラスは、その状態ごとに1つずつ作る。）<br><br>状態を判定する条件分岐を大量に書かなくてよくなる。 |
+| [Strategy](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/strategy/sample.ts)<br>（戦略）| 一連のアルゴリズム（戦略）をカプセル化（部品化）し、動的なアルゴリズムの切替えを可能とする。<br>**あることをするのに、いくつかの方法（ロジック）がある場合、その方法クラスを複数作り**、それを行うクラスは**その方法クラスを選択することでアルゴリズムを切り替え**できる。 |
+| **[Template Method](https://github.com/ito0804takuya/design-pattern_typescript/tree/main/src/template_method/sample.ts)**<br>（ひな型） | **スーパークラスで処理の流れを定義**し、その**処理の詳細はサブクラスで定義**することで、その**処理の流れをテンプレート化**できる。<br><br>いくつかのメソッド（処理）を呼び出すメソッド（処理の流れを定義）を、ひな型として定義したクラスを作成。<br>それを継承したクラスでその処理の流れを定義したメソッドの具体的な内容を実装する。<br><br>詳細は次項に記載。 |
 | Visitor<br>（訪問者） | データ構造を表すクラス（受け入れ側。これが本体。）と、それに対する処理を行うクラス（Visitor）を分離する。<br><br>**本体クラスのメソッドの引数にVisitorを渡す形にして、そのメソッドの中でVisitorに実装した処理を実行させる**ことで、**本体クラスの中でVisitorが仕事をする**仕組みにできる。<br>そうなると、Visitorを変更することで、**本体クラスにほとんど変更せずに機能を追加・変更できる**。 |
 
 
@@ -73,51 +73,69 @@ published: false
 デザインパターンのうち、CareerMapに適用すると良さそうなパターンを3つ見つけて、サンプル実装を作成した。
 
 ## Abstract Factory（抽象的な工場）
-互いに関連する一連のオブジェクト郡を、その具象クラスに依存しないで生成するためのインタフェースを提供します。
+#### < サンプル実装内容 >
+①募集情報へ応募したときと、②説明会へ応募したときに生成されるオブジェクトは`Entry`と`Message`だが、それらの持つ値や挙動は異なる。
+
+そのため、製品`Entry`の例で言うと、その製品を抽象化し、①の場合に生成するもの（`JobEntry`）と、②の場合に生成するもの（`CorporationEventEntry`）に分けた。（`Message`にも同じことをした。）
+かつ、それらを生成する工場も抽象化し、分けた。
+
+工場には`createEntry()`などと依頼できるため、クライアントはその工場が生産する製品（具象クラス）について知らなくて良い。
+
+#### < メリット >
+- 工場から得られる**製品同士は、互換**であることが保証される。
+- （上記の通り）別の工場で生成する製品同士もそうだが、**工場同士にも互換性を持たせる**ことができる。
+- **具象製品とクライアント側コードの密結合を防止**できる。
+- **製品作成コードが一箇所に**まとめられ、保守が容易になる。（単一責任の原則）
+- この例で言うと、（募集や説明会以外に）**企業実習を追加する場合でも**、同様のFactoryを作ることで**簡単に対応できる**。
+#### < デメリット >
+- コードが増えるため、**必要以上に複雑に**なる可能性がある。
 
 ```ts
 interface EntryFactory {
   createEntry(): Entry;
   createMessage(): Message;
-  createActivity(): Activity;
 }
 // 募集情報へのエントリー
 class JobEntryFactory implements EntryFactory {
-  public createEntry(): Entry {
-    return new Entry("job");
+  createEntry(): Entry {
+    return new JobEntry();
   }
-  public createMessage(): Message {
-    return new Message("job");
-  }
-  public createActivity(): Activity {
-    return new Activity("job");
+  createMessage(): Message {
+    return new EntryJobMessage();
   }
 }
 // 説明会へのエントリー
 class CorporationEventEntryFactory implements EntryFactory {
-  public createEntry(): Entry {
-    return new Entry("internship");
+  createEntry(): Entry {
+    return new CorporationEventEntry();
   }
-  public createMessage(): Message {
-    return new Message("internship");
-  }
-  public createActivity(): Activity {
-    return new Activity("internship");
+  createMessage(): Message {
+    return new EntryCorporationEventMessage();
   }
 }
 
-class Entry  {
-  protected entry_target: string;
-  public constructor(value: string) {
-    this.entry_target = value;
+interface Entry {
+  entryTarget: string;
+}
+class JobEntry implements Entry {
+  entryTarget = "job"; // 応募したのは、募集情報に対して。
+}
+class CorporationEventEntry implements Entry{
+  entryTarget = "session"; // 応募したのは、説明会に対して。
+}
+
+interface Message {
+  sendMessage(): void;
+}
+class EntryJobMessage implements Message {
+  sendMessage(): void {
+    console.log("募集情報へのエントリーがありました。");
   }
-  // ...
 }
-class Message {
-  // ...
-}
-class Activity{
-  // ...
+class EntryCorporationEventMessage implements Message {
+  sendMessage(): void {
+    console.log("説明会へのエントリーがありました。");
+  }
 }
 
 // <使い方>
@@ -125,7 +143,6 @@ function jobEntry() {
   const factory = new JobEntryFactory();
   const entry = factory.createEntry();
   const message = factory.createMessage();
-  const activity = factory.createActivity();
   // 以降、募集へのエントリーならではのビジネスロジック
 }
 
@@ -133,15 +150,22 @@ function corporationEventEntry() {
   const factory = new CorporationEventEntryFactory();
   const entry = factory.createEntry();
   const message = factory.createMessage();
-  const activity = factory.createActivity();
   // 以降、説明会へのエントリーならではのビジネスロジック
 }
 ```
 
 
 ## Facade（見かけ）
+#### < サンプル実装内容 >
 応募（`Entry`）をした際にSlack（メールでも可）に通知を送る（`SlackNotifier`）。
-その際、クライアント側から`Entryの登録`と`Slack通知`を別々に呼び出させるのでなく、Facadeクラスである`EntryNotifier`を使うことで、1つの窓口からその2つの機能を使うことができる。
+その際、クライアント側から`Entryの登録`と`Slack通知`というサブシステムを別々に呼び出させるのでなく、Facadeクラスである`EntryNotifier`を使うことで、1つの窓口からその2つの機能を使うことができる。
+
+#### < メリット >
+- 複数のオブジェクトにそれぞれやってほしいことを書くのでなく、1つのインターフェースから依頼することで、**それぞれが組み合わさって機能している**ということが、コードを読む人から分かりやすい。
+- **クライアント側のコードが簡素化**される。
+
+#### < デメリット >
+- Facade内で使用している、サブシステムのメソッドを他の箇所でFacadeからではなく単独で使う場合には、**そのメソッドの変更が、Facade経由でも正しく機能するか**確認が必要。
 
 ```ts
 // エントリー通知
@@ -154,7 +178,7 @@ class EntryNotifier {
   }
 
   // 2つのクラスの機能を組み合わせて実装したい機能
-  public operation(): void {
+  operation(): void {
     this.entry.createEntry();
     this.slackNotifier.sendMessage(this.entry);
     console.log(`ログに残す。< エントリー内容: ${this.entry}, slack通知: ${this.slackNotifier}>`);
@@ -163,14 +187,14 @@ class EntryNotifier {
 
 // エントリー
 class Entry {
-  public createEntry(): void {
+  createEntry(): void {
     console.log("選考状況をセットし、エントリー情報をDBに登録");
   }
 }
 
 // Slack通知
 class SlackNotifier {
-  public sendMessage(entry: Entry): void {
+  sendMessage(entry: Entry): void {
     console.log(`slackに通知を送信: <${entry}が登録されました。>`);
   }
 }
@@ -185,23 +209,28 @@ console.log(facade.operation());
 ```
 
 ## Template Method
-#### サンプル実装内容
+#### < サンプル実装内容 >
 求職管理簿（`JobHuntingList`）と求人管理簿（`JobList`）という2つのCSVは、出力する内容は異なるが、大きな処理の流れは同じ。（下記1〜4）
-なのでそれをテンプレートメソッド（`exportCSV()`）にする。
+なのでそれをテンプレートメソッド（`exportCSV()`）にした。
   1. CSVに出力するデータセットを取得。
   2. ヘッダーを1行目にセットする。
   3. 1.のデータを2行目以降に書き込み、CSV作成完了。
   4. CSVをクライアントに送る。
 
-いくつかのメソッド（処理）を呼び出すメソッド（処理の流れを定義）を、ひな型として定義したクラスを作成。それを継承したクラスでその処理の流れを定義したメソッドの具体的な内容を実装する。
+#### < メリット >
+- システムに必要となる**帳票**（CSV）**が増えたとしても、Templateクラス**（この例で言う`SchoolDocument`）**のサブクラスを追加するだけで良い**。
+- Templateクラスによって、テンプレートで使用する、サブクラスが持つべきメソッドの実装を強制できる。
+- 各帳票に**共通するコードをTemplateクラスに配置**できる。
 
-色々な種類のcsvを作る工程をテンプレート化。
+#### < デメリット >
+- ある帳票の処理順序に変更が入る場合、**テンプレートを修正すると他の帳票に影響**が出る。
+  （なので帳票が10種類あれば10種類に対して、問題がないか確認が必要。）
 
 ```ts
 abstract class SchoolDocument {
   
   // これがTemplateMethod
-  public exportCSV(): void {
+  exportCSV(): void {
     // CSVに出力するデータセットを取得（今回の例でいうと、求職管理簿ならEntry、求人管理簿ならJobのデータ）
     const data: object[] = this.getData();
 
