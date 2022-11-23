@@ -290,6 +290,12 @@ new JobList().exportCSV();
 ```
 
 
+# 参考ページ
+https://www.techscore.com/tech/DesignPattern/
+http://www.itsenka.com/contents/development/designpattern/
+https://refactoring.guru/ja/design-patterns/typescript
+
+
 # 感想
 - TypeScriptで書いたのだが、普段書くことの多いRubyとの差を実感した。（型注釈やインターフェース 等）
   言語レベルでの差を感じることができたため、他の言語を触る機会には、その言語の仕様に注意しながら取り扱おうと思えるようになった。
@@ -301,18 +307,36 @@ new JobList().exportCSV();
   現実、実務においてデザインパターンがぴったりハマり、使うメリットが大きいというタイミングは少ないかもと感じた。
 - 使っているもの（言語やフレームワーク）によって、良いパターンとアンチパターンがあるのではと感じた。
   Ruby on Railsで言うと、[こういうパターン](https://applis.io/posts/rails-design-patterns)が良しとされている と調べて知ることができた。
-- 参考ページのクラス図を読む上で、継承・集約などの関連の理解が浅いと感じた。[こちらのサイト](http://teacher.nagano-nct.ac.jp/fujita/LightNEasy.php?page=oop4)などで理解できた。
 
-# 参考ページ
+---
 
-## デザインパターンについて
-https://www.techscore.com/tech/DesignPattern/
-http://www.itsenka.com/contents/development/designpattern/
-https://refactoring.guru/ja/design-patterns/typescript
-
-## 「関係」について
+### オブジェクト指向の「関係」について
+デザインパターンや参考ページのクラス図を読む上で、継承・コンポジションなどの関連の知識が前提として必要だと感じたので、下項に整理した。
 https://www.ogis-ri.co.jp/otc/hiroba/technical/DesignPatternsWithExample/chapter01.html
+
+- 継承
+  `サブクラス is a スーパークラス.（トラックは車。）`
+- 集約
+  部品として他のオブジェクトを持つが、弱い結びつき。関連先が消滅しても、自身は消滅しない。
+  `A part of B.（駐車場Bと、そこに駐車された車A。）`
+- コンポジション（合成）
+  部品として他のオブジェクトを持つ、強い結びつき。関連先が消滅すると、自身も消滅する。
+  集約と似ている概念。
+  `A part of B.（エンジンAは車Bの一部。）`
+
+  利用したオブジェクト
+
+:::message alert
+GoFとUMLで、集約とコンポジションの定義が異なる。（逆のことを指す。）
+https://qiita.com/gatapon/items/5e3292f897ab4f817001
+（上記の箇条書きで記載した集約とコンポジションは、今一般的に使われる、UMLにおける定義のほうで記載した。）
+:::
+
+#### 参考ページ （「関係」について）
 http://teacher.nagano-nct.ac.jp/fujita/LightNEasy.php?page=oop4
 https://thinkit.co.jp/article/13112
+https://qiita.com/gatapon/items/5e3292f897ab4f817001
+https://rakusui.org/design_pattern/
+https://4geek.net/difference-between-inheritance-and-composition/
 
 以上
