@@ -291,7 +291,7 @@ AWS FireLensから下記のサービスに転送することができる。
   - 別のFluentdやFluent Bit
 
 
-# AWS Firelens
+コンテナ内にファイル出力されたログを取り扱うことは、AWSが用意しているFluent Bitイメージでは対応することができない
 
 https://zenn.dev/knjname/articles/2dc6c5ca520006e1e0ee
 https://engineering.dena.com/blog/2022/08/firelens/
