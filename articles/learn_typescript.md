@@ -1799,6 +1799,13 @@ Math.min(...array)
 ```
 
 ## ソート
+:::message alert:::
+**Array#sort()は文字列比較による辞書順でソートするので注意!!**
+
+なので、異なる桁数の数値のsortは、期待する結果にならない。
+`[3, 2, 1, 10, 100].sort()`は、`[1, 10, 100, 2, 3]`になってしまう。
+:::
+
 javascriptの`sort()`は、()内で関数を実行してその返り値が0より大きいか/小さいか/等しいかによって並べ替えをコントロールできる。
 https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 
