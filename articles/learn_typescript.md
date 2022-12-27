@@ -22,14 +22,6 @@ $ tsc -v
 Version 4.3.5
 ```
 
-:::message alert
-次のワードを調べて、網羅的に知識を整理すること。
-package.json
-node_modules
-npx
-yarn / npm
-:::
-
 
 # Typescriptとエコシステム
 
@@ -48,12 +40,6 @@ ECMAScriptは毎年1回、仕様改定され、そのたびにバージョンが
 **ECMAScriptが決める クライアントサイドJavaScript の仕様は部分的**。ECMAScriptが定める範囲は、言語の文法、構文の解釈方法、コアのAPIなど言語の中核部分。
 JavaScriptのうち**ブラウザ仕様に関する部分は、HTML Living Standard が決めている**。（HTML Living Standardで決められる内容は、ブラウザでJavaScriptを使うと触れることになる、windowオブジェクトやHTMLDivElement、ローカルストレージなどのAPI。）
 
-## フロントエンドフレームワーク
-React、Vue、Angular、Next.js、Nuxt.jsなど
-
-## 型定義ファイル
-TypeScriptを使ったプロジェクトにJavaScript純正のライブラリを使いたいときは、ライブラリとは別途、*型定義ファイル*を入手すると、TypeScriptでの型チェックができるようになる。
-
 ## 実行環境
 JavaScriptの実行環境は大きく分けて、「ブラウザ」と「サーバー」の2種類。
 
@@ -67,6 +53,14 @@ JavaScriptのライブラリを管理するツール。
 https://zenn.dev/hibikine/articles/27621a7f95e761
 
 npmやYarnでインストールされるライブラリは、`npmjs.com`という中央集権型のレジストリにホスティングされている。
+
+:::message alert
+次のワードを調べて、網羅的に知識を整理すること。
+package.json
+node_modules
+npx
+yarn / npm
+:::
 
 ### < モジュールバンドラー >
 複数のJavaScriptファイルをひとつのファイルに結合するためのツール。（代表は`Webpack`。）
@@ -1677,10 +1671,16 @@ class Developer implements Human, Programmer {
 }
 ```
 
+#### インターフェースと型エイリアスの使い分け
+どちらが良いとかでは無い。
+下表のように異なる点があるので、プロジェクト内でルールを決めて遵守すること。
 
-<!-- ここで一度TypeScriptの座学は終わる。
-短期指標であるデザインパターンの適用案を考えるほうに移行する。
-次回、TypeScriptを実務で使うときは、やり残しの項を勉強すること。 -->
+| 内容 | インターフェース | 型エイリアス |
+| :-: | - | - |
+|継承 | 可能 | 不可。ただし交差型で表現は可能 |
+| 継承による上書き | 上書きまたはエラー | フィールド毎に交差型が計算される |
+| 同名のものを宣言 | 定義がマージされる | エラー |
+| Mapped Types | 使用不可 | 使用可能 |
 
 ---
 
@@ -1799,12 +1799,9 @@ Math.min(...array)
 ```
 
 ## ソート
-:::message alert:::
 **Array#sort()は文字列比較による辞書順でソートするので注意!!**
-
 なので、異なる桁数の数値のsortは、期待する結果にならない。
 `[3, 2, 1, 10, 100].sort()`は、`[1, 10, 100, 2, 3]`になってしまう。
-:::
 
 javascriptの`sort()`は、()内で関数を実行してその返り値が0より大きいか/小さいか/等しいかによって並べ替えをコントロールできる。
 https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
