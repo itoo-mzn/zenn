@@ -1685,7 +1685,104 @@ class Developer implements Human, Programmer {
 ---
 
 ## 組み込みAPI
-未。
+JavaScriptに組み込まれているAPI。
+
+### < Map >
+連想配列。RubyでいうところのHash。
+```ts:使い方（基本）
+// 型注釈は省略しても、型推論してくれるのでOK
+const map = new Map<string, number>([
+  ["a", 1],
+  ["b", 2]
+]);
+console.log(map); // Map(2) { 'a' => 1, 'b' => 2 }
+
+// 取得
+console.log(map.get("a")); // 1
+// 追加
+map.set("c", 3);
+console.log(map); // Map(3) { 'a' => 1, 'b' => 2, 'c' => 3 }
+// 削除
+map.delete("c");
+console.log(map); // Map(2) { 'a' => 1, 'b' => 2 }
+// 存在確認
+console.log(map.has("a")); // true
+console.log(map.has("c")); // false
+// 要素数
+console.log(map.size); // 2
+// 全keyを取得
+console.log(map.keys()); // [Map Iterator] { 'a', 'b' }
+console.log([...map.keys()]); // [ 'a', 'b' ]
+// 全valueを取得
+console.log(map.values()); // [Map Iterator] { 1, 2 }
+console.log([...map.values()]); // [ 1, 2 ]
+// keyとvalueの全セットを取得
+console.log([...map.entries()]); // [ [ 'a', 1 ], [ 'b', 2 ] ]
+```
+
+JSON化するには、一度オブジェクトに変換しないといけない。（Map→オブジェクト→JSON）
+```ts:JSON化
+const obj = Object.fromEntries(map);
+console.log(JSON.stringify(obj)); // {"a":1,"b":2}
+```
+
+### < Set >
+値の重複を許さない配列。
+
+メソッドに関してはほぼ`Map`と同じ。
+```ts
+const set = new Set(["a", "b", "a"]);
+console.log(set); // Set(2) { 'a', 'b' }
+
+// 追加
+set.add("c");
+console.log(set); // Set(3) { 'a', 'b', 'c' }
+
+// 配列化
+const array = [...set];
+console.log(array); // [ 'a', 'b', 'c' ]
+```
+
+### < RegExp >
+正規表現のためのクラス。
+
+2つの記法があるが、基本的にリテラルで良い。
+（動的に検索ワードを切り替える場合はコンストラクタが良い。が、バックスラッシュ`\`1文字を検索したいとき、`\\\\`と4文字書く必要がある。これが個人的に嫌。）
+1. リテラルでの表記
+2. コンストラクタを利用した表記
+
+また、一致した文字列を取得する方法も2つあるが、ほぼ同じ。
+1. RegExpの`exec()`を使う。
+2. Stringの`match()`を使う。
+
+```ts
+// 1. リテラルでの表記
+const regexp2 = new RegExp("0(8|9)0-\\d{4}-\\d{4}", "g");
+
+// 2. コンストラクタを利用した表記
+const regexp2 = new RegExp("0(8|9)0-\\d{4}-\\d{4}", "g"); // \が多く必要
+
+// 一致したかどうか
+console.log(regexp1.test("080-1234-1234")); // true
+console.log(regexp1.test("080-12-12")); // false
+
+// 一致した文字列を取得
+// 1. RegExpの exec() を使う。
+const result_exec = regexp1.exec("080-1234-1234");
+console.log(result_exec);
+// [
+//   '080-1234-1234',
+//   '8',
+//   index: 0,
+//   input: '080-1234-1234-11',
+//   groups: undefined
+// ]
+
+// 2. Stringの match() を使う。
+const result_match = "080-1234-1234".match(regexp1);
+console.log(result_match);
+// [ '080-1234-1234' ]
+```
 
 ---
 
