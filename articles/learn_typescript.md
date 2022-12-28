@@ -1787,7 +1787,29 @@ console.log(result_match);
 ---
 
 ## import、export、require
-未。
+`import`や`export`を1つ以上含むファイルを、モジュールと言う。（無いものは、スクリプト。）
+importで他のモジュールから変数・関数・クラスなどを取り込み、exportで公開する。
+
+モジュール設定の記載方法には2種類ある。（JSの仕様はこういうのがあるからややこしい。）
+1. `import`, `export`を使う方法
+  ESMAScriptの仕様（ES Module）。比較的新しい記法。主にフロントエンドJSで使われる。
+2. `require`, `exports`を使う方法
+  CommonJSの仕様。Node.jsではこちらが使われる。
+
+:::message
+ブラウザ用であればES Moduleを、サーバー用であればCommonJSが無難な選択肢。
+:::
+
+CommonJSの記法（2.）だけ記載する。
+```ts:util.ts
+exports.increment = (i: number) => i + 1;
+exports.decrement = (i: number) => i - 1;
+```
+```ts:main.ts
+const util = require("./increment");
+console.log( util.increment(2) ); // 3
+console.log( util.decrement(2) ); // 1
+```
 
 ---
 
