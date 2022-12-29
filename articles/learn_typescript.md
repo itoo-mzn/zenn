@@ -1442,8 +1442,8 @@ const tuple: [number, string] = await Promise.all([
 ```
 
 
-
 ---
+
 
 ## オブジェクト指向
 
@@ -1682,7 +1682,9 @@ class Developer implements Human, Programmer {
 | 同名のものを宣言 | 定義がマージされる | エラー |
 | Mapped Types | 使用不可 | 使用可能 |
 
+
 ---
+
 
 ## 組み込みAPI
 JavaScriptに組み込まれているAPI。
@@ -1726,6 +1728,7 @@ const obj = Object.fromEntries(map);
 console.log(JSON.stringify(obj)); // {"a":1,"b":2}
 ```
 
+
 ### < Set >
 値の重複を許さない配列。
 
@@ -1742,6 +1745,7 @@ console.log(set); // Set(3) { 'a', 'b', 'c' }
 const array = [...set];
 console.log(array); // [ 'a', 'b', 'c' ]
 ```
+
 
 ### < RegExp >
 正規表現のためのクラス。
@@ -1784,9 +1788,11 @@ console.log(result_match);
 // [ '080-1234-1234' ]
 ```
 
+
 ---
 
-## import、export、require
+
+## import/export、require/exports
 `import`や`export`を1つ以上含むファイルを、モジュールと言う。（無いものは、スクリプト。）
 importで他のモジュールから変数・関数・クラスなどを取り込み、exportで公開する。
 
@@ -1811,15 +1817,176 @@ console.log( util.increment(2) ); // 3
 console.log( util.decrement(2) ); // 1
 ```
 
+
 ---
+
 
 ## シングルプロセス・シングルスレッドとコールバック
-未。
+JavaScriptは**シングルプロセス、シングルスレッド**の言語。
+つまり、プログラムは**直列に処理される**。
+（シングルスレッドなので、コールスタック（次の命令の情報などが格納されている場所）も1つ。）
+
+https://knowledge.sakura.ad.jp/24148/
+https://resanaplaza.com/%E3%80%90%E7%B0%A1%E5%8D%98%E8%A7%A3%E8%AA%AC%E3%80%91%E4%B8%80%E7%9B%AE%E3%81%A7%E5%88%86%E3%81%8B%E3%82%8B%E3%83%97%E3%83%AD%E3%82%BB%E3%82%B9%E3%80%81%E3%82%BF%E3%82%B9%E3%82%AF%E3%80%81%E3%82%B9/
+
+「直列に処理される」ということは、時間のかかる処理を行っている間、他の処理が実行されないということ。（ブロッキングという。）
+:::message
+- ブロッキング = 同期
+- ノンブロッキング ≒ 非同期 （少し違う）
+
+https://blog.takanabe.tokyo/2015/03/%E3%83%8E%E3%83%B3%E3%83%96%E3%83%AD%E3%83%83%E3%82%AD%E3%83%B3%E3%82%B0i/o%E3%81%A8%E9%9D%9E%E5%90%8C%E6%9C%9Fi/o%E3%81%AE%E9%81%95%E3%81%84%E3%82%92%E7%90%86%E8%A7%A3%E3%81%99%E3%82%8B/
+https://penpen-dev.com/blog/burokkinngu/
+:::
+
+Node.jsはノンブロッキングを扱える。
+```ts:ノンブロッキングの例
+console.log("first");
+
+setTimeout(() => {
+  console.log("second");
+}, 1000);
+
+console.log("third");
+// first
+// third
+// second
+```
+:::message
+setTimeoutは、`setTimeout(関数, 時間[ms])`なので、第一引数に渡しているのは関数。（今回はアロー関数で書いている。）
+こういう、**他の関数に渡される関数**のことを、**コールバック関数**という。
+
+コールバック関数の中でコールバック関数を使い、その中でもコールバック関数を使い、...ということをやるとコールバック地獄になる。
+:::
+
 
 ---
 
+
 ## 型の再利用
-未。
+
+### < typeof型演算子 >
+**変数から型を抽出**する型演算子。
+（値の型を調べる`typeof演算子`とは全く別のものなので注意。）
+
+```ts
+const point = { x: 135, y: 40};
+type Point = typeof point;
+// 下記のような型が生成される
+// type Point = {
+//   x: number;
+//   y: number;
+// }
+```
+
+### < keyof型演算子 >
+**オブジェクトからプロパティ名を型として抽出**する型演算子。
+```ts
+type Person = {
+  name: string;
+  age: number;
+};
+type PersonKey = keyof Person;
+// type PersonKey = "name" | "age"; と同じ
+```
+
+### < ユーティリティ型 >
+**型から別の型を導出**する型。
+（*型の世界の関数* のようなイメージ。）
+
+#### Required<T>
+任意のプロパティを表す`?`を取り除くユーティリティ型。（全て必須にする。）
+```ts
+type Person = {
+  name: string;
+  address?: string;
+  tel?: number;
+}
+type FullPropatyPerson = Required<Person>;
+// type FullPropatyPerson = {
+//   name: string;
+//   address: string;
+//   tel: number;
+// }
+```
+
+#### Readonly<T>
+読み取り専用になる。
+
+#### Partial<T>
+全てのプロパティを任意（オプショナル）にする。
+```ts
+type Person = {
+  name: string;
+  address?: string;
+  tel?: number;
+}
+type OptionalPropatyPerson = Partial<Person>;
+// type OptionalPropatyPerson = {
+//   name?: string | undefined;
+//   address?: string | undefined;
+//   tel?: number | undefined;
+// }
+```
+
+##### [ Partialを用いたOptions Objectパターン ]
+Partialを応用して、余分な引数の指定を省略可能な使いやすい関数を実装できる。
+
+<例>
+下記のように、ageだけを指定してユーザを検索・取得するfindUser関数を使う際に、ageより前の引数にはundefinedを指定しないといけない。
+```ts
+type User = {
+  name: string;
+  tel?: string;
+  address: string;
+  age?: number;
+}
+
+function findUsers(
+  name?: string,
+  tel?: string,
+  address?: string,
+  age?: number
+) {
+  // ...
+}
+
+findUsers(undefined, undefined, undefined, 22);
+```
+
+Partialを使い、任意に指定可能な引数用オブジェクトを作成。
+これをfindUsers関数の引数に指定することで、上記の問題が解消され、使いやすい関数になる。
+```ts
+type FindUsersArgs = Partial<User>;
+
+function findUsers({
+  name,
+  tel,
+  address,
+  age,
+}: FindUsersArgs) {
+  // ...
+}
+
+findUsers({}); // 殻のオブジェクトを渡さないといけない
+findUsers({ age: 22 });
+```
+
+（何も指定せずにuserを検索するとき、空のオブジェクトを渡さないといけないようになっている。これは、下記のようにデフォルト引数を使うことで解消できる。）
+```ts
+function findUsers({
+  name,
+  tel,
+  address,
+  age,
+}: FindUsersArgs = {}) {
+  // ...
+}
+
+findUsers();
+findUsers({ age: 22 });
+```
+
+
 
 ---
 
