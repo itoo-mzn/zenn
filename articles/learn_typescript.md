@@ -1986,6 +1986,59 @@ findUsers();
 findUsers({ age: 22 });
 ```
 
+#### Record<Keys, Type>
+プロパティの*キー*が`Keys`で、プロパティの*値*が`Type`となるオブジェクトを作るための型。
+```ts
+type Person = Record<"firstName" | "middleName" | "lastName", string>;
+const person: Person = {
+  firstName: "Robert",
+  middleName: "Cecil",
+  lastName: "Martin"
+}
+```
+
+#### Pick<T, Keys>
+既存の**オブジェクト型**`T`から、`Keys`に**指定したキーだけの型**を生成するユーティリティ型。
+（指定したものだけpickする。）
+
+<例>
+ユーザーのアカウントとなるUserというオブジェクトが必要だが、実際にユーザーが登録時に入力するのは`名前`と`住所（任意）`で良い場合、Pick型が役に立つ。
+
+```ts:悪い例
+// id, createdAt, updatedAtは、システム内で自動生成される
+type User = {
+  id: number;
+  name: string;
+  address?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 登録時にユーザーが入力する値
+// → Userのnameやaddressの型に変更が入った場合、UserInputDataにも変更の手入れが必要
+type UserInputData = {
+  name: string;
+  address?: string;
+}
+```
+```ts:良い例
+type UserInputData = Pick<User, "name" | "address">
+```
+
+#### Omit<T, Keys>
+既存の**オブジェクト型**`T`から、`Keys`に**指定したキーを除外**した型を生成するユーティリティ型。
+（指定したものだけomit（省略）する。）
+
+#### Exclude<T, U>
+既存の**ユニオン型**`T`から、`U`に**指定したキーを除外した型**を生成するユーティリティ型。
+（`Pick`のユニオン型ver.）
+
+#### Extract<T, U>
+既存の**ユニオン型**`T`から、`U`に**指定したキーだけの型**を生成するユーティリティ型。
+（`Omit`のユニオン型ver.）
+
+
+
 
 
 ---
