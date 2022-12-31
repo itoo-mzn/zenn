@@ -2037,132 +2037,321 @@ type UserInputData = Pick<User, "name" | "address">
 既存の**ユニオン型**`T`から、`U`に**指定したキーだけの型**を生成するユーティリティ型。
 （`Omit`のユニオン型ver.）
 
+#### Mapped Types
+インデックス型ではキーを自由に設定できてしまうため、アクセス時にundefinedかどうかチェックする必要がある。
+Mapped Typesで、オブジェクトに設定できるプロパティを指定できるため、それを解消できる。
 
+Mapped Typesは`{ [P in K]: T }`のように記述する。
+『オブジェクトの**プロパティPは型K**で、**値は型T**』ということ。
 
+すでに定義されているUnion型やオブジェクトのキーを再利用（マップ）して新しい型を定義するため、Mapped Typesという名前がつけられている。
+```ts
+type SystemSupportLanguage = "en" | "jp" | "fr" | "it";
+type Butterfly = {
+  [key in SystemSupportLanguage]: string;
+};
+
+const Butterflies: Butterfly = {
+  en: "Butterfly",
+  jp: "蝶",
+  de: "hoge" // SystemSupportLanguage（ユニオン型）に含まれていないため、エラーになり設定できない
+}
+```
+
+https://nishinatoshiharu.com/mapped-types-overview/
+
+#### インデックスアクセス型
+プロパティの値の型や、配列の要素の型を参照する。
+
+```ts
+type Person = { name: string, age: number};
+
+type PersonDataType = Person["name" | "age"];
+// type PersonDataType = string | number
+```
+```ts:keyofを使う方法
+type PersonDataType = Person[keyof Person];
+```
 
 
 ---
+
 
 ## ジェネリクス
-未。
+型も引数のように扱うことで、型の安全性とコードの共通化を両立する。
+`T`という**型変数**を使う。
+
+```ts:改善前のコード
+// 渡された2つの文字列の中からランダムに一方を返す
+function chooseRandomlySrting(v1: string, v2: string): string {
+  return Math.random() <= 0.5 ? v1 : v2;
+}
+const winOrLose = chooseRandomlySrting("勝ち", "負け");
+
+// 渡された2つの数値の中からランダムに一方を返す
+// → chooseRandomlySrting()に対して、型だけが異なる
+function chooseRandomlyNumber(v1: number, v2: number): number {
+  return Math.random() <= 0.5 ? v1 : v2;
+}
+```
+上の2つの関数を共通化しようとすると、関数の引数・返り値の型を`any`にすればできるが、型の安全性が失われる。
+
+そこで、ジェネリクスを使うと下記のように解決する。
+```ts:ジェネリクスによる改善後
+function chooseRandomly<T>(v1: T, v2: T): T {
+  return Math.random() <= 0.5 ? v1 : v2;
+}
+console.log( chooseRandomly<string>("勝ち", "負け") );
+console.log( chooseRandomly<number>(0, 1) );
+```
+
+### < 型引数の制約 >
+型引数にはどんな型でも指定できるため、下記のコードはエラーになる。
+（型引数`element`の型によっては`style`というプロパティが存在しないため。）
+```ts:エラー発生
+function changeBackGroudColor<T>(element: T) {
+  element.style.backgroundColor = "red"; // styleにアクセスできないためエラー発生している
+  return element;
+}
+```
+
+そこで、**`extends`キーワードで型引数に制約をつける**ことで解消できる。
+```ts
+function changeBackGroudColor<T extends HTMLElement>(element: T) {
+  element.style.backgroundColor = "red";
+  return element;
+}
+```
+
+また、`<T extends 型 = デフォルト型>`と書けば、デフォルト型引数を設定できる。
+
 
 ---
+
 
 ## Tips
-未。
+
+### < オブジェクトを浅くコピーする >
+```ts:オブジェクト
+const sample = { a: 1, b: 1 };
+const shallowCopied: object = { ...sample } // sampleと同じ中身のオブジェクトになる { a: 1, b: 1 }
+
+console.log(sample == shallowCopied); // だが、等しくない（別の空間にあるため）
+```
+
+```ts:配列
+const arr1 = [1, 2, 3];
+const arr2 = [...arr1]; // [ 1, 2, 3 ]
+```
+
+```ts:Map
+const map1 = new Map([
+  [".js", "JS"],
+  [".ts", "TS"],
+]);
+const map2 = new Map(map1);
+```
+
+```ts:Set
+const set1 = new Set([1, 2, 3]);
+const set2 = new Set(set1);
+```
+
+### < オブジェクトをマージ（結合）する >
+```ts
+const obj1 = { a: 1 };
+const obj2 = { b: 2 };
+const obj3 = { c: 3 };
+const merged = {
+  ...obj1,
+  ...obj2,
+  ...obj3
+}; // { a: 1, b: 2, c: 3 }
+```
+
+### < オブジェクトのサブセット（一部を切り取ったもの）を得る >
+即時関数・分割代入・shorthand property nameの合わせ技で、下記のように書ける。
+（別の方法として、lodashというライブラリを使う方法もある。）
+```ts
+const user = {
+  name: "田中",
+  age: 22,
+  tel: "00-1234-1234",
+  prefecture: "東京都",
+  city: "千代田区",
+  address: "丸の内1-2-3",
+  createdAt: "2022-01-01",
+  updatedAt: "2022-01-01"
+}
+
+// userの住所に関する情報だけを取得
+const userAddress = ( ({prefecture, city, address}) => ({prefecture, city, address}))(user);
+console.log(userAddress);
+// { prefecture: '東京都', city: '千代田区', address: '丸の内1-2-3' }
+
+// userの住所に関する情報 以外を取得
+const excludeUserAddress = ( ({prefecture, city, address, ...rest}) => rest)(user);
+console.log(excludeUserAddress);
+// {
+//   name: '田中',
+//   age: 22,
+//   tel: '00-1234-1234',
+//   createdAt: '2022-01-01',
+//   updatedAt: '2022-01-01'
+// }
+```
+
+### < オブジェクトで受け、オブジェクトで返す >
+```ts:改善前
+function findUser(
+  name?: string,
+  age?: number,
+  country?: string
+): User {
+  if (age && age >= 20) {
+    // ... (検索ロジック)
+  } else {}
+}
+```
+
+関数の引数にオブジェクトを渡すようにする。
+```ts
+type UserInfo = {
+  name?: string;
+  age?: number;
+  country?: string;
+}
+
+function findUser(info: UserInfo): User {
+  if (info.age && info.age >= 20) {
+    // ... (検索ロジック)
+  } else {}
+}
+```
+https://zenn.dev/itoo/articles/refactorilng-ruby#10.9-%E5%BC%95%E6%95%B0%E3%82%AA%E3%83%96%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AE%E5%B0%8E%E5%85%A5
+
+```ts:（応用）名前だけの検索を行う場合
+function findUserByName({ name }: UserInfo): User {
+  // ... (nameを使った検索ロジック)
+}
+
+```
 
 ---
 
-:::details プログラム問題でよく使うもの
 
 # プログラム問題でよく使うもの
 
-## 標準入力を受け取る
-```js:javascript パターン1
-process.stdin.resume();
-process.stdin.setEncoding('utf8');
+:::details 標準入力を受け取る
+  ## 標準入力を受け取る
+  パターン1は長すぎる。パターン2で良い。
+  ```js:javascript パターン1
+  process.stdin.resume();
+  process.stdin.setEncoding('utf8');
 
-var lines = [];
-var reader = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-reader.on('line', (line) => {
-  lines.push(line);
-});
-reader.on('close', () => {
-  // ここにロジックを書く。(標準入力を受け取った後に行うことを記述する場所)
-  console.log(lines); // 標準入力で受け取った値が配列で格納されている
-}
-```
-```js:javascript パターン2
-function Main(input) {
-  console.log(input);
-}
-
-Main(require("fs").readFileSync("/dev/stdin", "utf8"));
-```
-
-### 標準入力を文字列→整数に変換する
-(例 : `5 2 4` → `[5, 2, 4]`)
-```js
-const input = lines[0].split(' ').map(str => (parseInt(str, 10)) );
-```
-
-
-## ループ
-forはできるだけ使わないようにする。
-https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
-
-```js:filter
-// 数値が並ぶ配列の中で、後ろの数値のほうが大きい要素(整列していない数値)のみを取得
-const not_sorted_numbers = num_array.filter((num, index) => num > num_array[index+1]);
-```
-
-```js:for of文
-for (const result of results) {
-  // ...
-}
-
-// インデックスも欲しい場合
-for (const [index, result] of results.entries()) {
-  // ...
-}
-```
-
-
-```js:for文 (仕方ない場合)
-for(let count = 0; count < peopleSum; count++) {
-  // ...
-}
-```
-
-## 連番の配列を作る
-```js
-const arr = Array.from({ length: 5 }).map( (v, k) => k+1); // [1, 2, 3, 4, 5]
-```
-
-## 配列の中の数値を合計
-```js
-const sum = nums_array.reduce( (sum, i) => sum + i, 0);
-
-// 入力値までの総和が欲しい場合（num=10の場合、1+2+3+... = 55）
-const sum = [...Array(num)].reduce(function(sum, _, i) {
-    return sum + i + 1 
-  } , 0);
-```
-
-## 配列の中の数値の最大値、最小値を取得
-```js
-Math.min(...array)
-```
-
-## ソート
-**Array#sort()は文字列比較による辞書順でソートするので注意!!**
-なので、異なる桁数の数値のsortは、期待する結果にならない。
-`[3, 2, 1, 10, 100].sort()`は、`[1, 10, 100, 2, 3]`になってしまう。
-
-javascriptの`sort()`は、()内で関数を実行してその返り値が0より大きいか/小さいか/等しいかによって並べ替えをコントロールできる。
-https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-
-```js
-// < 降順(大→小)にソートする例 >
-numbers_array.sort(function(first, second){
-  if (first > second) {
-    return -1; // 次の要素(second)より大きいfirstは、secondの前に整列
-  } else if (first < second) {
-    return 1; // secondより小さいfirstは、secondの後ろに整列
-  } else {
-    return 0; // 順序はそのまま
+  var lines = [];
+  var reader = require('readline').createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  reader.on('line', (line) => {
+    lines.push(line);
+  });
+  reader.on('close', () => {
+    // ここにロジックを書く。(標準入力を受け取った後に行うことを記述する場所)
+    console.log(lines); // 標準入力で受け取った値が配列で格納されている
   }
-});
-```
+  ```
+  ```js:javascript パターン2
+  function Main(input) {
+    console.log(input);
+  }
 
+  Main(require("fs").readFileSync("/dev/stdin", "utf8"));
+  ```
+
+  ### 標準入力を文字列→整数に変換する
+  (例 : `5 2 4` → `[5, 2, 4]`)
+  ```js
+  const input = lines[0].split(' ').map(str => (parseInt(str, 10)) );
+  ```
+:::
+
+:::details ループ
+  ## ループ
+  forはできるだけ使わないようにする。https://qiita.com/diescake/items/70d9b0cbd4e3d5cc6fce
+
+  ```js:filter
+  // 数値が並ぶ配列の中で、後ろの数値のほうが大きい要素(整列していない数値)のみを取得
+  const not_sorted_numbers = num_array.filter((num, index) => num > num_array[index+1]);
+  ```
+
+  ```js:for of文
+  for (const result of results) {
+    // ...
+  }
+
+  // インデックスも欲しい場合
+  for (const [index, result] of results.entries()) {
+    // ...
+  }
+  ```
+
+  ```js:for文 (仕方ない場合)
+  for(let count = 0; count < peopleSum; count++) {
+    // ...
+  }
+  ```
+:::
+
+:::details 配列
+  ## 連番の配列を作る
+  ```js
+  const arr = Array.from({ length: 5 }).map( (v, k) => k+1); // [1, 2, 3, 4, 5]
+  ```
+
+  ## 配列の中の数値を合計
+  ```js
+  const sum = nums_array.reduce( (sum, i) => sum + i, 0);
+
+  // 入力値までの総和が欲しい場合（num=10の場合、1+2+3+... = 55）
+  const sum = [...Array(num)].reduce(function(sum, _, i) {
+      return sum + i + 1 
+    } , 0);
+  ```
+
+  ## 配列の中の数値の最大値、最小値を取得
+  ```js
+  Math.min(...array)
+  ```
+:::
+
+:::details ソート
+  ## ソート
+  **Array#sort()は文字列比較による辞書順でソートするので注意!!**
+  なので、異なる桁数の数値のsortは、期待する結果にならない。
+  `[3, 2, 1, 10, 100].sort()`は、`[1, 10, 100, 2, 3]`になってしまう。
+
+  javascriptの`sort()`は、()内で関数を実行してその返り値が0より大きいか/小さいか/等しいかによって並べ替えをコントロールできる。
+  https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+
+  ```js
+  // < 降順(大→小)にソートする例 >
+  numbers_array.sort(function(first, second){
+    if (first > second) {
+      return -1; // 次の要素(second)より大きいfirstは、secondの前に整列
+    } else if (first < second) {
+      return 1; // secondより小さいfirstは、secondの後ろに整列
+    } else {
+      return 0; // 順序はそのまま
+    }
+  });
+  ```
 :::
 
 
 # 参考文献
 https://typescriptbook.jp/
 
-### 便利そうなのでインデックスしておくページ
+### < 便利そうなのでインデックスしておくページ >
 https://typescriptbook.jp/symbols-and-keywords
