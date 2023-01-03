@@ -1454,7 +1454,95 @@ console.log("同期的な処理2");
 
 その**非同期処理で発生した例外を扱う方法**として、**主に`Promise`と`Async Function`の2つがある**。
 
+### < Promise >
+Promiseは、**非同期処理の状態や結果を表現する**ビルトインオブジェクト。
+**Promiseインスタンスに、状態変化（成功/失敗）をしたときに呼び出されるコールバック関数を登録**する。`new Promise((resolve, reject) => { ... }`
 
+#### thenとcatch
+**`then`メソッド**には、**第一引数に非同期処理がresolve（成功）時に実行したいコールバック関数**を、**第二引数にreject（失敗）時に実行したいコールバック関数を登録**する。
+ただし、どちらも省略することもできる。（下記の例3, 4）
+
+```js:例1 試しに、rejectを考えないでやってみる
+function dummyFetch(path) {
+  return new Promise( (resolve, reject) => {
+    // ひとまず、rejectされた場合のことを考えないで使ってみる
+    resolve({ body: `${path}のレスポンス`});
+    // → then()の第一引数のコールバック関数（onFulfilled）に渡される
+  });
+}
+
+dummyFetch("/success/data").then(function onFulfilled(response) {
+  console.log(response); // { body: '/success/dataのレスポンス' }
+}, function onRejected(error) {
+  // ここには絶対に入ってこない
+  console.log(error);
+});
+```
+
+```js:例2 resolve状態, reject状態が起こり得る
+function dummyFetch(path) {
+  return new Promise( (resolve, reject) => {
+    setTimeout( () => {
+      if (path.startsWith("/success")) {
+        // resolve（成功）状態のPromiseオブジェクトを返す
+        resolve({ body: `${path}のレスポンス`});
+      } else {
+        // reject（失敗）状態のPromiseオブジェクトを返す
+        reject(new Error("NOT FOUNT"));
+      }
+    }, 1000);
+  });
+}
+
+dummyFetch("/success/data").then(function onFulfilled(response) {
+  console.log(response); // 実行され、{ body: '/success/dataのレスポンス' } と出力される
+}, function onRejected(error) {
+  console.log(error);
+});
+
+dummyFetch("/failure/data").then(function onFulfilled(response) {
+  console.log(response);
+}, function onRejected(error) {
+  console.log(error); // 実行され、Error: NOT FOUNT と出力される
+});
+```
+
+```js:例3 resolve時のコールバック関数だけ登録する
+function delay(timeoutMs) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, timeoutMs);
+  });
+}
+
+delay(10).then(() => {
+  console.log("10ms後に呼ばれる");
+});
+```
+```js:例4 reject時のコールバック関数だけ登録する
+function delay(timeoutMs) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject();
+    }, timeoutMs);
+  });
+}
+
+// 非推奨（thenの第一引数はundefinedで殺して、第二引数だけ登録する方法）
+delay(10).then(undefined, () => {
+  console.log("失敗! 10ms後に呼ばれる");
+});
+
+// 推奨（thenでなくcatchを使う）
+delay(10).catch(() => {
+  console.log("失敗! 10ms後に呼ばれる");
+});
+```
+
+#### Promiseと例外
+Promise内で例外が発生すると、失敗時と同じコールバック関数（`then`の第二引数や、`catch`で登録したコールバック）が呼ばれる。
+そのため、Promise内では`try...catch`しなくていい。
 
 ```ts
 async function take3Sec(): Promise<string> {
