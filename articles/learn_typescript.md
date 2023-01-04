@@ -1544,6 +1544,33 @@ delay(10).catch(() => {
 Promise内で例外が発生すると、失敗時と同じコールバック関数（`then`の第二引数や、`catch`で登録したコールバック）が呼ばれる。
 そのため、Promise内では`try...catch`しなくていい。
 
+#### Promiseの状態
+**同期的な処理が行われた後**に、非同期なタイミングで`then`メソッドのコールバック関数が実行される。
+```js
+const promise = Promise.resolve(100); // new Promiseしてresolve()を登録するコードのシンタックスシュガー
+promise.then(v => {
+  console.log(v);
+})
+console.log(20);
+// 出力結果
+// 20
+// 100
+```
+```js
+const promise = new Promise((resolve) => {
+  console.log("1. resolveします");
+  resolve();
+});
+promise.then(() => {
+  console.log("3. コールバック関数が実行されました");
+});
+console.log("2. 同期的な処理が実行されました");
+// 出力結果
+// 1. resolveします
+// 2. 同期的な処理が実行されました
+// 3. コールバック関数が実行されました
+```
+
 ```ts
 async function take3Sec(): Promise<string> {
   return "3秒かかる";
