@@ -1601,6 +1601,7 @@ asyncTask()
     console.log(error); // Error: 失敗
   });
 ```
+また、Promiseの`finaly`メソッドで、成功/失敗のどちらの場合も実行されるコールバック関数を登録できる。
 
 #### Promiseチェーンで値を返す
 Promiseチェーンでは、コールバックで返した値を次のコールバックへ引数として渡せる。
@@ -1618,6 +1619,35 @@ Promise.resolve(1)
     console.log("3番目: ", v); // 3番目:  undefined
   });
 ```
+
+#### Promiseチェーンで逐次処理（順番に処理）
+```js
+function dummyFetch(path) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (path.startsWith("/resource")) {
+        resolve({ body: `レスポンス: ${path}` });
+      } else {
+        reject(new Error("not FOUND"));
+      }
+    }, 1000 * Math.random());
+  });
+}
+
+const results = [];
+dummyFetch("/resource/A").then((response) => {
+  results.push(response.body);
+
+  // dummyFetch()からはPromiseインスタンスが返されるので、それをこのthen()内のコールバックの返り値にすれば、
+  // 次のthen()はそのPromiseインスタンス（resolved or rejected）に対して実行される
+  return dummyFetch("/resource/B");
+}).then((response) => {
+  results.push(response.body);
+}).then(() => {
+  console.log(results); // [ 'レスポンス: /resource/A', 'レスポンス: /resource/B' ]
+});
+```
+
 ```ts
 async function take3Sec(): Promise<string> {
   return "3秒かかる";
