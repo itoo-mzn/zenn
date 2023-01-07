@@ -1648,6 +1648,53 @@ dummyFetch("/resource/A").then((response) => {
 });
 ```
 
+#### Promise.allで複数のPromiseをまとめる
+`Promise.all`は**Promiseインスタンスの配列を入力**に、新しいPromiseインスタンスを返す。
+
+その**返り値のPromiseインスタンスに対して`then()`で登録したコールバックには、入力Promiseの結果をまとめた配列が渡される**。
+（その配列の要素の順番は、`Promise.all`に渡したPromiseの順番。）
+
+```js
+function delay(timeoutMs) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(timeoutMs); // timeoutMs がPromiseの結果となる
+    }, timeoutMs);
+  });
+}
+
+const promise1 = delay(1);
+const promise2 = delay(2);
+const promise3 = delay(3);
+
+Promise.all([promise1, promise2, promise3]).then((values) => {
+  console.log(values); // [ 1, 2, 3 ]
+});
+```
+
+Promiseチェーンで逐次処理したときと違い、Promise.allではPromiseの処理が順番にならない代わりに、1つ1つ処理するよりも早い時間で処理が完了する。
+
+### < async function >
+Promiseで非同期処理は見通しよく書けるようになったが、`async function`を使うことでそれよりも更に見通しよくできる。
+
+**async functionは必ずPromiseインスタンスを返す関数**。
+関数の前に`async`と書くことで定義できる。
+```js
+async function doAsync() {
+  // 明示的にPromiseをreturnしていないが、
+  // asyncキーワードにより、この関数は常にPromiseを返すことになる
+  return "値";
+}
+doAsync().then((value) => {
+  console.log(value); // 値
+});
+
+// --- 上の関数と同じ処理をPromiseで書いたもの ---
+function doAsyncByPromise() {
+  return Promise.resolve("値");
+}
+```
+
 ```ts
 async function take3Sec(): Promise<string> {
   return "3秒かかる";
