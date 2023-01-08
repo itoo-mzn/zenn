@@ -1409,6 +1409,7 @@ hello(["taro", "hanako"]); // Hello, taro,hanako
 
 
 ## Promise / async / await
+https://jsprimer.net/basic/async/
 
 ### < 同期処理と非同期処理 >
 プログラム言語のコードの評価方法として、同期処理（sync）と非同期処理（async）に分けられる。
@@ -1695,6 +1696,168 @@ function doAsyncByPromise() {
 }
 ```
 
+:::message
+Async Functionも内部的にPromiseの仕組みを利用しているため、両者は対立関係ではなく共存関係。
+:::
+
+
+#### await式
+await式は、**右辺のPromiseがFullfiled or Rejectedになるまで その場で非同期処理の完了を待つ**。
+```js
+async function doAsync(num) {
+  console.log(num);
+}
+
+async function asyncMain() {
+  await doAsync(42);
+  console.log("これは上のawait式の次に実行される");
+}
+asyncMain();
+//   42
+// これは上のawait式の次に実行される
+```
+
+:::message alert
+あくまで、async関数の中でawaitする（待つ）ことができるだけなので、その呼出し元である非同期関数の外の世界は停止する訳ではない。
+なので、下記のように<1>の非同期関数の前後で同期的な処理（console.log）を書いた場合、非同期関数とその後ろのconsole.logについては処理順序は保証されない。
+```js
+async function doAsync(num) {
+  console.log(num);
+}
+
+async function asyncMain() {
+  await doAsync(42);
+  console.log("これは上のawait式の次に実行される");
+}
+
+console.log("1");
+asyncMain(); // 非同期関数を実行 <1>
+console.log("2");
+// 1
+// 42
+// 2
+// これは上のawait式の次に実行される
+```
+:::
+
+await式の場合は、（他の箇所のJS/TSコードと同じように）`try...catch`文を使える。
+（Promiseの場合は`.catch()`メソッドでキャッチする。`try..catch`文では上手くキャッチできないため。そのため、Promise独自の書き方でないといけなかった。）
+```js
+async function asyncMain() {
+  try {
+    await Promise.reject(new Error("エラー"));
+    console.log("この行は実行されない");
+  } catch(error) {
+    console.log(error.message);
+  }
+}
+
+asyncMain();
+// エラー
+```
+
+await式は、下記の2箇所でしか使えない。
+1. async functionの直下。（基本的にこっち）
+2. ECMAScriptモジュールの直下。（まれ）
+
+```js
+async function main() {
+  // このawaitは OK
+  await Promise.resolve();
+}
+main();
+
+function main() {
+  // この関数はasync functionじゃないので、このawaitは NG (エラー)
+  await Promise.resolve();
+}
+main();
+
+// モジュールとして実行したとき、モジュールの直下であれば、このawaitは OK (2.)
+await Promise.resolve();
+```
+
+#### Promiseチェーンをawait式で表現
+```js
+function dummyFetch(path) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (path.startsWith("/resource")) {
+        resolve({ body: `レスポンスボディ: ${path}`});
+      } else {
+        reject(new Error("エラー"));
+      }
+    }, 1000 * Math.random() );
+  });
+}
+
+// --- Promise ver. ---
+// function fetchAB() {
+//   const results = [];
+//   return dummyFetch("/resource/A").then((res) => {
+//     results.push(res.body);
+//     return dummyFetch("/resource/B");
+//   }).then((res) => {
+//     results.push(res.body);
+//     return results;
+//   });
+// }
+
+// --- async function ver. ---
+async function fetchAB() {
+  const results = [];
+  const responseA = await dummyFetch("/resource/A");
+  results.push(responseA.body);
+  const responseB = await dummyFetch("/resource/B");
+  results.push(responseB.body);
+  return results;
+}
+
+fetchAB().then((results) => {
+  console.log(results); // [ 'レスポンスボディ: /resource/A', 'レスポンスボディ: /resource/B' ]
+});
+```
+
+#### async functionと反復処理
+async functionでは、下記のようにforループを普段通りに使える。
+```js
+function dummyFetch(path) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (path.startsWith("/resource")) {
+        resolve({ body: `レスポンスボディ: ${path}`});
+      } else {
+        reject(new Error("エラー"));
+      }
+    }, 1000 * Math.random() );
+  });
+}
+
+async function fetchResources(resources) {
+  const results = [];
+  // 普段通りにfor of 文が使える
+  for (const resource of resources) {
+    const response = await dummyFetch(resource);
+    results.push(response.body);
+  }
+  return results;
+}
+
+const resources = [
+  "/resource/A",
+  "/resource/B"
+];
+
+fetchResources(resources).then((results) => {
+  console.log(results); // [ 'レスポンスボディ: /resource/A', 'レスポンスボディ: /resource/B' ]
+})
+```
+
+Proimseの場合はコールバック関数を使って反復処理を実装する必要がある。
+https://trialanderror.jp/promise-loop/
+
+#### typescriptでasync function
+ここまではJSで書いてきたasync functionを、TSで。
 ```ts
 async function take3Sec(): Promise<string> {
   return "3秒かかる";
