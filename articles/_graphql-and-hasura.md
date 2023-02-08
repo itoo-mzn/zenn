@@ -15,20 +15,76 @@ published: false
   - errorにエラーメッセージが入るため、errorがnullかどうかでハンドリングする。
   - すべて200なので、HTTPステータスコードでヘルスチェックするモニタリングとは相性✕
 
-*TODO*
-スキーマ
-キャッシング
-フラグメント
+- 操作の種類（operation type）
+  - query
+  - mutation
+  - subscription
 
-*TODO*
-codegen
-`graphql-code-generator`
+## <スキーマ (schema)>
+GraphQL APIの仕様を表現するもの。
+
+`.graphql`ファイルに、SDL（スキーマ定義言語）で記述する。（[.graphql**s**ファイルのほうが良いらしい？](https://maku.blog/p/5s5jvfz/)）
+
+```graphql:xx.graphql
+# オブジェクト型
+type Book {
+  id: ID!
+  name: String
+  pageCount: Int
+  author: Author
+}
+
+# Query
+type Query {
+  books: [Book!]!
+  book(id: ID!): Book
+}
+
+# Mutation
+type Mutation {
+  createBook(title: String!): Book
+  deleteBook(id: String!): Boolean!
+}
+```
+
+## <リゾルバ (resolver)>
+スキーマは型情報だけを定義しているが、リゾルバはその具体的な実装。
+特定のフィールドのデータを操作・返却する関数（メソッド）。
+
+プログラミング言語で記述する。
+
+例えば、こういうスキーマがあった場合には、
+```graphql:xxx.graphql
+type Query {
+  quoteOfTheDay: String
+  random: Float!
+}
+```
+こういうリゾルバを開発者の手で作る必要がある。
+（本来は。→ 後述の`Hasura`は基本的なものを自動生成してくれる。）
+```ts:xxx.ts
+quoteOfTheDay: () => {
+  return Math.random() < 0.5 ? "Take it easy" : "Salvation lies within";
+},
+//random: Float! をスキーマで定義
+random: () => {
+  return Math.random();
+}
+```
+
+## <GraphQL Code Generator>
 GraphQLのスキーマから自動的に型を生成してくれます。
+
+例えばtypescriptを使う場合は下記。
+```
+.graphqlファイル → (codegen) → xxx.ts（出力先に設定した）ファイル 
+```
 
 
 ## <参考記事>
 https://speakerdeck.com/sonatard/graphql-knowhow?slide=10
 https://speakerdeck.com/yukukotani/graphql-schema-design-practice
+https://reffect.co.jp/html/graphql
 
 
 ---
