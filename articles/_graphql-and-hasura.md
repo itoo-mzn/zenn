@@ -97,16 +97,10 @@ https://reffect.co.jp/html/graphql
   ```
   client <- (GraphQL) -> Hasura server <- (SQL) -> PostgreSQL server
   ```
-- 基本的なCRUDのGraphQLリゾルバ、および集計用リゾルバ(`aggregate`)やupsert mutationも自動生成してくれる。
+- 基本的な**CRUDのGraphQLリゾルバ**、および**集計用リゾルバ(`aggregate`)**や**upsert mutation**も**自動生成**してくれる。
   （N+1も気にしなくていいらしい。）
   `where`, `order_by`, `limit`, `offset` といった条件句と `max`, `count`, `avg` といった集計がデフォルトで可能。
 - GraphQLオペレーションが直接SQLに変換される。そのSQLと実行計画をhasuraコンソールから見ることができる。
-
-*TODO*
-:::message
-GraphQLリゾルバ (resolver) とは、
-スキーマ (schema) とは
-:::
 
 ## <使用方法>
 ざっくりだが、下記。
@@ -145,7 +139,7 @@ HasuraがAuth0などの認証プロバイダと通信してJWTを取得。
 そのJWTに含まれている、Auth0から設定したデータ（カスタムクレーム）をHasuraがGraphQLオペレーション実行時に読む。
 （Hasuraのコンソールで設定した）ルールに則って、その操作が実行できるかどうか決まる。
 
-*TODO: カスタムクレームの理解。よく分かってない*
+*TODO: カスタムクレームの理解。よく分かってないが、今はいい*
 
 例えば、下記のような全ユーザの名前をコメントを取得するQueryが発行されたとしても、`"user_id": { "_eq": "X-Hasura-User-Id" }`の条件がQueryに埋め込まれるため、他のユーザーのデータが参照されることはないといった感じ。
 ```
@@ -179,6 +173,7 @@ https://qiita.com/knaot0/items/8427918564400968bd2b
 
 
 ## <参考記事>
+https://event.ospn.jp/slides/OSC2022-OnlineSpring/OSC2022_online_spring_hitachi.pdf
 https://blog.uzumaki-inc.jp/hasuragraphqlspa
 https://qiita.com/sho-hata/items/2dbd41be42662007071e
 https://qiita.com/maaz118/items/9e198ea91ad8fc624491
