@@ -8,10 +8,80 @@ published: false
 
 取り上げるフロントエンド領域・技術
 
-フレームワーク
-- Vue.js
-- Nuxt.js
+- 基礎知識
+- HTML
+- CSS
+- フレームワーク
+  - Vue.js
+  - Nuxt.js
+- UI設計
+  - Atomic Design
 
+
+# 基礎知識
+
+
+## <DOM (Document Object Model)>
+HTMLなどの中の各要素をプログラミング言語で扱えるようにするための仕組み。
+JavaScriptではDOMを操作する。
+
+### 仮想DOM
+DOMは、その状態を常にチェックできないが、仮想DOMならできる。
+
+仮想DOMの値を変更→DOMの値が更新される→HTMLの表示が更新される。
+
+
+## <イベント>
+イベントは、重なっている一番上のタグで発生すると、その下のタグへと次々に伝搬する。
+`（上）孫要素→子要素→親要素（下）`
+
+### イベントハンドラ（イベントリスナ）
+一般的には、イベントが発生したときに呼び出される処理のこと。
+JavaScriptにおいては、イベントを受け取って後続の処理に引き渡す中継役の命令のこと。（onClick属性の値として記述されるもの）
+
+
+## <Node.js>
+Node.jsはJSを（ブラウザでなく手元で）動かすための実行環境。
+### npm/yarn
+npmはNode.jsを使うときに、ライブラリをインストールするための専用ツール。
+
+
+## <HTML>
+
+## <CSS>
+
+
+## <TypeScript>
+https://zenn.dev/itoo/articles/draft_learn-typescript
+
+
+# フレームワーク
+
+
+## Vue.js
+
+
+## Nuxt.js
+
+/composablesとは？
+
+- **composableな関数**を配置するディレクトリ
+- ここに配置したものは自動importされる（コンポーネントで毎回わざわざimportすることなく使える）
+- **composableな関数とは？**
+    - **状態を持つロジック**をカプセル化して利用するための関数
+    - 慣習としてコンポーザブル関数の名前は**use**~~~から始める
+
+
+
+// computedつけてないとただの配列で、
+// ただの配列のままではそれが読み込まれるときにまだpropsが読み込まれていないので
+// 初期画面表示時に表示されなくなってしまう
+
+// computed : propが変わるたび
+// onMounted : DOM読み込まれたときのみ
+
+vue3からはtypeをつけないといけないらしい
+import type { Academy_School } from '~~/src/graphql/generated/graphqlOperations';
 
 # UI設計
 
