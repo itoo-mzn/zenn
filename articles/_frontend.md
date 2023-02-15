@@ -50,8 +50,42 @@ npmはNode.jsを使うときに、ライブラリをインストールするた�
 
 
 ## <CSS>
-grid css
-rscss
+https://web-cheatsheet.com/css-selector#%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E3%82%BB%E3%83%AC%E3%82%AF%E3%82%BF
+https://web-cheatsheet.com/sass
+
+### rem
+- `px` : 文字サイズの拡大・縮小に対応できない。また、端末のディスプレイ解像度によって見た目のサイズが異なる。
+- `%`, `em` : **親要素**の文字サイズからの割合。
+- `rem` : HTMLの最上位要素であるhtmlタグの文字サイズを基準に文字サイズが設定され、親要素の影響を受けない。
+
+### RSCSS
+https://rfs.jp/sb/html-css/html-css-guide/rscss.html
+
+RSCSSには３つの分類がある。
+###### Components（コンポーネント）
+- パーツの大枠の要素で最低二つの単語（like-button、search-form）でクラス名を命名する。
+  （→ AtomicDesignでいうと、`Molucules`以上の範囲）
+##### Elements（エレメンツ）
+- コンポーネントの内の要素。1単語で命名する。（例：search-formコンポーネントの、入力欄がfield、ボタンがaction）
+- 独立して使われない。（→ AtomicDesignにおいては、`Atoms`に該当するため独立して使われる可能性もある。）
+- 2単語以上使いたい場合は`-`等の区切り文字なしで連結する。（例：first-nameはダメで、firstnameとする。）
+- セレクタ`>`の使用を推奨。（`>`：子要素のみに適用される。）
+```css
+.article-card {
+  > .item { }
+}
+```
+##### Variants（バリアント）
+- 既存のコンポーネントやエレメントと構成が同じで、見た目や機能が違うものを作りたい場合に使用する。
+- クラス名の先頭に`-`を付ける。
+```css
+  .search-form {
+	&.-wide { }
+	&.-short { }
+	&.-disabled { }
+}
+```
+
 
 
 ## <TypeScript>
