@@ -2,7 +2,7 @@
 title: "フロントエンドの技術"
 emoji: "🐥"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
+topics: ["HTML", "CSS", "Vue.js", "Nuxt.js"]
 published: false
 ---
 
@@ -48,6 +48,8 @@ npmはNode.jsを使うときに、ライブラリをインストールするた�
 
 ## <HTML>
 
+https://www.htmq.com/html/indexm.shtml
+
 
 ## <CSS>
 https://web-cheatsheet.com/css-selector#%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E3%82%BB%E3%83%AC%E3%82%AF%E3%82%BF
@@ -58,25 +60,39 @@ https://web-cheatsheet.com/sass
 - `%`, `em` : **親要素**の文字サイズからの割合。
 - `rem` : HTMLの最上位要素であるhtmlタグの文字サイズを基準に文字サイズが設定され、親要素の影響を受けない。
 
+### CSS Grid Layout（グリッドレイアウト）
+2次元レイアウトを簡単に操作できるCSSの機能。
+https://qiita.com/kura07/items/e633b35e33e43240d363
+
+#### 要素
+- コンテナ : グリッド全体を囲む要素。
+- アイテム : コンテナの子要素。
+
+
+
 ### RSCSS
 https://rfs.jp/sb/html-css/html-css-guide/rscss.html
 
+#### 要素
 RSCSSには３つの分類がある。
 ###### Components（コンポーネント）
 - パーツの大枠の要素で最低二つの単語（like-button、search-form）でクラス名を命名する。
   （→ AtomicDesignでいうと、`Molucules`以上の範囲）
+- 1つ以上のエレメンツを持つ。
+- コンポーネントは再利用されるので、positionやmarginといった**位置や余白に関するプロパティは設定しない**。
 ##### Elements（エレメンツ）
-- コンポーネントの内の要素。1単語で命名する。（例：search-formコンポーネントの、入力欄がfield、ボタンがaction）
-- 独立して使われない。（→ AtomicDesignにおいては、`Atoms`に該当するため独立して使われる可能性もある。）
+- コンポーネントの内の**要素**。1単語で命名する。（例：search-formコンポーネントの、入力欄がfield、ボタンがaction）
+- **独立して使われない**。（→ AtomicDesignにおいては、`Atoms`に該当するため独立して使われる可能性もある。）
 - 2単語以上使いたい場合は`-`等の区切り文字なしで連結する。（例：first-nameはダメで、firstnameとする。）
-- セレクタ`>`の使用を推奨。（`>`：子要素のみに適用される。）
+- 子セレクタ`>`の使用を推奨。（`>`：子要素のみに適用される。）
+  タグセレクタは使わない。
 ```css
 .article-card {
   > .item { }
 }
 ```
 ##### Variants（バリアント）
-- 既存のコンポーネントやエレメントと構成が同じで、見た目や機能が違うものを作りたい場合に使用する。
+- 既存のコンポーネントやエレメントと**構成が同じ**で、**見た目や機能が違うもの**を作りたい場合に使用する。
 - クラス名の先頭に`-`を付ける。
 ```css
   .search-form {
@@ -85,7 +101,14 @@ RSCSSには３つの分類がある。
 	&.-disabled { }
 }
 ```
+- コンポーネントのネスト
+  - コンポーネントA内で他のコンポーネントBを使う際、Bにいつもとは違うスタイルを割り当てたい場合、
+    コンポーネントをネストして記載する（Aの中にBのstyleを書く）のでなく、バリアントを使う。
 
+#### その他
+- SCSSのファイル名・ディレクトリ構成にも規則がある。（が、割愛）
+- プロパティのオーバーライドはヘルパーを使う。
+- ヘルパー名は先頭にアンダースコア（_）を付ける。
 
 
 ## <TypeScript>
@@ -135,6 +158,12 @@ const changeText = () => text.value = 'Changed!!';
 const number = ref(10);
 const double = computed(() => number * 2);
 ```
+
+### ライフサイクルフック
+
+
+
+
 
 
 ## Nuxt.js
