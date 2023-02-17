@@ -30,6 +30,7 @@ DOMは、その状態を常にチェックできないが、仮想DOMならで�
 
 仮想DOMの値を変更→DOMの値が更新される→HTMLの表示が更新される。
 
+---
 
 ## <イベント>
 イベントは、重なっている一番上のタグで発生すると、その下のタグへと次々に伝搬する。
@@ -39,21 +40,37 @@ DOMは、その状態を常にチェックできないが、仮想DOMならで�
 一般的には、イベントが発生したときに呼び出される処理のこと。
 JavaScriptにおいては、イベントを受け取って後続の処理に引き渡す中継役の命令のこと。（onClick属性の値として記述されるもの）
 
+---
 
 ## <Node.js>
 Node.jsはJSを（ブラウザでなく手元で）動かすための実行環境。
 ### npm/yarn
 npmはNode.jsを使うときに、ライブラリをインストールするための専用ツール。
 
+---
 
 ## <HTML>
 
 https://www.htmq.com/html/indexm.shtml
 
+---
 
 ## <CSS>
 https://web-cheatsheet.com/css-selector#%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E3%82%BB%E3%83%AC%E3%82%AF%E3%82%BF
 https://web-cheatsheet.com/sass
+
+### インポート
+他のCSSファイルをインポートして、その内容を（`@import`と書いた側で）使うことができる。
+
+### ミックスイン
+何度も使うプロパティをグループ化して使い回す。
+```css
+/* widthのデフォルト値は40px */
+@mixin select-mark($width: 40px) {
+  display: inline-block;
+  width: $width;
+}
+```
 
 ### rem
 - `px` : 文字サイズの拡大・縮小に対応できない。また、端末のディスプレイ解像度によって見た目のサイズが異なる。
@@ -62,16 +79,14 @@ https://web-cheatsheet.com/sass
 
 ### CSS Grid Layout（グリッドレイアウト）
 2次元レイアウトを簡単に操作できるCSSの機能。
-https://qiita.com/kura07/items/e633b35e33e43240d363
 
 #### 要素
 - コンテナ : グリッド全体を囲む要素。
 - アイテム : コンテナの子要素。
 
-
+https://qiita.com/kura07/items/e633b35e33e43240d363
 
 ### RSCSS
-https://rfs.jp/sb/html-css/html-css-guide/rscss.html
 
 #### 要素
 RSCSSには３つの分類がある。
@@ -96,7 +111,7 @@ RSCSSには３つの分類がある。
 - クラス名の先頭に`-`を付ける。
 ```css
   .search-form {
-	&.-wide { }
+    &.-wide { }
 	&.-short { }
 	&.-disabled { }
 }
@@ -110,10 +125,14 @@ RSCSSには３つの分類がある。
 - プロパティのオーバーライドはヘルパーを使う。
 - ヘルパー名は先頭にアンダースコア（_）を付ける。
 
+https://rfs.jp/sb/html-css/html-css-guide/rscss.html
+
+---
 
 ## <TypeScript>
 https://zenn.dev/itoo/articles/draft_learn-typescript
 
+---
 
 # フレームワーク
 
@@ -160,6 +179,18 @@ const double = computed(() => number * 2);
 ```
 
 ### ライフサイクルフック
+下記はComposition APIでの書き方。（Option APIは少し異なる。）
+（誰のlifeなのか = Vueインスタンスのlifeのことを指している。）
+
+- `onMounted()`, `onBeforeMount()` : **DOMが読み込まれた直後**（Vueインスタンスが生成された後）のタイミング。（`onBeforeMount`はその直前。）
+- `onUpdated()`, `onBeforeUpdate()` : **データの変更・画面の更新時**。
+- `onUnmounted()` , `onBeforeMounted()` : Vueインスタンスが破棄されるタイミング。（よく理解できていない）
+
+### props
+propsは**コンポーネントのプロパティ**。
+
+`<script>`内では`props.hoge`でアクセスする。
+`<template>`内では`{{ hoge }}`。
 
 
 
