@@ -2,7 +2,7 @@
 title: "フロントエンドの技術"
 emoji: "🐥"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["HTML", "CSS", "Vue.js", "Nuxt.js"]
+topics: ["HTML", "CSS", "Vue", "Nuxt"]
 published: false
 ---
 
@@ -146,6 +146,43 @@ https://zenn.dev/itoo/articles/draft_learn-typescript
 
 ### SPA, SSR
 https://zenn.dev/rinda_1994/articles/e6d8e3150b312d
+
+### テンプレート構文
+- マスタッシュ `{{ }}`
+  ```pug:(pug)
+  span {{ msg }}
+  ```
+- v-html : テキストでなく生のHTMLを渡したいときに使う。
+
+#### 属性バインディング
+- バインドとは、`<script>`内と`<template>`内とで、値を結びつけること。
+
+- *HTMLタグの属性*（id, classとか）に設定する値を渡すと、属性値を動的に設定・変更。
+  ```pug
+  div(v-bing:id="dynamicId")
+  //- 省略形
+  div(:id="dynamicId")
+  ```
+
+- オブジェクトを渡すことで、複数の属性を一度にバインドできる。
+  ```tsx
+  <template>
+  div(v-bind="attrsObject")
+  </template>
+  <script setup>
+  const attrsObject = {
+    id: 'container',
+    class: 'wrapper'
+  }
+  </script>
+  ```
+
+- ①`{{ }}`内 or ②Vueディレクティブの属性値の中 では、JSを書ける。
+  ```pug
+  {{ isOk ? 'Yes' : 'No' }}
+
+  div(:id="`list-${id}`")
+  ```
 
 ### リアクティブ
 リアクティブとは、`値が監視されており、変更が検知される状態`のこと。
