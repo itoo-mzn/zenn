@@ -58,6 +58,8 @@ https://www.htmq.com/html/indexm.shtml
 ## <CSS>
 https://web-cheatsheet.com/css-selector#%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E3%82%BB%E3%83%AC%E3%82%AF%E3%82%BF
 https://web-cheatsheet.com/sass
+https://web-cheatsheet.com/css-flexbox
+https://fuuno.net/web02/flex/flex.html
 
 ### インポート
 他のCSSファイルをインポートして、その内容を（`@import`と書いた側で）使うことができる。
@@ -146,6 +148,21 @@ https://zenn.dev/itoo/articles/draft_learn-typescript
 
 ### SPA, SSR
 https://zenn.dev/rinda_1994/articles/e6d8e3150b312d
+https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
+
+:::message
+### ハイドレーションとは
+静的ホスティング or サーバーサイドレンダリングによって配信された静的HTMLウェブページを、クライアントサイドのJavaScriptがHTML要素に**イベントハンドラをアタッチ**して動的ウェブページに変換する手法のこと。
+具体的には、ボタンを押したときなどのイベントにJavaScriptを紐付けて、ページが変化するようにする。
+
+1. サーバーサイドで、HTMLが作成される。
+2. クライアントサイドにHTMLをダウンロードし、JavaScriptのコードたちもダウンロードが終わり実行できる状態になったときに、ComponentなどのコードをもとにHTMLを生成し直し、**参照透過性のチェックを行う**。
+3. サーバーサイドで生成したHTMLにイベントハンドラをアタッチしていく。
+
+#### 参照透過性
+同じpropsを渡してるのに、違うレンダリングがされてはいけない。
+「**サーバーサイドのHTML === クライアントサイドで作ったHTML**」となるのが期待値。
+:::
 
 ### テンプレート構文
 - マスタッシュ `{{ }}`
@@ -280,3 +297,12 @@ atomsとmoleculesが組み合わさってヘッダーになる。
 atoms, molecules, organisms, templatesが組み合わさって1つのページとなる。
 
 https://qiita.com/Kazuhiro_Mimaki/items/3d9a8594064aab5119da
+
+---
+
+# UX
+- UXデザイン
+  UXを向上させることを目的としてプロダクトを設計すること。
+- UXライティング
+  ユーザー(読み手)の体験を助け、体験の価値を高めるように配慮した文章の書き方、技術のこと。
+  Webサービスでいうと、ボタンの文言、入力フォームのラベル、エラーメッセージなど、ユーザーが接する全ての文章が対象。
