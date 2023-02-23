@@ -167,10 +167,11 @@ https://qiita.com/knaot0/items/8427918564400968bd2b
 
 
 ## <ビジネスロジック>
+:::message alert
 *TODO: おいおいキャッチアップする。下記がキーワード*
 - Hasura Remote Schema
 - Hasura Action
-
+:::
 
 ## <参考記事>
 https://event.ospn.jp/slides/OSC2022-OnlineSpring/OSC2022_online_spring_hitachi.pdf
