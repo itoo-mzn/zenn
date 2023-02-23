@@ -179,15 +179,4 @@ https://qiita.com/sho-hata/items/2dbd41be42662007071e
 https://qiita.com/maaz118/items/9e198ea91ad8fc624491
 
 
----
-
-
-# ApolloClient
-**GraphQL APIのクライアント**ライブラリ。
-
-1. 状態管理を行う
-  グローバルな状態管理もApolloで完結できる。
-2. キャッシュを行う
-  APIレスポンスを正規化やキャッシュしながらのデータ取得が可能。
-
 以上
