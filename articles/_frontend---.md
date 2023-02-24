@@ -14,6 +14,7 @@ published: false
 - フレームワーク
   - Vue.js
   - Nuxt.js
+- ApolloClient
 - UI設計
   - Atomic Design
 
@@ -272,6 +273,27 @@ propsは**コンポーネントのプロパティ**。
 
 vue3からはtypeをつけないといけないらしい
 import type { Academy_School } from '~~/src/graphql/generated/graphqlOperations';
+
+
+---
+
+# ApolloClient
+**GraphQL APIのクライアント**ライブラリ。
+
+1. 状態管理を行う
+  グローバルな状態管理もApolloで完結できる。
+2. キャッシュを行う
+  APIレスポンスを正規化やキャッシュしながらのデータ取得が可能。
+
+## <1. 状態管理を行う>
+https://zenn.dev/furharu/articles/0397d183760970
+
+## <2. キャッシュを行う>
+https://zenn.dev/furharu/articles/ece72dac5feffe
+https://zenn.dev/furharu/articles/26557d977b1b8c
+
+
+---
 
 # UI設計
 
