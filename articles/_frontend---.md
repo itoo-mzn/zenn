@@ -172,7 +172,15 @@ https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
   ```
 - v-html : テキストでなく生のHTMLを渡したいときに使う。
 
-#### 属性バインディング
+:::message
+### Vueディレクティブ
+- Vueディレクティブとは、**接頭辞 `v-` が付いたVue.jsの特別な属性**のこと。
+- **ディレクティブの役割**は、**式が示す値が変化したとき、リアクティブに更新を DOM に適用する**こと。
+
+![Alt text](https://ja.vuejs.org/assets/directive.386ba0f0.png)
+:::
+
+#### 属性バインディング v-bind
 - バインドとは、`<script>`内と`<template>`内とで、値を結びつけること。
 
 - *HTMLタグの属性*（id, classとか）に設定する値を渡すと、属性値を動的に設定・変更。
@@ -227,19 +235,45 @@ const changeText = () => text.value = 'Changed!!';
 <p>{{ text }}</p>
 ```
 
+### 算出プロパティ
 #### computed
 ```ts:computed
 const number = ref(10);
 const double = computed(() => number * 2);
 ```
 
-### ライフサイクルフック
-下記はComposition APIでの書き方。（Option APIは少し異なる。）
-（誰のlifeなのか = Vueインスタンスのlifeのことを指している。）
+1行でtemplate内に書き収めるのでなく、computedでロジックを切り出すほうがいい。
+```pug:✕
+span {{ author.books.length > 0 ? 'Yes' : 'No' }}
+```
+```tsx:○
+<template>
+span {{ publishedBooksMessage }}
+</template>
+<script setup>
+const publishedBooksMessage = computed(() => {
+  return author.books.length > 0 ? 'Yes' : 'No'
+})
+</script>
+```
 
-- `onMounted()`, `onBeforeMount()` : **DOMが読み込まれた直後**（Vueインスタンスが生成された後）のタイミング。（`onBeforeMount`はその直前。）
-- `onUpdated()`, `onBeforeUpdate()` : **データの変更・画面の更新時**。
-- `onUnmounted()` , `onBeforeMounted()` : Vueインスタンスが破棄されるタイミング。（よく理解できていない）
+##### 関数との違い
+算出プロパティはリアクティブな依存関係にもとづき**キャッシュされる**。（関数は再描画が起きると常に実行される。）
+逆にいうと、**リアクティブな依存関係が更新されたときだけ再評価される**。
+
+### 条件付きレンダリング
+#### v-if, v-show
+**頻繁に何かを切り替える**必要があれば `v-show`を、
+変更することがほとんどない場合は、`v-if`を選ぶ。
+
+### リストレンダリング
+#### v-for
+- indexも取れる。
+- ループ回数指定もできる。（`v-for="n in 10"`で10回ループする。）
+- keyは必要。`v-for="item in items" :key="item.id"`
+
+
+
 
 ### props
 propsは**コンポーネントのプロパティ**。
