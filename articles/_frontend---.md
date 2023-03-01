@@ -185,7 +185,7 @@ https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
 
 - *HTMLタグの属性*（id, classとか）に設定する値を渡すと、属性値を動的に設定・変更。
   ```pug
-  div(v-bing:id="dynamicId")
+  div(v-bind:id="dynamicId")
   //- 省略形
   div(:id="dynamicId")
   ```
@@ -272,6 +272,26 @@ const publishedBooksMessage = computed(() => {
 - ループ回数指定もできる。（`v-for="n in 10"`で10回ループする。）
 - keyは必要。`v-for="item in items" :key="item.id"`
 
+### イベントハンドリング
+#### v-on
+`v-on:click='hogeHandler'` または `@click='hogeHandler'`。
+
+### フォーム入力バインディング
+#### v-model
+```html
+<div>{{ name }}</div>
+<input v-model="name">
+```
+https://ja.vuejs.org/guide/essentials/forms.html
+
+
+### ライフサイクルフック
+下記はComposition APIでの書き方。（Option APIは少し異なる。）
+（誰のlifeなのか = Vueインスタンスのlifeのことを指している。）
+
+- `onMounted()`, `onBeforeMount()` : **DOMが読み込まれた直後**（Vueインスタンスが生成された後）のタイミング。（`onBeforeMount`はその直前。）
+- `onUpdated()`, `onBeforeUpdate()` : **データの変更・画面の更新時**。
+- `onUnmounted()` , `onBeforeMounted()` : Vueインスタンスが破棄されるタイミング。（よく理解できていない）
 
 
 
