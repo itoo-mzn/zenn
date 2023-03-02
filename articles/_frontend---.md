@@ -293,6 +293,15 @@ https://ja.vuejs.org/guide/essentials/forms.html
 - `onUpdated()`, `onBeforeUpdate()` : **データの変更・画面の更新時**。
 - `onUnmounted()` , `onBeforeMounted()` : Vueインスタンスが破棄されるタイミング。（よく理解できていない）
 
+### ウォッチャー
+#### watch
+watchを使う場面。（computedとの違い。）
+- computedでは処理できない**非同期通信などの複雑な処理**を行う場合
+- **更新前**と**更新後**の値を使う場合
+- 処理を実行しても、データは返さない場合
+
+computedで書ける場合はcomputedのほうが簡素に書ける。
+
 
 
 ### props
