@@ -165,6 +165,7 @@ https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
 「**サーバーサイドのHTML === クライアントサイドで作ったHTML**」となるのが期待値。
 :::
 
+
 ### テンプレート構文
 - マスタッシュ `{{ }}`
   ```pug:(pug)
@@ -210,6 +211,7 @@ https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
   div(:id="`list-${id}`")
   ```
 
+
 ### リアクティブ
 リアクティブとは、`値が監視されており、変更が検知される状態`のこと。
 
@@ -234,6 +236,7 @@ const changeText = () => text.value = 'Changed!!';
 ```html
 <p>{{ text }}</p>
 ```
+
 
 ### 算出プロパティ
 #### computed
@@ -261,10 +264,12 @@ const publishedBooksMessage = computed(() => {
 算出プロパティはリアクティブな依存関係にもとづき**キャッシュされる**。（関数は再描画が起きると常に実行される。）
 逆にいうと、**リアクティブな依存関係が更新されたときだけ再評価される**。
 
+
 ### 条件付きレンダリング
 #### v-if, v-show
 **頻繁に何かを切り替える**必要があれば `v-show`を、
 変更することがほとんどない場合は、`v-if`を選ぶ。
+
 
 ### リストレンダリング
 #### v-for
@@ -272,9 +277,11 @@ const publishedBooksMessage = computed(() => {
 - ループ回数指定もできる。（`v-for="n in 10"`で10回ループする。）
 - keyは必要。`v-for="item in items" :key="item.id"`
 
+
 ### イベントハンドリング
 #### v-on
 `v-on:click='hogeHandler'` または `@click='hogeHandler'`。
+
 
 ### フォーム入力バインディング
 #### v-model
@@ -293,6 +300,7 @@ https://ja.vuejs.org/guide/essentials/forms.html
 - `onUpdated()`, `onBeforeUpdate()` : **データの変更・画面の更新時**。
 - `onUnmounted()` , `onBeforeMounted()` : Vueインスタンスが破棄されるタイミング。（よく理解できていない）
 
+
 ### ウォッチャー
 #### watch
 watchを使う場面。（computedとの違い。）
@@ -302,16 +310,34 @@ watchを使う場面。（computedとの違い。）
 
 computedで書ける場合はcomputedのほうが簡素に書ける。
 
+#### watchEffect
+watchとは違い、**callback関数の内部で使われている値の変更**を検知して実行される。
+watchに比べると監視対象を一つ一つ宣言にせずに済むのはメリットだが、逆に、何がトリガーで実行されているか分かりにくくなる。
+また、watchと違い、定義時に実行される。
 
 
 ### props
 propsは**コンポーネントのプロパティ**。
+**親→子コンポーネントに値を渡す**。
 
-`<script>`内では`props.hoge`でアクセスする。
+<親コンポーネント内>
+`<template>`内で`:hoge="val"`でhogeという名前のものを渡す。
+
+<子コンポーネント内>
+`<script>`内で`defineProps`で受け取って、`props.hoge`でアクセスする。
 `<template>`内では`{{ hoge }}`。
 
+**親→子**へはプロパティの更新が流れるが、その逆は無い。（**一方向バインディング**）
 
+**親コンポーネントが更新されるたびに、子コンポーネント内のすべてのプロパティが最新の値に更新される**。
+子コンポーネント内でプロパティの変更はできない。
 
+#### プロパティのバリデーション
+バリデーションの要件に合致しないと、コンソールに`warning`が出る。（動きはするので注意！）
+- 型 (type)
+- 必須かどうか (required)
+- デフォ (default)
+- 独自の（カスタム）バリデーション関数 (validator)
 
 
 
