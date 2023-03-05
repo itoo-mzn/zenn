@@ -344,6 +344,7 @@ propsは**コンポーネントのプロパティ**。
 
 ### emits
 **子→親**コンポーネントへイベントを発する。
+（emit = 放つ）
 
 - 使い方
   - <親コンポーネント内>
@@ -354,6 +355,57 @@ propsは**コンポーネントのプロパティ**。
     (イベント名はキャメルケース)
 
 
+### コンポーネント間のv-moel(emit)
+子コンポーネントにおける変更を、親コンポーネントに反映させるためには、下記のようにv-modelとemitを使う必要がある。
+（computedのsetter,getterで実装する方法もあるが、それは割愛）
+
+```pug:親
+<template>
+  <!-- textを、子コンポーネントにtitleという名前で渡す -->
+  <VModelComponent v-model:title="text"/>
+
+  <!-- 子コンポーネントでの変更が、↓のtextに反映される -->
+  {{ text }}
+</template>
+<script setup lang="ts">
+import VModelComponent from '@/components/VModelComponent.vue'
+import { ref } from 'vue'
+const text = ref('ほげ')
+</script>
+```
+```pug:子
+<template>
+  <!-- inputイベントに反応して、[update:title]がemitされる -->
+  <input :value='title' @input="$emit('update:title', $event.target.value)">
+</template>
+<script setup lang="ts">
+defineProps(['title'])
+// update : (HTML要素の)イベントの種類
+// title : 対象のプロパティ(props)名
+defineEmits(['update:title'])
+</script>
+```
+
+
+### slot
+- `v-slot:hoge`は`#:hoge`と省略できる。
+- 使い方
+  - <親コンポーネント内>
+    `<template v-slot:hoge>`
+  - <子コンポーネント内>
+    `<slot name="hoge">`
+
+
+### コンポーザブル (composable)
+**状態を持つロジック**をカプセル化して再利用するための関数。
+
+- 慣習として、コンポーザブル関数の名前は`use`で始める。
+- `<script setup>`の中か、ライフサイクルフックで**同期的に呼ぶこと**。
+- **DOMを操作するような関数の場合**は、`onMounted()`などの**マウント後のライフサイクルフック内で実行すること**。そうすることで、DOMにアクセスすることが保証される。
+その場合、**`onUnmounted()`で掃除することも忘れず**。コンポーザブルがDOMイベントリスナーを登録したなら、そのリスナーを削除しないといけない。
+
+
+---
 
 ## Nuxt.js
 
