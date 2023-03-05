@@ -237,6 +237,10 @@ const changeText = () => text.value = 'Changed!!';
 <p>{{ text }}</p>
 ```
 
+:::message
+OptionAPIでいうところの`data`は、CompositionAPIでいうところの`ref()`や`reactive()`で定義した変数。
+:::
+
 
 ### 算出プロパティ
 #### computed
@@ -403,6 +407,28 @@ defineEmits(['update:title'])
 - `<script setup>`の中か、ライフサイクルフックで**同期的に呼ぶこと**。
 - **DOMを操作するような関数の場合**は、`onMounted()`などの**マウント後のライフサイクルフック内で実行すること**。そうすることで、DOMにアクセスすることが保証される。
 その場合、**`onUnmounted()`で掃除することも忘れず**。コンポーザブルがDOMイベントリスナーを登録したなら、そのリスナーを削除しないといけない。
+
+
+:::message
+### キャメルケース、ケバブケースの使い分け
+Vue.jsで一番ややこしいと感じている。
+- プロパティ : キャメルケース (`firstName`)
+- メソッド : キャメルケース (`getName`)
+- props
+  - 渡す側 : ケバブケース (`user-count`)
+    ```pug
+    <UserList user-count=20 />
+    ```
+  - 受け取る側 : キャメルケース (`userCount`)
+    ```ts
+    defineProps({
+      userCount : Number
+    })
+    ```
+- イベント名 : ケバブケース (`click-create-button`)
+
+https://qiita.com/ngron/items/ab2a17ae483c95a2f15e
+:::
 
 
 ---
