@@ -241,6 +241,9 @@ const changeText = () => text.value = 'Changed!!';
 OptionAPIでいうところの`data`は、CompositionAPIでいうところの`ref()`や`reactive()`で定義した変数。
 :::
 
+:::message
+consoleとかで確認したとき、`RefImp`と表示されているのはリアクティブなオブジェクト。
+:::
 
 ### 算出プロパティ
 #### computed
@@ -433,7 +436,38 @@ https://qiita.com/ngron/items/ab2a17ae483c95a2f15e
 
 ---
 
+
 ## Nuxt.js
+Vue.jsでは主にUIを担当する。Nuxt.jsはその他の色々な機能を含んでいる。
+
+
+### ルーティング
+vue.jsは1枚なので、ルーティングの仕組みがない。（パスを作れない）
+Vue Routerで簡単に複数ページを作れる。
+pagesフォルダに.vueファイルを追加するだけでアドレスが自動で割当てられる。
+`$route`からルーティング情報を取り出せる（`<template>`内では`$route.params`、`<script>`内では`useRoute()`。）
+
+### ナビゲーション
+`aタグ`でページ移動すると、移動の度にページ読み込みが発生する。
+ページ全体でなく、**更新が必要な部分だけが更新されるように、`NuxtLinkタグ`を使う**。
+
+### プラグイン
+pluginsディレクトリに置いたプラグイン（拡張機能）は、コンポーネントからuseNuxtApp関数を使って取り出して、使うことができる。
+
+### middlewareディレクトリ
+Route middlewareを使うと、ページ遷移時にユーザの権限チェックを行う等の処理を挟むことができる。
+
+### useState
+コンポーネント間やページ間で状態管理（データ共有）したいときに使う。
+（状態を変更した状態で、別のページに移動して、その後そのページに戻ったときに、状態が変更されたままであってほしいとき 等）
+```ts
+// useState('ID（キー名）', 初期値を提供する関数)
+const counter = useState('counter', () => 0);
+```
+
+### エラーハンドリング
+- NuxtErrorBoundary : エラーをキャッチしてエラー内容を表示するときに使われるコンポーネント。
+- ヘルパー関数 : createErrorなどのヘルパー関数がある。
 
 /composablesとは？
 
