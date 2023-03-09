@@ -147,24 +147,6 @@ https://zenn.dev/itoo/articles/draft_learn-typescript
   （デプロイするのはこれ。）
 - Vueでは仮想DOMを操作する。仮想DOMで扱うのが仮想ノード (VNode)。
 
-### SPA, SSR
-https://zenn.dev/rinda_1994/articles/e6d8e3150b312d
-https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
-
-:::message
-### ハイドレーションとは
-静的ホスティング or サーバーサイドレンダリングによって配信された静的HTMLウェブページを、クライアントサイドのJavaScriptがHTML要素に**イベントハンドラをアタッチ**して動的ウェブページに変換する手法のこと。
-具体的には、ボタンを押したときなどのイベントにJavaScriptを紐付けて、ページが変化するようにする。
-
-1. サーバーサイドで、HTMLが作成される。
-2. クライアントサイドにHTMLをダウンロードし、JavaScriptのコードたちもダウンロードが終わり実行できる状態になったときに、ComponentなどのコードをもとにHTMLを生成し直し、**参照透過性のチェックを行う**。
-3. サーバーサイドで生成したHTMLにイベントハンドラをアタッチしていく。
-
-#### 参照透過性
-同じpropsを渡してるのに、違うレンダリングがされてはいけない。
-「**サーバーサイドのHTML === クライアントサイドで作ったHTML**」となるのが期待値。
-:::
-
 
 ### テンプレート構文
 - マスタッシュ `{{ }}`
@@ -465,9 +447,82 @@ Route middlewareを使うと、ページ遷移時にユーザの権限チェッ�
 const counter = useState('counter', () => 0);
 ```
 
+https://nuxt.com/docs/examples/composables/use-state
+https://note.com/taatn0te/n/n8c3bc521b3e7
+https://zenn.dev/coedo/articles/use-state-nuxt3
+https://developer.mamezou-tech.com/nuxt/nuxt3-state-management/
+
 ### エラーハンドリング
 - NuxtErrorBoundary : エラーをキャッチしてエラー内容を表示するときに使われるコンポーネント。
 - ヘルパー関数 : createErrorなどのヘルパー関数がある。
+
+### Server API Route
+Nuxt3には**Nitro Engine**というサーバエンジン（内部では**h3**というhttpサーバを使用）が含まれている。
+Nitroサーバによって、クライアントからアクセス可能なAPI Routeを作ることができる。
+
+serverディレクトリ以下にディレクトリを切るとルーティングができる。
+（routesディレクトリ以下に置くことでも同じことができるよう。おそらくroutesディレクトリに置くのが良さそう。）
+middlewareディレクトリには、リクエストがAPI Routesに入る前に挟みたい処理を置く。
+
+
+### レンダリングモード
+レンダリングモードを**ページごとに変更**できる。
+
+#### Nuxtのレンダリングモード
+1. **CSR**（クライアントサイドレンダリング）
+**要は、SPA**(Single Page Application)。
+クライアント（つまりブラウザ上）でレンダリングするモード。
+
+:::message
+#### SPA
+一つのページをまずサーバーから取得。そのページを基軸に、表示したいものがあれば、そのための差分を都度APIから取得してくる。
+
+まず、中身がほとんど無いHTMLが返ってくる。それと別のリクエストで画面に表示するデータ（JSON）を取得していて、それらをクライアント側でレンダリング（組み立てて表示）している。
+
+##### メリット
+- ページ遷移ごとに、サーバで組み立てたHTMLやCSS/JSを取得するMPA(例:Railsのerb)と比較して早い。
+- ユニバーサルレンダリングと比較して開発が容易。（サーバー環境でのレンダリングを意識する必要がない）
+- サーバー実行環境が不要。
+##### デメリット
+- ページが表示されるまでの初期ロード(クライアントレンダリングの完了)に時間がかかる。
+- JavaScriptがメインとなっているため、SEOには不利。
+:::
+
+2. **Universal Rendering**（ユニバーサルレンダリング）
+Nuxt3のデフォルト。
+**要は、SSR**(Server-Side Rendering)だが、**CSR(SPA)とSSRを組み合わせて**レンダリングを行う。
+
+:::message
+#### SSR
+サーバサイドでHTMLを生成して、クライアント（ブラウザ）に返す。（content-typeがtext/html）
+:::
+
+3. その他
+今後の予定として、両者を組み合わせたHybrid Rendering（ハイブリッドレンダリング）やエッジ環境でのレンダリングもサポート予定のよう。
+- Hybrid Rendering : Route Rulesをnuxt.cofig.ts内で設定することでページ毎にレンダリングモードを変更することができる。
+
+
+
+
+
+:::message
+### ハイドレーションとは
+静的ホスティング or サーバーサイドレンダリングによって配信された静的HTMLウェブページを、クライアントサイドのJavaScriptがHTML要素に**イベントハンドラをアタッチ**して動的ウェブページに変換する手法のこと。
+具体的には、ボタンを押したときなどのイベントにJavaScriptを紐付けて、ページが変化するようにする。
+
+1. サーバーサイドで、HTMLが作成される。
+2. クライアントサイドにHTMLをダウンロードし、JavaScriptのコードたちもダウンロードが終わり実行できる状態になったときに、ComponentなどのコードをもとにHTMLを生成し直し、**参照透過性のチェックを行う**。
+3. サーバーサイドで生成したHTMLにイベントハンドラをアタッチしていく。
+
+#### 参照透過性
+同じpropsを渡してるのに、違うレンダリングがされてはいけない。
+「**サーバーサイドのHTML === クライアントサイドで作ったHTML**」となるのが期待値。
+:::
+
+https://zenn.dev/rinda_1994/articles/e6d8e3150b312d
+https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
+
+
 
 /composablesとは？
 
