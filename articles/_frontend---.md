@@ -495,15 +495,15 @@ Nuxt3のデフォルト。
 :::message
 #### SSR
 サーバサイドでHTMLを生成して、クライアント（ブラウザ）に返す。（content-typeがtext/html）
+
+ただし、サーバーサイドでレンダリングしたHTMLのままでは、ユーザー操作に対するリアクティブ性が無い。
+そこで、**ハイドレーション**を行うステップを設けることで、SPAと同じリアクティブ性を後付けで追加している。
+
+このように、**サーバー、クライアントサイド双方でレンダリングされる**ため、ユニバーサルレンダリングという名称となっている。
+
+##### メリット
+- SPAの欠点である初期ロードの遅さやSEOの問題を解消できる。
 :::
-
-3. その他
-今後の予定として、両者を組み合わせたHybrid Rendering（ハイブリッドレンダリング）やエッジ環境でのレンダリングもサポート予定のよう。
-- Hybrid Rendering : Route Rulesをnuxt.cofig.ts内で設定することでページ毎にレンダリングモードを変更することができる。
-
-
-
-
 
 :::message
 ### ハイドレーションとは
@@ -519,8 +519,15 @@ Nuxt3のデフォルト。
 「**サーバーサイドのHTML === クライアントサイドで作ったHTML**」となるのが期待値。
 :::
 
+3. その他
+今後の予定として、両者を組み合わせたHybrid Rendering（ハイブリッドレンダリング）やエッジ環境でのレンダリングもサポート予定のよう。
+- Hybrid Rendering : Route Rulesをnuxt.cofig.ts内で設定することでページ毎にレンダリングモードを変更することができる。
+
 https://zenn.dev/rinda_1994/articles/e6d8e3150b312d
 https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
+https://zenn.dev/mm67/articles/nuxt3-rendering-modes#summary
+https://developer.mamezou-tech.com/nuxt/nuxt3-rendering-mode/
+
 
 
 
