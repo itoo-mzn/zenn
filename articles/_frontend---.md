@@ -439,6 +439,21 @@ pluginsディレクトリに置いたプラグイン（拡張機能）は、コ�
 ### middlewareディレクトリ
 Route middlewareを使うと、ページ遷移時にユーザの権限チェックを行う等の処理を挟むことができる。
 
+### Data Fetching
+Nuxt3でのデータ取得に関する関数は、useFetch, useLazyFetch, useAsyncData, useLazyAsyncDataの4つ。
+
+#### 1. useFetch
+Promiseを返す。
+```ts
+const response = await useFetch('https://jsonplaceholder.typicode.com/posts/');
+```
+戻されたデータの構成は下記。
+- data : 取得したデータ。dataとerrorとpendingはRefImpなので、リアクティブな状態。（data.valueでアクセスできる。）
+- error : エラー。
+- pending : 取得中かどうか。bool。
+- execute : 関数。???
+- refresh : データを再取得する関数。
+
 ### useState
 コンポーネント間やページ間で状態管理（データ共有）したいときに使う。
 （状態を変更した状態で、別のページに移動して、その後そのページに戻ったときに、状態が変更されたままであってほしいとき 等）
@@ -527,29 +542,6 @@ https://zenn.dev/rinda_1994/articles/e6d8e3150b312d
 https://qiita.com/maruken24/items/71461c6a0247bbc9d4e5#ssr-with-rehydration
 https://zenn.dev/mm67/articles/nuxt3-rendering-modes#summary
 https://developer.mamezou-tech.com/nuxt/nuxt3-rendering-mode/
-
-
-
-
-/composablesとは？
-
-- **composableな関数**を配置するディレクトリ
-- ここに配置したものは自動importされる（コンポーネントで毎回わざわざimportすることなく使える）
-- **composableな関数とは？**
-    - **状態を持つロジック**をカプセル化して利用するための関数
-    - 慣習としてコンポーザブル関数の名前は**use**~~~から始める
-
-
-
-// computedつけてないとただの配列で、
-// ただの配列のままではそれが読み込まれるときにまだpropsが読み込まれていないので
-// 初期画面表示時に表示されなくなってしまう
-
-// computed : propが変わるたび
-// onMounted : DOM読み込まれたときのみ
-
-vue3からはtypeをつけないといけないらしい
-import type { Academy_School } from '~~/src/graphql/generated/graphqlOperations';
 
 
 ---
