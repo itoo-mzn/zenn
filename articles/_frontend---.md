@@ -388,10 +388,21 @@ defineEmits(['update:title'])
 ### コンポーザブル (composable)
 **状態を持つロジック**をカプセル化して再利用するための関数。
 
-- 慣習として、コンポーザブル関数の名前は`use`で始める。
+- 慣習として、**コンポーザブル関数の名前は`use`で始める**。
 - `<script setup>`の中か、ライフサイクルフックで**同期的に呼ぶこと**。
 - **DOMを操作するような関数の場合**は、`onMounted()`などの**マウント後のライフサイクルフック内で実行すること**。そうすることで、DOMにアクセスすることが保証される。
 その場合、**`onUnmounted()`で掃除することも忘れず**。コンポーザブルがDOMイベントリスナーを登録したなら、そのリスナーを削除しないといけない。
+
+
+#### カスタムフック
+カスタムフックとは、複数のコンポーネントの中に存在する共通の処理を取り出して作成した関数。
+VueやNuxtでは`composables`ディレクトリ配下に配置する。（Nuxtの場合はauto importされる）
+
+https://qiita.com/powdersugar828828/items/0d0eff27437faf5fcc06#:~:text=%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E3%83%95%E3%83%83%E3%82%AF%E3%81%A8%E3%81%AF%E3%80%81state,%E3%81%97%E3%81%9F%E9%96%A2%E6%95%B0%E3%81%AE%E3%81%93%E3%81%A8%E3%81%A7%E3%81%99%E3%80%82
+
+#### フックとは
+https://zenn.dev/poteboy/articles/ce47ec05498cfa#hooks
+https://ja.reactjs.org/docs/hooks-overview.html
 
 
 :::message
@@ -441,8 +452,9 @@ Route middlewareを使うと、ページ遷移時にユーザの権限チェッ�
 
 ### Data Fetching
 Nuxt3でのデータ取得に関する関数は、useFetch, useLazyFetch, useAsyncData, useLazyAsyncDataの4つ。
+（useFetchのみ記載。）
 
-#### 1. useFetch
+#### useFetch
 Promiseを返す。
 ```ts
 const response = await useFetch('https://jsonplaceholder.typicode.com/posts/');
@@ -453,6 +465,8 @@ const response = await useFetch('https://jsonplaceholder.typicode.com/posts/');
 - pending : 取得中かどうか。bool。
 - execute : 関数。???
 - refresh : データを再取得する関数。
+
+https://zenn.dev/coedo/articles/cc000738a0f069
 
 ### useState
 コンポーネント間やページ間で状態管理（データ共有）したいときに使う。
@@ -548,6 +562,8 @@ https://developer.mamezou-tech.com/nuxt/nuxt3-rendering-mode/
 
 # ApolloClient
 **GraphQL APIのクライアント**ライブラリ。
+（Apolloには、クライアントとサーバーがある。サーバーについてはよく分かっていない。）
+https://v4.apollo.vuejs.org/guide/#what-is-apollo
 
 1. 状態管理を行う
   グローバルな状態管理もApolloで完結できる。
@@ -561,6 +577,12 @@ https://zenn.dev/furharu/articles/0397d183760970
 https://zenn.dev/furharu/articles/ece72dac5feffe
 https://zenn.dev/furharu/articles/26557d977b1b8c
 
+
+## Vue Apollo
+Vueと連結するApollo。
+https://v4.apollo.vuejs.org/
+
+**`vue/apollo-composable`というのは、Vue Apolloの中でも、compositionAPIに対応したもの**のこと。
 
 ---
 
