@@ -582,7 +582,57 @@ https://zenn.dev/furharu/articles/26557d977b1b8c
 Vueと連結するApollo。
 https://v4.apollo.vuejs.org/
 
+## vue/apollo-composable
 **`vue/apollo-composable`というのは、Vue Apolloの中でも、compositionAPIに対応したもの**のこと。
+
+*Apollo Clientを使用してGraphQL APIを呼び出し、
+Vue3 Composition APIを使用してAPIからのデータを取得し、
+リアクティブにVueコンポーネントに反映する* ためのユーティリティ関数を提供している。
+
+- `useQuery`: GraphQLのクエリを使用してデータを取得するためのフック
+- `useMutation`: GraphQLのミューテーションを使用してデータを更新するためのフック
+- `useSubscription`: GraphQLのサブスクリプションを使用してデータをリアルタイムに取得するためのフック
+- `useResult`: **useQueryの結果を加工する**ためのフック
+- `useLazyQuery`: useQueryと同様にクエリを実行するが、手動で呼び出すことができるフック
+
+### useQuery
+Componentがrenderされたらクエリを実行する。
+引数には`gql`で生成したクエリを食わせる。
+
+useQuery（useSubscriptionも）のイベントフックには下記がある。
+- onResult : 新しい結果が利用可能になるたびに呼び出される。
+- onError : エラーが発生したときにトリガーされる。
+
+https://v4.apollo.vuejs.org/guide-composable/query.html#graphql-document
+https://v4.apollo.vuejs.org/api/use-query.html#return
+
+:::message
+上のリンク先に記載があるが、useQueryのreturnには、上記のイベントフック以外にも、resultやloading、refetchなどがある。
+
+その中の`refetch`とは、キャッシュを利用せず、問い合わせを再度行うこと（再取得すること）。
+- onResultはキャッシュされる。
+  refetchはキャッシュされない。（ネットワーク通信あり）
+  使い分けは、キャッシュしていい画面なのかどうか。
+:::
+
+### useLazyQuery
+任意のイベントをトリガーにしてクエリを実行できるようになる。
+（= 好きなタイミングで。例えばボタンを押した時とか）
+
+useLazyQueryのイベントフックには下記がある。
+- onDone : ミューテーションが正常に完了すると呼び出される。
+- onError : エラーが発生したときにトリガーされる。
+
+:::message alert
+**バインディングしたものは、`<template>`内で呼ばないと動かない**。（GraphQL Queryとか）
+（なぜかQueryが実行されない みたいなときにチェックすること。）
+:::
+
+https://note.com/tabelog_frontend/n/n7360fd7bc007
+https://zenn.dev/furharu/articles/26557d977b1b8c
+https://tech.raksul.com/2021/12/05/combination-of-vue-js-v2-composition-api-vue-apollo-v4/
+
+
 
 ---
 
