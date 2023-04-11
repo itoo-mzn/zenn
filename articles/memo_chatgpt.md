@@ -14,6 +14,12 @@ published: false
 https://qiita.com/devneko/items/0dc9fd8b37419d9e369c?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&utm_campaign=0879695d15-Qiita_newsletter_555_03_01_2023&utm_medium=email&utm_term=0_e44feaa081-0879695d15-34065145
 
 - 要件定義
+  - 欲しいもの（システム）を伝えて、どんな機能が必要か教えてもらう。
+  - その機能には、どんな画面が必要か
+  - その画面にはどんな要素（項目）を配置する必要があるか
+  - その画面にはどんなUI要素を配置する必要があるか
+  - 要件定義書として、これまでのやり取りをマークダウンで書き出してもらう
+  - 
 
 https://dev.classmethod.jp/articles/gpt-requirement-definition/
 
@@ -66,6 +72,7 @@ https://dev.classmethod.jp/articles/how-to-design-prompt-engineering/
 https://qiita.com/sonesuke/items/981925cfcc610a602e94?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&utm_campaign=9a40bfae49-Qiita_newsletter_558_03_22_2023&utm_medium=email&utm_term=0_e44feaa081-9a40bfae49-34065145
 
 
+
 # 生存戦略
 - エンジニアには「コードを書くこと」自体では無く、「ビジネスサイドが実現したいこと」を実現する能力がより強く求められるようになる。
 
@@ -76,8 +83,6 @@ https://qiita.com/sonesuke/items/981925cfcc610a602e94?utm_source=Qiita%E3%83%8B%
 - 自分が培ってきたスキル・専門性とAI（GPT）を掛け合わせて価値を出す。
   （自分のスキル ✕ AI = 新たな価値）
 
-
-## (参考情報)
 https://qiita.com/lazy-kz/items/e4932f1a90c2a7986ef5#3-%E3%81%93%E3%82%8C%E3%82%92%E5%89%8D%E6%8F%90%E3%81%A8%E3%81%97%E3%81%9F%E3%82%A8%E3%83%B3%E3%82%B8%E3%83%8B%E3%82%A2%E3%81%AE%E7%94%9F%E5%AD%98%E6%88%A6%E7%95%A5
 
 以上
