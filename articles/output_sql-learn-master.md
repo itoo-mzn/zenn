@@ -3,7 +3,7 @@ title: "「達人に学ぶSQL徹底指南書」要点"
 emoji: "📑"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["SQL", "DB"]
-published: true
+published: false
 ---
 
 # 目的

@@ -3,7 +3,7 @@ title: "Docker + Kubernetes"
 emoji: "🐳"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Docker", "Kubernetes"]
-published: true
+published: false
 ---
 
 # 教材

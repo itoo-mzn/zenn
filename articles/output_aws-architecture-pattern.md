@@ -3,7 +3,7 @@ title: "「AWS定番業務システム 14パターン設計ガイド」要点"
 emoji: "☁"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["AWS"]
-published: true
+published: false
 ---
 
 # 書籍

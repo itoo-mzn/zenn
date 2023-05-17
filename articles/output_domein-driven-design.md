@@ -3,7 +3,7 @@ title: "「ドメイン駆動設計入門」要点"
 emoji: "🐶"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["ドメイン駆動設計", "DDD"]
-published: true
+published: false
 ---
 
 # 書籍

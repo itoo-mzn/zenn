@@ -3,7 +3,7 @@ title: "「サーバーの基本」要点"
 emoji: "🐱"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["サーバー"]
-published: true
+published: false
 ---
 
 # 書籍
