@@ -19,6 +19,7 @@ published: false
   - 根拠（リソース）を教えてもらう
 
 https://qiita.com/devneko/items/0dc9fd8b37419d9e369c?utm_source=Qiita%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%B9&utm_campaign=0879695d15-Qiita_newsletter_555_03_01_2023&utm_medium=email&utm_term=0_e44feaa081-0879695d15-34065145
+https://stocker.jp/diary/chatgpt-coding/
 
 - 設計してもらう
   - データベース設計をしてもらう
