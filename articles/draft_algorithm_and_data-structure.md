@@ -150,26 +150,144 @@ func main() {
 }
 ```
 
-再帰を使う場合は、前に計算した値をメモ化して、計算済みであればそれを返す方法がある。（キャッシュの考え方）
+:::message
+再帰を使う場合は、**前に計算した値をメモ化**して、**計算済みであればそれを返す**方法がある。（キャッシュの考え方）
+:::
 
 ## 部分和問題
 
 N 個の数字から何個かを選んで、総和を x にできるか という問題。
 再帰でも実装できるが、計算量が最悪`O(2^N)`なので効率的でない。
 
-
 # 5 章 設計技法(3)：動的計画法
 
+## 動的計画法
 
-5.1 動的計画法とは
-5.2 最初の例題
-5.3 動的計画法に関連する諸概念
-5.4 動的計画法の例(1)：ナップサック問題
-5.5 動的計画法の例(2)：編集距離
-5.6 動的計画法の例(3)：区間分割の仕方を最適化
-5.7 まとめ
+動的計画法とは、
+問題を**一連の部分問題に分解**し、
+**各部分問題の解をメモ化**しながら、
+**小さな問題から大きな問題へ**と順に解を求めていく手法。
+（抽象度の高い話）
 
-6 章 設計技法(4)：二分探索法
+## Flog 問題
+
+カエルが「次の足場に行く」or「（1 つ飛ばしで）2 つ先の足場に行く」を選びながら、足場の落差（移動コスト）が最小になる方法で移動したときの総落差を求める という問題。
+
+```go:Flog問題
+package main
+
+import (
+  "fmt"
+  "math"
+)
+
+func abs(n int) int {
+  return int(math.Abs(float64(n)))
+}
+
+func min(a int, b int) int {
+  return int(math.Min(float64(a), float64(b)))
+}
+
+func flog(steps []int) int {
+  // コスト[0] = 0
+  // コスト[1] = 頂点0から1step = コスト[0] + |頂点0 - 頂点1|
+  // コスト[2] = min[ 頂点1から1step, 頂点0から2step ] = min[ コスト[1] + |頂点1 - 頂点2| , コスト[0] + |頂点0 - 頂点2| ]
+  // コスト[3] = min[ 頂点2から1step, 頂点1から2step ] = min[ コスト[2] + |頂点2 - 頂点3| , コスト[1] + |頂点1 - 頂点3| ]
+  // コスト[4] = ...
+
+  // 入力であるsteps（スライス）と同じ数の配列をmake()で作成
+  dp := make([]int, len(steps))
+  dp[0] = 0 // 初期値
+
+  for i := 1; i < len(steps); i++ {
+    if i == 1 {
+      dp[i] = abs(steps[i] - steps[i-1])
+    } else {
+      dp[i] = min(dp[i-1]+abs(steps[i]-steps[i-1]), dp[i-2]+abs(steps[i]-steps[i-2]))
+    }
+  }
+
+  return dp[len(dp)-1]
+}
+
+func main() {
+  steps := []int{2, 9, 4, 5, 1, 6, 10} // 足場の高さ
+  fmt.Println(flog(steps))
+}
+```
+
+## ナップサック問題
+
+重さ w、価値 v が決まっている N 個の品物の中から、重さの総和が W を超えように選んだときの、価値の最大値を求める問題。
+
+まず、総価値 dp の初期値は `dp[0][w] = 0`。
+それ以降、i番目の品物を選んだときの総価値 `dp[i][w]` が決まっている状態で、`dp[i+1][w]`を求めて、i+1番目の品物を選択して総価値が高まったかどうかを調べる。
+そうして、その品物を選ぶ or 選ばないという2択を順に判断していく。
+
+```go
+package main
+
+import (
+  "fmt"
+)
+
+type Item struct {
+  Weight int
+  Value  int
+}
+
+func chmax(a *int, b int) {
+  if *a < b {
+    *a = b
+  }
+}
+
+func maxValue(items []Item, maxWeight int) int {
+  // value[i][w] : 重さ w 以内に収まる中で、i 番目の品物を選んだときの総価値
+  // 必要な要素数が格納できる2次元配列を作る。（各要素の値はすべて0）
+  value := make([][]int, len(items)+1)
+  for i := range value {
+    value[i] = make([]int, maxWeight+1)
+  }
+
+  for i, item := range items {
+    for w := 0; w <= maxWeight; w++ {
+      if w-item.Weight >= 0 {
+        // 制限値 w 以内の品物なので、その品物を選ぶ可能性を検討する。
+        // その品物を選ばなかったときの価値 vs 選んだときの価値 で高い方を、
+        // 制限値w・i番目までの品物における最大価値として、valueにメモする。
+        chmax(&value[i+1][w], value[i][w-item.Weight]+item.Value)
+      }
+      // 制限値wを超える品物なのでその品物自体は選ばない。ただ、そのことをvalueにメモはする。
+      chmax(&value[i+1][w], value[i][w])
+    }
+  }
+
+  // 2次元配列の末尾の要素が、戦いに勝ち抜いた[最大価値]なので、それを返す。
+  return value[len(items)][maxWeight]
+}
+
+func main() {
+  // 品物（重さ, 価値）
+  items := []Item{
+    {Weight: 2, Value: 3},
+    {Weight: 1, Value: 2},
+    {Weight: 3, Value: 6},
+    {Weight: 2, Value: 1},
+    {Weight: 1, Value: 3},
+    {Weight: 5, Value: 85},
+  }
+
+  // fmt.Println(maxValue(items, 5)) // 重さの制限を5にしたときの最大価値
+  // fmt.Println(maxValue(items, 10))
+  fmt.Println(maxValue(items, 15))
+}
+```
+
+
+
+# 6 章 設計技法(4)：二分探索法
 6.1 配列の二分探索
 6.2 C++の std::lower bound()
 6.3 一般化した二分探索法
