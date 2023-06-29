@@ -3,10 +3,10 @@ title: "Goを書く上でよく見るDocやサイト"
 emoji: "💭"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Go"]
-published: false
+published: true
 ---
 
-Go を学ぶ・使う上で参照するサイトをまとめておく。
+Go を学ぶ・使う上で参照するサイトをまとめています。
 
 # Doc
 
