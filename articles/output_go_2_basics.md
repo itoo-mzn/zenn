@@ -24,9 +24,113 @@ func main() {
 }
 ```
 
-## Exported name
+## スコープ
 
 Go では、最初の文字が**大文字**で始まる名前は、**外部のパッケージから参照できる**（export された）ものです。
+
+:::message alert
+Go には、public や private キーワードが存在しないので、
+変数や関数の**先頭文字が 小文字 or 大文字** で判断されます。
+| プライベート | パブリック |
+| ------------ | ---------- |
+| 小文字 | 大文字 |
+:::
+
+```go:sum.go
+// 自作したpackage
+package calculator
+
+// パッケージの中からしか呼び出せない
+var logMessage = "[LOG]"
+
+// どこからでもアクセスできる
+var Version = "1.0"
+
+// パッケージの中からしか呼び出せない
+func internalSum(number int) int {
+  return number - 1
+}
+
+// どこからでもアクセスできる
+func Sum(number1, number2 int) int {
+  return number1 + number2
+}
+```
+
+# パッケージ
+
+### Package とは
+
+同じ 1 つの空間に存在するソースコードファイル群のことです。同じ空間とは、同じ package 名が付いている ということ。
+**このソースコードファイル群は一緒にコンパイルされます**。
+**同じ Package 内のソールファイル間では、関数や変数などが共有されます**。
+
+### Module とは
+
+複数の Package の集合体。
+
+### go mod
+
+`go mod init モジュール名`で Module を使用するのに必要な**go.mod ファイル**を生成。
+
+```:go.modファイル
+module sample
+
+go 1.20
+```
+
+## モジュールを作成
+
+calculator というパッケージを作った場合、モジュールを作成するには、そのコード(ファイル)があるカレントディレクトリで `go mod init` を実行します。
+
+```bash
+# go mod init [モジュール名]
+go mod init github.com/myuser/calculator
+```
+
+実行すると、下記の go.mod が生成されます。
+
+```go:go.mod
+module github.com/myuser/calculator
+
+go 1.16
+```
+
+## 作成したモジュールを使う
+
+```go:main.go
+// 自作（calculator）パッケージを使う
+import "github.com/myuser/calculator"
+
+func main() {
+  total := calculator.Sum(3, 5)
+  println(total)
+  println("version: ", calculator.Version)
+}
+```
+
+:::message alert
+上記のようにコードを書くだけでは使えません。
+go mod initを実行して、パッケージを認識させないといけません。
+:::
+
+1. 呼び出す側のファイルがあるディレクトリで `go mod init` を実行する。
+
+```
+go mod init github.com/myuser/calculator
+```
+
+2. 生成された go.mod ファイルを編集。(追加)
+
+```diff go:go.mod
+module helloworld
+
+go 1.14
+
++ require github.com/myuser/calculator v0.0.0
+
++ replace github.com/myuser/calculator => ../calculator
+```
 
 # プログラム実行
 
@@ -67,26 +171,6 @@ go build main.go
 ## Module の場合
 
 これまで記載したのはファイル単体を実行するときの話でしたが、Module として実行するときの話をします。
-
-### Package とは
-
-同じ 1 つの空間に存在するソースコードファイル群のこと。同じ空間とは、同じ package 名が付いている ということ。
-**このソースコードファイル群は一緒にコンパイルされる**。
-**同じ Package 内のソールファイル間では、関数や変数などが共有される**。
-
-### Module とは
-
-複数の Package の集合体。
-
-### go mod
-
-`go mod init モジュール名`で Module を使用するのに必要な**go.mod ファイル**を生成。
-
-```:go.modファイル
-module sample
-
-go 1.20
-```
 
 ### 実行
 
