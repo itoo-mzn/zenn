@@ -8,7 +8,7 @@ published: true
 
 # ステートメント
 
-## 基本構文
+## <基本構文>
 
 ```go:main.go
 // main: すべての 実行可能プログラムは main パッケージに含まれる必要がある。
@@ -24,7 +24,7 @@ func main() {
 }
 ```
 
-## スコープ
+## <スコープ>
 
 Go では、最初の文字が**大文字**で始まる名前は、**外部のパッケージから参照できる**（export された）ものです。
 
@@ -69,17 +69,7 @@ func Sum(number1, number2 int) int {
 
 複数の Package の集合体。
 
-### go mod
-
-`go mod init モジュール名`で Module を使用するのに必要な**go.mod ファイル**を生成。
-
-```:go.modファイル
-module sample
-
-go 1.20
-```
-
-## モジュールを作成
+## <モジュールを作成>
 
 calculator というパッケージを作った場合、モジュールを作成するには、そのコード(ファイル)があるカレントディレクトリで `go mod init` を実行します。
 
@@ -88,7 +78,7 @@ calculator というパッケージを作った場合、モジュールを作成
 go mod init github.com/myuser/calculator
 ```
 
-実行すると、下記の go.mod が生成されます。
+実行すると、下記の **go.mod** が生成されます。
 
 ```go:go.mod
 module github.com/myuser/calculator
@@ -96,7 +86,7 @@ module github.com/myuser/calculator
 go 1.16
 ```
 
-## 作成したモジュールを使う
+## <作成したモジュールを使う>
 
 ```go:main.go
 // 自作（calculator）パッケージを使う
@@ -111,7 +101,7 @@ func main() {
 
 :::message alert
 上記のようにコードを書くだけでは使えません。
-go mod initを実行して、パッケージを認識させないといけません。
+go mod init を実行して、パッケージを認識させないといけません。
 :::
 
 1. 呼び出す側のファイルがあるディレクトリで `go mod init` を実行する。
@@ -137,7 +127,7 @@ go 1.14
 Go は、main パッケージ内の main 関数からプログラムがスタートします。
 （プログラムがスタートする地点のことを、エントリーポイントといいます。）
 
-## 実行
+## <実行>
 
 Go ファイルがあるフォルダーに移動し、`go run`を実行。
 
@@ -151,7 +141,7 @@ go run ./src/helloworld/main.go
 run コマンドは、**ビルド(go build) + 実行** を行っています。
 が、**実行ファイル**（= バイナリファイル（機械語で書かれたファイル））**が残らない**ので、見た目はインタプリタ言語のように実行できます。
 
-## ビルド
+## <ビルド>
 
 ```bash
 go build main.go
@@ -168,7 +158,7 @@ go build main.go
 `go build` コマンドにて`GOOS`と`GOARCH`を指定すると、違う OS やアーキテクチャ向けのビルドができます。
 :::
 
-## Module の場合
+## <Module の場合>
 
 これまで記載したのはファイル単体を実行するときの話でしたが、Module として実行するときの話をします。
 
