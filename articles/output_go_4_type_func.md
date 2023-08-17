@@ -3,7 +3,7 @@ title: "Go 型・関数"
 emoji: "😸"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["Go"]
-published: false
+published: true
 ---
 
 # 型
@@ -129,7 +129,7 @@ fmt.Println( reflect.TypeOf(v) )
 
 スライスは下記 3 つの要素を持っている。（この 3 要素の構造体である。）
 
-1. **ポインタ** : 基となる配列の最初の要素の場所（切り出した場所）を表す。
+1. **ポインタ** : **基となる配列の最初の要素の場所**（**切り出した場所**）を表す。
 2. **len** : 切り出した長さ。
 3. **cap** : 基になる配列に対して、ポインタの位置（切り出した位置）から配列の終端までの要素数。つまり、このスライスはどこまで拡張できるのかを表す量。
 
@@ -249,6 +249,204 @@ append の挙動によって、**配列が再確保される場合がある**の
 
 なので、ユーザ定義型というのは struct だけでなく、`type MyInt int`とかも定義できる。
 
----
-
 # 関数
+
+- 引数の型は、変数名の**後ろ**に書く。
+- 2 つ以上の引数の型が同じ場合は、1 つに省略できる。
+- 複数の戻り値を返せる。
+  使わない戻り値は、ブランク変数`_`によって明示すること。Go の変数は必ず使わないといけないため。
+
+```go
+func sample(x, y int) (string, string) {
+  // 処理
+  // return ...
+}
+```
+
+## <ポインター>
+
+### ポインターじゃないとどうなるか
+
+多くの言語と同じように、Go は「値渡し」の言語。
+つまり、`b := a`では（変数 b に変数 a のメモリ位置を共有している訳でなく、）変数 a の**値のコピー**を変数 b に格納している。
+（_ローカルコピー（メモリ内の新しい変数）を作成している。_）
+
+よって、**関数の引数で変数（値）を渡しても、その関数内での変更は呼び出し元に反映されない**。
+その引数は、元の変数の値のコピーなので。
+
+```go:関数に変数を渡しても呼び出し元に反映されない
+func main() {
+  first := "ジョン"
+  updateName(first)
+  println(first) // ジョン と出力される
+}
+
+func updateName(name string) {
+  name = "田中" // "田中"に書き換えたつもりだが...
+}
+```
+
+### ポインターの用途
+
+ただ、そうじゃなくて「**関数内で値を変更したい**」というときに**ポインタ**を使う。
+**ポインターでは、値ではなくアドレスメモリを渡す**。そうすることで、**呼び出し元にも反映される**。
+（ポインターを使うことで、上記の updateName 関数で行う変更を main 関数の first 変数にも反映させることができる。）
+
+**ポインター**は、**変数の格納先（メモリアドレス）を表す値**。
+
+- **&演算子** : ポインタを**渡す**。
+- **\*演算子** : ポインターを**参照**して、（ポインターが示す）格納先のオブジェクトへアクセスする。
+
+```go:main.go
+func main() {
+  first := "ジョン"
+  updateName(&first) // ポインター(メモリアドレス)を渡す
+  println(first) // 田中 と出力される
+}
+
+func updateName(name *string) { // 注: 変数名でなく、型のとなりに*を書く
+  *name = "田中" // ポインター先の文字列をupdate
+}
+```
+
+:::message alert
+
+#### スライス、マップ、チャネル はポインタを用いる必要がない（場合が多い）。
+
+スライスの場合、`b := a`としても、スライス a が持つ**配列へのポインタ**を変数 b にコピーしているため、a と b は（背後にある）同じ配列を参照する。
+
+ただし、（スライスでなく）**配列は、ポインタを使わないとアドレスを参照できない**。
+配列の場合、`b := a`は、配列aの持つ**値**を変数bにコピーしている。
+:::
+
+:::message alert
+ポインタが指すものが**配列の場合**、書き方に注意。
+
+`*arr[i]` : NG（エラーになる）
+`(*arr)[i]` : OK
+:::
+
+## <メソッド>
+**メソッド**は、**レシーバ**（= 構造体 や その他何かのデータ）**に紐付けられた関数**。
+メソッドによって、作成した構造体やデータに**動作**を追加できる。
+
+**レシーバは、第0引数みたいなイメージ**。（なので変数の値のコピーが発生する。）
+
+文法 : `func (変数 レシーバ) メソッド名() 返却型 { ... }`
+
+```go:例
+type triangle struct {
+  size int
+}
+
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+func main() {
+  t := triangle{3}
+  fmt.Println("この三角形の外周:", t.perimeter())
+}
+```
+
+### レシーバにポインターを使う
+
+メソッドに、変数でなくポインターを渡すほうが良い場合がある。（変数のアドレスを参照する。）
+
+- メソッドで変数を更新する場合。
+- 引数が（データ容量として）大きすぎる場合。→そのコピーを回避したい。
+
+```go:ポインタを使う
+type triangle struct {
+  size int
+}
+
+// ポインタを使わないメソッド
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+// ポインタを使うメソッド
+func (t *triangle) doubleSize() {
+  t.size *= 2 // return しない
+}
+
+func main() {
+  t := triangle{3}
+  t.doubleSize() // ポインタを参照して tが更新される
+
+  fmt.Println("size:", t.size) // size: 6
+  fmt.Println("perimeter:", t.perimeter()) // perimeter: 18
+}
+```
+:::message
+メソッドにポインターを使うこの用法はよく使われるので、シンタックスシュガーがある。
+
+`(&t).doubleSize()` 本来はこう書かないといけないが、
+`t.doubleSize()` こう書いても同じ意味になる。
+:::
+
+:::message alert
+下記については詳細の記載を省略している。
+- メソッド値 : メソッドを値として扱える。なので、変数にメソッドを格納して、それを別の場所で実行できたりする。
+- メソッド式 : おおよそメソッド値と同じようなこと。違いは、レシーバでなく型を渡しているだけなので、メソッド式にはレシーバを第一引数に渡す必要がある。
+:::
+
+### 埋め込まれた構造体のメソッドを呼び出すことができる
+
+```go:埋め込まれた構造体のメソッドを呼び出す
+type triangle struct {
+  size int
+}
+
+type coloredTriangle struct {
+  triangle // 構造体を埋め込む
+  color string
+}
+
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+func main() {
+  t := coloredTriangle{triangle{3}, "blue"}
+  fmt.Println("size:", t.size)
+  // coloredTriangleが、triangleのメソッドも使える
+  fmt.Println("perimeter:", t.perimeter())
+}
+```
+
+また、**埋め込んだ構造体のメソッドをオーバーロード**することもできる。
+※ オーバーロード(多重定義) : 同じ名前の関数等を定義すること。
+
+その場合、下記のように、埋め込んだ側・埋め込まれた側どちらのメソッドも使用することができる。
+
+```go:埋め込んだ構造体のメソッドをオーバーロード
+type triangle struct {
+  size int
+}
+
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+type coloredTriangle struct {
+  triangle
+  color string
+}
+
+func (t coloredTriangle) perimeter() int {
+  return t.size * 5
+}
+
+func main() {
+  t := coloredTriangle{triangle{3}, "blue"}
+  fmt.Println("size:", t.size)
+
+  // coloredTriangleで、coloredTriangleのメソッドを使う
+  fmt.Println("perimeter:", t.perimeter()) // perimeter: 15
+
+  // coloredTriangleで、triangleのメソッドも使える
+  fmt.Println("perimeter:", t.triangle.perimeter()) // perimeter: 9
+}
+```
