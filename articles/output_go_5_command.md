@@ -90,11 +90,11 @@ init()は main()より先に実行される特殊な関数。
 
 # 入出力
 
-| 種類 | 変数 | 説明 |
-| - | - | - |
-| 標準入力 | os.Stdin | 入力（キーボードとかから待ち受けるやつ） |
-| 標準出力 | os.Stdout | 出力。次のコマンドに（パイプとかで）渡すような値。なのでエラーは標準出力に出さないこと。 |
-| 標準エラー出力 | os.Stderr | エラーを出力。 |
+| 種類           | 変数      | 説明                                                                                     |
+| -------------- | --------- | ---------------------------------------------------------------------------------------- |
+| 標準入力       | os.Stdin  | 入力（キーボードとかから待ち受けるやつ）                                                 |
+| 標準出力       | os.Stdout | 出力。次のコマンドに（パイプとかで）渡すような値。なのでエラーは標準出力に出さないこと。 |
+| 標準エラー出力 | os.Stderr | エラーを出力。                                                                           |
 
 os.Stdin らは、**io.Reader**や**io.Writer**インターフェースを実装している。
 なので、様々な関数やメソッドの引数として渡せる。
@@ -108,11 +108,21 @@ os.Stdin らは、**io.Reader**や**io.Writer**インターフェースを実装
 :::
 
 # プログラムの終了
-`os.Exit(0)`で、プログラムを終了する。*呼び出し元にも終了状態が伝えられる*。
+
+`os.Exit(0)`で、プログラムを終了する。_呼び出し元にも終了状態が伝えられる_。
+
 - 0 : 正常
-- 0以外 : 異常
+- 0 以外 : 異常
 
 # ファイル
+
+- ファイルを開く : `f, err := os.Open("ファイル名")`
+- ファイルを作成 : `f, err := os.Create("ファイル名")`
+- 詳細なオプションを指定して、ファイルを開く :
+  `f, err := os.OpenFile(ファイル名, フラグ(ファイルが無ければ作成する等), パーミッション)`
+
+- ファイルを読み込む : `[*os.File型].Read(読み込んだデータを格納するスライス)`
+- ファイルを読み込む : `[*os.File型].Write(書き込む文字列を格納したスライス)`
 
 ```go:読み込み
 func main() {
@@ -159,11 +169,13 @@ func main() {
   fmt.Println(count) // // 何byte読み込んだか
 }
 ```
+
 ```txt:create_sample.txt
 書き込みたいテキスト
 ```
 
 # ファイルパス
+
 `path/filepath`パッケージを使う。
 
 ```go
@@ -176,3 +188,95 @@ fmt.Println(filepath.Base(path)) // main.go
 // ディレクトリ のみ
 fmt.Println(filepath.Dir(path)) // dir
 ```
+
+# ログ
+
+```go:log.Fatal, log.SetPrefix
+func main() {
+	log.Print("Printログ1")
+
+	log.SetPrefix("main(): ")
+	log.Print("Printログ2")
+
+	log.Fatal("最終ログ")
+	log.Print("Printログ3 log.Fatalで終了させるためこれは実行されない")
+	/*
+		2023/08/24 06:48:09 Printログ1
+		main(): 2023/08/24 06:48:09 Printログ2
+		main(): 2023/08/24 06:48:09 最終ログ
+		exit status 1
+	*/
+}
+```
+
+```go:log.Panic
+func main() {
+  log.Print("printろぐ")
+  // → 2021/08/09 07:23:53 printろぐ
+
+  log.Panic("panicろぐ")
+  fmt.Print("これは見えない")
+  // → panic: panicろぐ
+  //   goroutine 1 [running]:
+  //   log.Panic(0xc0000c3f58, 0x1, 0x1)
+  //       /usr/local/go/src/log/log.go:354 +0xae
+  //   main.main()
+  //       /Users/itotakuya/projects/go/src/helloworld/main.go:814 +0xa5
+  // Panic()以降は実行されない
+}
+```
+
+### ファイルにログを記録する
+
+```go:main.go
+func main() {
+  // ファイル作成
+  file, err := os.OpenFile("ingo.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+
+  if err != nil {
+  log.Fatal("エラー発生")
+  }
+
+  // 後でファイルにログを記録するが、file.Close()を忘れないようにdefer予約
+  defer file.Close()
+
+  // 通常通り、標準出力へ
+  log.Print("ログ1")
+
+  // fileにログを記録することを宣言
+  // これ以降、log出力すると、ファイルに記録される
+  log.SetOutput(file)
+
+  // ファイルに書き込まれる
+  log.Print("ログ2")
+}
+```
+
+# Print 関数
+
+```go
+func main() {
+  fmt.Print("Hello", "world!")
+  fmt.Print("Hello", "world!")
+  // -> Helloworld!Helloworld!
+
+  // Printlnの場合は、スペースと改行が挿入される
+  fmt.Println("Hello", "world!")
+  fmt.Println("Hello", "world!")
+  // -> Hello world!
+  //    Hello world!
+
+  hello := "Hello world!"
+  // Printf : フォーマットを指定して出力する
+  fmt.Printf("%s\n", hello) // %s : 文字のみを出力 (""なし)
+  fmt.Printf("%#v\n", hello) // %#v : Goの文法での表現を出力
+  // -> Hello world!
+  //    "Hello world!"
+}
+```
+
+:::message
+Printf のフォーマット指定方法については、下の記事が詳細に書いてある。
+:::
+https://qiita.com/rock619/items/14eb2b32f189514b5c3c
+
