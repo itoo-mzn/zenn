@@ -57,6 +57,13 @@ func Sum(number1, number2 int) int {
 }
 ```
 
+# 命名規則
+
+- 変数 : 1 語 かつ 超短い言葉で。`i, s, cnf`
+- 関数、type、構造体 : キャメルケース。`MailLog` エクスポートされる場合、頭文字は大文字。
+
+https://zenn.dev/kenghaya/articles/1b88417b1fa44d
+
 # パッケージ
 
 ### Package とは
