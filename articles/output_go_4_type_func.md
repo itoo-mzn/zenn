@@ -469,7 +469,8 @@ func main() {
   t := coloredTriangle{triangle{3}, "blue"}
   fmt.Println("size:", t.size)
   // coloredTriangleが、triangleのメソッドも使える
-  fmt.Println("perimeter:", t.perimeter())
+  fmt.Println("perimeter:", t.triangle.perimeter())
+  // fmt.Println("perimeter:", t.perimeter()) // ↑の書き方のシンタックスシュガー
 }
 ```
 
