@@ -508,3 +508,8 @@ func main() {
   fmt.Println("perimeter:", t.triangle.perimeter()) // perimeter: 9
 }
 ```
+
+:::message
+Goには**継承は無い**。
+↑の構造体の埋め込みで行っているのは継承ではなく、**委譲**。
+:::
