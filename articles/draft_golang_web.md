@@ -8,7 +8,7 @@ published: false
 
 # 01. Go のコーディングで意識しておきたいこと
 
-Go は大規模なチーム開発で浮かび上がった問題を解決するために開発された言語であり、学術的な目的で開発されていないので、言語機能がシンプル。（そのため、表現力が不足している点もある。）
+Go は大規模なチーム開発で浮かび上がった問題を解決するために開発された言語であり、学術的な目的ではないので、言語機能がシンプル。（そのため、表現力が不足している点もある。）
 
 Go を使った設計やコーディングをする上では「シンプルかどうか」を判断基準にし、**迷ったらシンプルを選ぶ**ことが良い。
 
@@ -16,18 +16,18 @@ Go を使った設計やコーディングをする上では「シンプルか�
 
 context パッケージの役割は下記 2 点。
 
-1. **キャンセル**や**デッドライン**（時間制限。時間が来たら終了）を伝搬させる。
+1. **キャンセル**や**デッドライン**（時間制限）を伝搬させる。
 2. （リクエストやトランザクションスコープ内の）**メタデータ**を、関数やゴルーチン間で伝播させる。
 
 Go を使った HTTP サーバーにおいて、context パッケージの利用は必須。
-クライアントとの通信状態は、`context.Context`型の値からしか知ることができないため。
+**クライアントとの通信状態は、`context.Context`型の値からしか知ることができない**ため。
 
 :::message
 Go の仕様上、xxx 型のオブジェクト（やインスタンス）という表現は無く、**xxx 型の値**という表現になる。
 :::
 
 多くのパッケージが`context.Context`型の値を受け取る前提で設計されている。
-関数やメソッドを設計するときは、常に`context.Context`型の値を受け取るよう実装しておくべき。
+**関数やメソッドを設計するときは、常に`context.Context`型の値を受け取るよう実装しておくべき**。
 
 ## <キャンセルを通知する>
 
@@ -39,6 +39,7 @@ Go の仕様上、xxx 型のオブジェクト（やインスタンス）とい�
 ```go:context.WithCancelメソッド
 func child(ctx context.Context) {
   if err := ctx.Err(); err != nil {
+    fmt.Println("キャンセルされた")
     return
   }
   fmt.Println("キャンセルされていない")
@@ -48,7 +49,7 @@ func main() {
   ctx, cancel := context.WithCancel(context.Background()) // context.Background()はrootコンテキスト
   child(ctx) // "キャンセルされていない"
   cancel()
-  child(ctx) // 実行されない
+  child(ctx) // "キャンセルされた"
 }
 ```
 
@@ -65,7 +66,9 @@ func main() {
 （↑ の context.WithCancel メソッドのサンプルコード内で使っている。）
 
 ### キャンセルされるまで処理を続ける
+
 キャンセル通知（完了通知）があるまで処理を待機する場合は、**`<-ctx.Done()`で通知を待つ**。
+
 ```go
 func main() {
   ctx, cancel := context.WithCancel(context.Background())
@@ -93,10 +96,10 @@ func main() {
 // 終了
 ```
 
-## <Contextにデータを含める>
+## <Context にデータを含める>
 
-`context.WithValue(context, キー, 値)`でデータをセット。
-`ctx.Value(キー)`でデータを取得する。
+**`context.WithValue(context, キー, 値)`でデータをセット**。
+**`ctx.Value(キー)`でデータを取得**する。
 
 **キーには空の構造体`struct{}`を使う**のが一般的。
 （プリミティブな値はキーが衝突する恐れがあるので避けること。）
@@ -134,19 +137,54 @@ func main() {
 ```
 
 :::message
+
 ### 型アサーション
+
 `インターフェース.(型)`と書くことで、**特定の型への変換や型の確認**ができる。
 
 ```go
 var i interface{} = 42
 result, ok := i.(int)
-fmt.Println(result, ok)
+fmt.Println(result, ok) // 42 true
 ```
 
 :::
 
+## <context を扱うときの注意点>
 
-CHAPTER 03 　「database/sql」パッケージ
+- 呼び出された側で context.Context 型の値を操作しても、**呼び出した側には伝搬されない**。
+
+- 構造体の中（フィールド）に context.Context 型の値を保持すると、それが対象とするスコープが曖昧になるため、アンチパターン。
+
+- context.Context 型の値は、**複数のゴルーチンから同時に使われても安全**。
+
+- context.Context 型の値に、含める or 含めないべきデータは下記。
+  - 関数への引数となる値は含めない。（= **関数のロジックに関わる値を含めてはいけない**。）
+  - リクエストに関するデータを含める。
+  - 認証・認可に関するデータは、（厳密にはロジックに関わることになるが）含めてもよい。
+
+:::message
+
+### 既存のコードが context.Context 型の値を引数に受け取っていない場合
+
+`context.TODO`を使うことで、膨大なコードの中でも徐々に context.Context 型の値を引数に受け取るように改修を進めることができる。
+`context.TODO`は、空の context.Context 型の値。
+:::
+
+# 03. 「database/sql」パッケージ
+
+:::message
+MYSQL を使うときのチュートリアル
+https://go.dev/doc/tutorial/database-access
+:::
+
+## <sql.Open を使うのは一度だけ>
+
+\*sql.DB 型の値がコネクションプールを持っているので、HTTP リクエストを受け取るたびに`sql.Open`関数を呼ぶとコネクションが再利用されず効率が悪い。
+なので、**`sql.Open`は main 関数や初期化処理の中で、一度だけ呼ぶ**ようにする。
+
+
+
 CHAPTER 04 　可視性と Go
 CHAPTER 05 　 Go Modules（Go の依存関係管理ツール）
 CHAPTER 06 　 Go とオブジェクト指向プログラミング
