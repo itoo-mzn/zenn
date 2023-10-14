@@ -247,10 +247,10 @@ Go には`private`や`public`といった概念がない。
 
 ### Go Modules とは
 
-Go の**パッケージ管理ツール**として、`Go Modules`は Go 1.13 から正式にサポートされ、それ以前は標準の管理ツールは無かった。
-今は Go Modules を使うようになっているが、検索すると Go Modules 以前の情報が出てくるが、それらは無視すること。
+Go の**パッケージ管理ツール**として、`Go Modules`は Go 1.13 から正式にサポートされ、今は Go Modules を使うようになっている。
+（それ以前は標準の管理ツールは無かった。そのため、検索すると **Go Modules 以前の情報**が出てくるが、それらは**無視すること**。）
 
-Go Modules 自体は、`go.mod`ファイルと`go.sum`ファイルを使ってパッケージのバージョン管理を行う仕組み。
+Go Modules 自体は、**`go.mod`ファイルと`go.sum`ファイルを使ってパッケージのバージョン管理を行う**仕組み。
 
 セマンティックバージョニングを使って、破壊的変更を含むのかなどを表す。
 
@@ -263,11 +263,88 @@ Go Modules は`go.mod`ファイルを作成することで開始できる。
 （`go.mod`ファイルは**リポジトリに 1 ファイル**で十分。**サブパッケージを作るたびに`go mod init`を実行する必要はない**。）
 
 `go.mod`ファイルの作成後は、`go get`コマンドで利用したいパッケージを取得する。
+（`go get -u`（u オプション）で、パッケージを更新。）
 
 パッケージの依存関係が更新された場合は、自動で`go.mod`ファイルと`go.sum`ファイルが更新される。
 ルートディレクトリ（`go.mod`ファイルがあるディレクトリ）でなく、サブディレクトリで`go get`を実行しても、自動で`go.mod`ファイルと`go.sum`ファイルが更新される。
 
-CHAPTER 06 　 Go とオブジェクト指向プログラミング
+`go mod tidy`を実行すると`go.sum`ファイルができる。
+モジュール管理していて使わなくなったり必要なくなったパッケージを削除するためのコマンド。（tidy : 几帳面）
+**`go.mod`ファイルを修正したあとは、commit する前に`go mod tidy`を実行する**のがオススメ。
+
+# 06. Go とオブジェクト指向プログラミング
+
+Go はオブジェクト指向なのか という問いに対して、公式サイトで Yes でも No でもある と回答している。
+オブジェクト指向言語であるということを 下記の 3 要素を満たすこと とした場合、Go は継承に対応していないため。
+
+- カプセル化
+- 多態性（ポリモーフィズム）
+- 継承
+  → Go は**サブクラス**（クラスの階層構造による**継承**）に**対応していない**。
+
+**埋め込み**を使うアプローチがあるが、これは**継承を完全には表現できない**。
+**埋め込みは継承でなくコンポジションである**。
+
+:::message
+
+### オブジェクト指向の「関係」について
+
+- 継承
+  `サブクラス is a スーパークラス. （トラックは車。）`
+- 集約
+  部品として他のオブジェクトを持つが、弱い結びつき。
+  関連先が消滅しても、自身は消滅しない。
+  `A part of B. （駐車場Bと、そこに駐車された車A。）`
+- コンポジション（合成）
+  部品として他のオブジェクトを持つ、強い結びつき。
+  関連先が消滅すると、自身も消滅する。
+  集約と似ている概念。
+  `A part of B. （エンジンAは車Bの一部。）`
+
+#### 参考記事
+
+https://zenn.dev/itoo/articles/object-oriented_design#%E3%82%B3%E3%83%B3%E3%83%9D%E3%82%B8%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%A8%E7%B6%99%E6%89%BF%E3%81%AE%E9%81%B8%E6%8A%9E
+:::
+
+```go:埋め込みは継承でなくコンポジション
+type Dog struct {}
+
+func (d *Dog) Bark() string { return "Bow" }
+
+type BullDog struct { Dog }
+
+type ShibaInu struct { Dog }
+
+func (s *ShibaInu) Bark() string { return "ワン"}
+
+func DogVoice(d *Dog) string { return d.Bark()}
+
+func main() {
+  bd := &BullDog{}
+  fmt.Println(bd.Bark()) // Bow
+
+  si := &ShibaInu{}
+  fmt.Println(si.Bark()) // ワン
+
+  // 下のコードはエラーが出る
+  fmt.Println(DogVoice(bd))
+  // → cannot use bd (variable of type *BullDog) as *Dog value in argument to DogVoice
+}
+```
+
+上のコードで以下のことが分かる。
+
+- `BullDog`は、`Dog`が持つ Bark()を実行できる。
+  `ShibaInu`は更に、Bark()をオーバーライドして独自の処理を定義できている。
+- しかし、`Dog`を引数にするメソッドに、`BullDogはDog`や`ShibaInu`は引数として使うことができない。
+  これは、シンプルに`BullDogはDog`や`ShibaInu`は Dog 型でないから。
+  つまり、`Dog`型を**継承した訳でなく**、`Dog`型の値を**保有しているだけ（= コンポジション）だから**。
+
+よって、SOLID 原則のリスコフの原則（サブクラスは、スーパークラスを代替可能としなければならない。）は、そのまま Go に適用できない。
+
+https://dave.cheney.net/2016/08/20/solid-go-design
+https://qiita.com/shunp/items/646c86bb3cc149f7cff9
+
 CHAPTER 07 　インターフェース
 CHAPTER 08 　エラーハンドリングについて
 CHAPTER 09 　無名関数・クロージャ
