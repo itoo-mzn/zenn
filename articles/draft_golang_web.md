@@ -418,9 +418,16 @@ https://zenn.dev/itoo/articles/output_go_7_error_panic#%E3%82%A8%E3%83%A9%E3%83%
 https://zenn.dev/itoo/articles/output_go_7_error_panic#%E4%BE%8B%E5%A4%96%E5%87%A6%E7%90%86
 
 # 09. 無名関数・クロージャ
-省略。
+
+関数はファーストクラスオブジェクト。
+なので、変数へ代入したり、型として使うことができる。
+
+また、無名関数も作れる。
+
+あとは省略。
 
 # 10. 環境変数の扱い方
+環境変数を読み込む操作は（リクエストを受け付けるたびでなく）アプリケーション起動時のみにすること。
 
 
 CHAPTER 11 　 Go と DI（依存性の注入）
