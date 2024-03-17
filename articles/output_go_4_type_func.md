@@ -317,6 +317,27 @@ func sample(x, y int) (string, string) {
 }
 ```
 
+## Named return value
+
+返り値の定義で変数を定義できる。
+それで、それをそのまま関数内で使えるのはもちろん、return とするだけでその変数が返される。
+```go
+func greetingPrefix(language string) (prefix string) {
+	switch language {
+	case japanese:
+		prefix = japaneseHelloPrefix
+	case french:
+		prefix = frenchHelloPrefix
+	default:
+		prefix = englishHelloPrefix
+	}
+	return
+}
+```
+
+https://zenn.dev/yuyu_hf/articles/c7ab8e435509d2
+
+
 ## <ポインター>
 
 ### ポインターじゃないとどうなるか
