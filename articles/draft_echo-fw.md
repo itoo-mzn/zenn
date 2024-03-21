@@ -47,3 +47,21 @@ published: false
 ## サーバー
 
 - `Echo.Start(address string)`や`Echo.StartSerever(s *http.Server)`などで起動する。
+
+## IPアドレス
+
+- アプリケーションの前段にHTTP(L7)プロキシ（Nginx, AWS ALBなど）を置かない場合は、`echo.ExtractIPDirect()`でネットワーク層からのIPアドレスを取得する。
+  （HTTPヘッダーは信頼しないこと。クライアントが制御できるものなので。）
+- プロキシを置く場合
+  - X-Forwarded-Forヘッダーを使用している場合は、`echo.ExtractIPFromXFFHeader()`を使う。
+    - `X-Forwarded-For: <client>, <proxy1>, <proxy2>`というように、左端がクライアントのIPアドレスで、右に行くにつれてサーバー側のプロキシを指す。
+  - X-Real-IPを使う場合は、`echo.ExtractIPFromRealIPHeader()`を使う。
+
+## リクエスト
+
+- フォームデータは`Context.FormValue()`で取得する。
+- クエリパラメータは`Context.QueryParam()`で取得する。
+- パスパラメータは`Context.Param()`で取得する。
+
+## バリデーション
+- Echo.Validate()でバリデーション実施。
