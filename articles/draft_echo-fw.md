@@ -48,14 +48,14 @@ published: false
 
 - `Echo.Start(address string)`や`Echo.StartSerever(s *http.Server)`などで起動する。
 
-## IPアドレス
+## IP アドレス
 
-- アプリケーションの前段にHTTP(L7)プロキシ（Nginx, AWS ALBなど）を置かない場合は、`echo.ExtractIPDirect()`でネットワーク層からのIPアドレスを取得する。
-  （HTTPヘッダーは信頼しないこと。クライアントが制御できるものなので。）
-- プロキシを置く場合
-  - X-Forwarded-Forヘッダーを使用している場合は、`echo.ExtractIPFromXFFHeader()`を使う。
-    - `X-Forwarded-For: <client>, <proxy1>, <proxy2>`というように、左端がクライアントのIPアドレスで、右に行くにつれてサーバー側のプロキシを指す。
-  - X-Real-IPを使う場合は、`echo.ExtractIPFromRealIPHeader()`を使う。
+- アプリケーションの前段に HTTP(L7)プロキシ（Nginx, AWS ALB など）を置かない場合は、`echo.ExtractIPDirect()`でネットワーク層からの IP アドレスを取得する。
+  （HTTP ヘッダーは信頼しないこと。クライアントが制御できるものなので。）
+- プロキシを置く場合、アプリケーションにインフラのアーキテクチャ全体を認識させる必要がある。（信頼できるのはどこまでか。）
+  - X-Forwarded-For ヘッダーを使用している場合は、`echo.ExtractIPFromXFFHeader()`を使う。
+    - `X-Forwarded-For: <client>, <proxy1>, <proxy2>`というように、左端がクライアントの IP アドレスで、右に行くにつれてサーバー側のプロキシを指す。
+  - X-Real-IP を使う場合は、`echo.ExtractIPFromRealIPHeader()`を使う。
 
 ## リクエスト
 
@@ -63,5 +63,18 @@ published: false
 - クエリパラメータは`Context.QueryParam()`で取得する。
 - パスパラメータは`Context.Param()`で取得する。
 
-## バリデーション
+### バリデーション
+
 - Echo.Validate()でバリデーション実施。
+
+## レスポンス
+
+- JSON を返す場合は、`Context.JSON(HTTPステータス, 構造体)`を使う。構造体を渡すと、JSON にエンコードしてくれる。
+  整形したければ`JSONPretty()`。
+  クエリ文字列に pretty をつけても整形できる。（開発時に便利そう。）
+  `curl http://localhost:1323/users/1?pretty`
+- ファイルは`Context.File("ファイルパス")`で返す。
+- BLOBやストリームもレスポンスできる。（*理解浅いので、実際に使ってみること！*）
+- リダイレクトは`Context.Redirect(HTTPステータス, "URL")`。
+- `Context.Response.Befor(関数)`や`.After()`でレスポンスの前後に処理を挟むことができる。
+
