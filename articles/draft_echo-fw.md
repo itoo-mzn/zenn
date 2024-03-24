@@ -76,5 +76,11 @@ published: false
 - ファイルは`Context.File("ファイルパス")`で返す。
 - BLOBやストリームもレスポンスできる。（*理解浅いので、実際に使ってみること！*）
 - リダイレクトは`Context.Redirect(HTTPステータス, "URL")`。
-- `Context.Response.Befor(関数)`や`.After()`でレスポンスの前後に処理を挟むことができる。
+- `Context.Response.Befor(関数)`や`.After()`でレスポンスの前後に処理を挟むことができる。（フック）
 
+## ルーティング
+- ルーティングの解決順序
+  1. 静的なもの : `e.Get("/user/mew")`
+  2. パラメータ : `e.Get("/user/:id")`
+  3. いずれかに一致 `*` : `e.Get("/user/1/files/*")`
+- e.Groupでグループ化することで、そのグループに（ミドルウェアで）共通した処理を挟むことができる。
