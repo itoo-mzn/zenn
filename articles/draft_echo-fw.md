@@ -84,3 +84,8 @@ published: false
   2. パラメータ : `e.Get("/user/:id")`
   3. いずれかに一致 `*` : `e.Get("/user/1/files/*")`
 - e.Groupでグループ化することで、そのグループに（ミドルウェアで）共通した処理を挟むことができる。
+
+## テスト
+よくわからなかったので一旦飛ばす。
+https://echo.labstack.com/docs/testing#testing-handler
+
