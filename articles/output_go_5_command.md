@@ -275,8 +275,22 @@ func main() {
 }
 ```
 
+## フォーマット指定子
+
+`%v`には何でも渡してok。
+
+構造体の出力には、フォーマット指定子は`%+v`か`%#v`がいい。
+```go
+t := &T{ 7, -2.35, "abc\tdef" }
+
+fmt.Printf("%+v\n", t)
+// &{a:7 b:-2.35 c:abc     def}
+
+fmt.Printf("%#v\n", t)
+&main.T{a:7, b:-2.35, c:"abc\tdef"}
+```
+
 :::message
 Printf のフォーマット指定方法については、下の記事が詳細に書いてある。
 :::
 https://qiita.com/rock619/items/14eb2b32f189514b5c3c
-
