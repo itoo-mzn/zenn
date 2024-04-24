@@ -12,8 +12,10 @@ https://www.lambdanote.com/collections/go-2/products/go-2
 
 # 参考
 
-以前 Go を学習した際の記事も参照。
-https://zenn.dev/itoo/articles/learn_golang
+コードを動かすために作ったレポジトリ。
+https://github.com/ito0804takuya/go-sytem-programing
+
+以前 Go を学習した際の自分の記事も参照。
 
 # 第 1 章 Go 言語で覗くシステムプログラミングの世界
 
@@ -52,7 +54,7 @@ https://zenn.dev/itoo/articles/learn_golang
   - （スクリプト言語よりは速いが）、C, C++と比較すると遅い。
   - バイナルサイズがかなり大きくなる。
 
-### go コマンド
+:::details go mod init の解説
 
 #### プロジェクト作成後の初期化
 
@@ -62,68 +64,34 @@ https://zenn.dev/itoo/articles/learn_golang
 go mod init <プロジェクト名>
 ```
 
----
+:::
 
 ## 1.4 デバッガーを使って "Hello World!"の裏側を覗く
 
-```go:main.go
-package main
+`fmt.Println("Hello", "World!")`について、裏側でどういう処理が行われているか、関数の定義をたどっていくことで確認していく。
+→ **最終的には、システムコールを呼び出している**ことが分かった。
 
-import "fmt"
+#### システムコールとは（ざっくり）
 
-func main() {
-	fmt.Println("Hello", "World!")
-}
-```
+- アプリケーションのプログラム単体では達成できない仕事を、OS のカーネルに依頼するために使う。
+  （`syscall.Write()`では、（プログラムの外の世界である）ターミナルに対して文字列を出力するという仕事 を依頼している。）
+- いくつも種類がある。
 
-:::message
+:::details 可変長引数関数
 
-#### パッケージ package
+#### 可変長引数関数(Variadic function) `...`
 
-Go 言語は各ディレクトリごとに`パッケージ`という単位で分割される。
-このパッケージ内部ではローカル変数を除けばどの変数へもアクセスできる。
-（= 同一ディレクトリ上で定義されたオブジェクトにアクセスすることができる。）
-
-※ サブディレクトリはまったく関係のない別モジュールとして扱われる。
-
-- 関連記事 : https://zenn.dev/itoo/articles/learn_golang#%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8
-  :::
-
-この Hello World の裏側でどういう処理が行われているか、関数の定義をたどっていくことで確認していく。
-↓
-
-```go:print.go
-func Println(a ...interface{}) (n int, err error) {
-	return Fprintln(os.Stdout, a...)
-}
-```
-
-↓
-
-```go:print.go
-// func 関数名(引数-1 型-1, 引数-2 型-2) (返り値-1 型-1, 返り値-2 型-2) { .... }
-func Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
-	p := newPrinter()
-	p.doPrintln(a)
-	n, err = w.Write(p.buf)
-	p.free()
-	return
-}
-```
-
-:::message
-
-#### 可変長引数関数(Variadic function) `...(ドット3つ)`
-
-メソッドの引数が、同じ型の複数個の場合、`...`で示す。
+メソッドの引数が、同じ型の複数個の場合、`...`(ドット 3 つ)で示す。
 
 ```go
 func method(args ...Type)
 ```
 
 - 参考記事 : https://zenn.dev/mikankitten/articles/cfa2ef834e338e
-  :::
-  :::message
+
+:::
+
+:::details interface{}型
 
 #### interface{}型
 
@@ -131,83 +99,8 @@ interface{}型は int, string, bool などと同じ、golang の型名。{}の�
 どんな型も格納できる特殊な型。
 
 - 参考記事 : https://qiita.com/sh-tatsuno/items/0c32c01eaeaf2d726fdf
-  :::
-  :::message
-  そのため、上の`Fprintln`関数の第 2 引数`a ...interface{}`は、「何が渡されるかわからない複数の引数を受け取る」という意味。（今回は、"Hello"と"World!"）
-
-```go
-fmt.Println("Hello", "World!")
-```
 
 :::
-↓
-
-```go:file.go
-// 構造体Fileの公開メソッド（メソッド名の最初が大文字）
-// https://zenn.dev/itoo/articles/learn_golang#スコープ
-
-// func (変数 構造体) メソッド名(引数 型) (返り値1 型1, 返り値2 型2) { .... }
-func (f *File) Write(b []byte) (n int, err error) {
-	if err := f.checkValid("write"); err != nil {
-		return 0, err
-	}
-	n, e := f.write(b)
-  // 以降は省略
-}
-```
-
-↓
-
-```go:file_posix.go
-func (f *File) write(b []byte) (n int, err error) {
-	n, err = f.pfd.Write(b) // 構造体Fileのプライベートフィールドpfd の公開メソッド
-	runtime.KeepAlive(f)
-	return n, err
-}
-```
-
-↓
-
-```go:fd_unix.go
-func (fd *FD) Write(p []byte) (int, error) {
-	if err := fd.writeLock(); err != nil {
-		return 0, err
-	}
-	defer fd.writeUnlock()
-	if err := fd.pd.prepareWrite(fd.isFile); err != nil {
-		return 0, err
-	}
-	var nn int
-	for {
-		max := len(p)
-		if fd.IsStream && max-nn > maxRW {
-			max = nn + maxRW
-		}
-		n, err := ignoringEINTRIO(syscall.Write, fd.Sysfd, p[nn:max]) // syscall.Write()はシステムコール
-		if n > 0 {
-			nn += n
-		}
-		if nn == len(p) {
-			return nn, err
-		}
-		if err == syscall.EAGAIN && fd.pd.pollable() {
-			if err = fd.pd.waitWrite(fd.isFile); err == nil {
-				continue
-			}
-		}
-  // 以降は省略
-```
-
-:::message
-
-#### システムコールとは（ざっくり）
-
-- アプリケーションのプログラム単体では達成できない仕事を、OS のカーネルに依頼するために使う。
-  （上の`syscall.Write()`では、（プログラムの外の世界である）ターミナルに対して文字列を出力するという仕事 を依頼している。）
-- いくつも種類がある。
-  :::
-
----
 
 # 第 2 章 低レベルアクセスへの入口 1：io.Writer
 
@@ -225,15 +118,13 @@ _ここにあとで追記する_
 - Go 言語のインタフェースは、使う側が
 - `動名詞(その振る舞いの動詞 + er)`で命名することが多い。
 
-
-
-2.3 io.Writer は「インタフェース」
-　 2.4 io.Writer を使う構造体の例
-　 2.5 インタフェースの実装状況・利用状況を調べる
-　 2.6 低レベルの機能を組み合わせて入出力 API を作る
-　 2.7 柔軟性が高く、パフォーマンスのよい設計のための Tips.
-　 2.8 本章のまとめと次章予告
-　 2.9 問題
+  2.3 io.Writer は「インタフェース」
+  　 2.4 io.Writer を使う構造体の例
+  　 2.5 インタフェースの実装状況・利用状況を調べる
+  　 2.6 低レベルの機能を組み合わせて入出力 API を作る
+  　 2.7 柔軟性が高く、パフォーマンスのよい設計のための Tips.
+  　 2.8 本章のまとめと次章予告
+  　 2.9 問題
 
 ---
 
