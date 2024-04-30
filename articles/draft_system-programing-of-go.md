@@ -172,13 +172,19 @@ type Writer interface {
 
 - `io.Copy(dst io.Writer, src io.Reader)`で、Reader から Writer にデータをそのまま渡せる。
 
-  3.3 入出力に関する io.Writer と io.Reader 以外のインタフェース
-  　 3.4 io.Reader を満たす構造体で、よく使うもの
-  　 3.5 バイナリ解析用の io.Reader 関連機能
-  　 3.6 テキスト解析用の io.Reader 関連機能
-  　 3.7 io.Reader／io.Writer でストリームを自由に操る
-  　 3.8 本章のまとめと次章予告
-  　 3.9 問題
+## 3.3 入出力に関する io.Writer と io.Reader 以外のインタフェース
+
+- io.Closer : 使用し終わったファイルを閉じる`Close()`を持つ。
+- io.Seeker : 読み込み位置を移動する`Seek()`を持つ。
+- io.ReaderAt : `ReadAt()`を持つ。（あまり使わないようなので理解を飛ばした。）
+
+## 3.4 io.Reader を満たす構造体で、よく使うもの
+
+- os.Stdin : 標準入力。`os.Stdin.Read(buffer)`
+- os.File : ファイル内容を入力とする。`os.Open(ファイル)`
+- net.Conn
+- bytes.Buffer
+
 
 第 4 章 低レベルアクセスへの入口 3：チャネル
 　 4.1 goroutine.
