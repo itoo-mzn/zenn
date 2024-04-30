@@ -73,6 +73,7 @@ published: false
 :::message
 この原則は、理解を間違っているかも。これを見てみる。
 https://www.youtube.com/watch?v=ET4iWuRntO4
+https://zenn.dev/nakurei/books/solid-principle-kanzen-rikai/viewer/open-closed-principle
 :::
 
 ## 第 9 章　 LSP：リスコフの置換原則
