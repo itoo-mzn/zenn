@@ -185,6 +185,26 @@ type Writer interface {
 - net.Conn
 - bytes.Buffer
 
+<!-- ## 3.5 バイナリ解析用の io.Reader 関連機能 -->
+
+## 3.6 テキスト解析用の io.Reader 関連機能
+
+- 文字列を読み込む
+  - bufio.NewScanner() : デフォは改行で区切る。`scanner.Split(bufio.ScanWords)`で単語で区切る。
+- 文字列や数値などを読み込む
+  - fmt.Fscan() : 半角スペース区切り
+  - fmt.Fscanln() : 改行区切り
+  - fmt.Fscanf() : 何で区切るかを指定する
+- csv
+  - encoding/csv パッケージ
+- json
+  - encoding/json パッケージ
+
+## 3.7 io.Reader／io.Writer でストリームを自由に操る
+
+- io.MultiReader : 複数の Reader をまとめて 1 つの Reader として扱う。
+- io.TeeReader : `teeReader := io.TeeReader(reader, writer)`で、"reader" から "writer と teeReader の両方"にデータを流し込む。
+- io.Pipe : Writer に書き込むと Reader から出力される。
 
 第 4 章 低レベルアクセスへの入口 3：チャネル
 　 4.1 goroutine.
