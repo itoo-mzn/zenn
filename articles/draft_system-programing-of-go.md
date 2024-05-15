@@ -318,9 +318,11 @@ HTTP/1.1 では`Keep-Alive`を使うことでしばらくは TCP のコネクシ
 - UDP はコネクションを繋がず、相手のポートにデータを送りつけるので、TCP で接続時に行う 3way ハンドシェイクを UDP では行わない。（時間がかからない。）
 - マルチキャスト、ブロードキャストができる。
 
-　 7.4 UDP を使った実世界のサンプル
-　 7.5 UDP と TCP の機能面の違い
-　 7.6 本章のまとめと次章予告
+## 7.2 UDP と TCP の処理の流れの違い
+
+https://github.com/ito0804takuya/go-sytem-programing/commit/1beae5b818ce98b1483abf490193f310b05d7ad6
+
+- コネクションを繋がないのだが、Go 言語で UDP を実装する際には`net.Conn` や `net.PacketConn` 構造体を使って、TCP と同じ感覚で Conn に対して Read や Write を行う。（Go 特有）
 
 第 8 章 高速な Unix ドメインソケット
 　 8.1 Unix ドメインソケットの基本
