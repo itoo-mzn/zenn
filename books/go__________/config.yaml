@@ -1,0 +1,10 @@
+title: "Goと関連技術"
+summary: "Goやその関連技術（フレームワーク、ライブラリなど）の知識をまとめています。"
+topics: ["Go", "echo", "gorm"]
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - go
+  - echo
+  - gorm
