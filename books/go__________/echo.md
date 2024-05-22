@@ -1,9 +1,5 @@
 ---
 title: "Echo"
-emoji: "🙌"
-type: "tech" # tech: 技術記事 / idea: アイデア
-topics: ["echo", "Go"]
-published: false
 ---
 
 https://echo.labstack.com/docs
