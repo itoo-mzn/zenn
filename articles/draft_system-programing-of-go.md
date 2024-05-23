@@ -357,8 +357,12 @@ https://github.com/ito0804takuya/go-sytem-programing/commit/1beae5b818ce98b1483a
 https://pkg.go.dev/path/filepath
 https://pkg.go.dev/os
 
-第 10 章 ファイルシステムの最深部を扱う Go 言語の関数
-　 10.1 ファイルの変更監視（syscall.Inotify\*）
+# 第 10 章 ファイルシステムの最深部を扱う Go 言語の関数
+## 10.1 ファイルの変更監視（syscall.Inotify\*）
+ファイルの変更を監視する（例：ソースコードの変更を検知して自動コンパイル）には、2種類の方法がある。
+- 監視したいファイルをOSに通知して、変更があったら教えてもらう。（OSに任せる、パッシブな方式）
+- タイマーなどで定期的にフォルダを走査して、`os.Stat()`などを使って変更を探しに行く。（自ら探す、アクティブな方式）
+
 　 10.2 ファイルのロック（syscall.Flock()）
 　 10.3 ファイルのメモリへのマッピング（syscall.Mmap()）
 　 10.4 同期・非同期／ブロッキング・ノンブロッキング
