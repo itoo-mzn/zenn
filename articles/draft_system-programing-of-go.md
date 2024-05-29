@@ -369,7 +369,11 @@ https://pkg.go.dev/os
 ## 10.2 ファイルのロック（syscall.Flock()）
 ファイルロックのためのシステムコール`syscall.Flock()`で、ロック中のファイルに他のプロセスがロックをかけようとするとブロックする。
 
-10.3 ファイルのメモリへのマッピング（syscall.Mmap()）
+## 10.3 ファイルのメモリへのマッピング（syscall.Mmap()）
+システムコール`syscall.Mmap()`をラップしたパッケージがいくつかある。Go言語の実験的パッケージ（discover package）の[mmap](https://pkg.go.dev/golang.org/x/exp/mmap)や、[mmap-go](https://github.com/edsrzf/mmap-go)。
+
+ファイルの中身をそのままメモリ上に展開して、メモリ上で書き換えた内容をファイルに書き込むことができる。（つまり、ファイルをメモリを同期（mapping）させる。）
+
 　 10.4 同期・非同期／ブロッキング・ノンブロッキング
 　 10.5 select 属のシステムコールによる I/O 多重化
 　 10.6 FUSE を使った自作のファイルシステムの作成
