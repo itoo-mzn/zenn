@@ -254,4 +254,17 @@ fmt.Println("slice1", slice1) // slice1 [A X] : 反映される
 fmt.Println("slice2", slice2) // slice2 [B C D] : 要素が変更されていない!
 ```
 
+## スライスの拡張
+
+```go
+ary := [...]int{11, 12, 13, 14}
+
+s := ary[0:2]
+fmt.Println(s, cap(s), len(s)) // [11 12] 4 2
+
+s = s[:3]
+fmt.Println(s, cap(s), len(s)) // [11 12 13] 4 3
+// s = s[:3] とすることで、素の配列から切り出してくる要素が自動的に増えている！
+```
+
 ```
