@@ -96,3 +96,69 @@ fmt.Printf("%v", decorded)
 //   {{0 bob fuga} 0}
 // ]
 ```
+
+# 関数
+
+## Named return value
+
+返り値の定義で変数を指定すると、それをそのまま関数内で使え、return時にはそれが返される。
+```go
+func greetingPrefix(language string) (prefix string) {
+	switch language {
+	case japanese:
+		prefix = japaneseHelloPrefix
+	default:
+		prefix = englishHelloPrefix
+	}
+	return
+}
+```
+
+https://zenn.dev/yuyu_hf/articles/c7ab8e435509d2
+
+# メソッド
+
+`func (変数 レシーバ) メソッド名() 返却型 { ... }`
+
+メソッドは、**レシーバ**（= 構造体 や その他何かのデータ）**に紐付けられた関数**。
+メソッドによって、作成した構造体やデータに動作を追加できる。
+
+**レシーバは、第 0 引数みたいなイメージ**。（なので変数の値のコピーが発生する。）
+
+## レシーバにポインターを使う
+
+メソッドに、変数でなくポインターを渡すほうが良い場合がある。（変数のアドレスを参照する。）
+
+- メソッドで変数を更新する場合。
+- 引数が（データ容量として）大きすぎる場合。→ そのコピーを回避したい。
+
+```go
+type triangle struct {
+  size int
+}
+
+// ポインタを使わないメソッド
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+// ポインタを使うメソッド
+func (t *triangle) doubleSize() {
+  t.size *= 2 // return しない
+}
+
+func main() {
+  t := triangle{3}
+  t.doubleSize() // ポインタを参照して tが更新される
+
+  fmt.Println("size:", t.size) // size: 6
+  fmt.Println("perimeter:", t.perimeter()) // perimeter: 18
+}
+```
+
+:::message
+メソッドにポインターを使うこの用法はよく使われるので、シンタックスシュガーがある。
+
+`(&t).doubleSize()` 本来はこう書かないといけないが、
+`t.doubleSize()` こう書いても同じ意味になる。
+:::
