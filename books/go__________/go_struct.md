@@ -101,7 +101,8 @@ fmt.Printf("%v", decorded)
 
 ## Named return value
 
-返り値の定義で変数を指定すると、それをそのまま関数内で使え、return時にはそれが返される。
+返り値の定義で変数を指定すると、それをそのまま関数内で使え、return 時にはそれが返される。
+
 ```go
 func greetingPrefix(language string) (prefix string) {
 	switch language {
@@ -147,13 +148,11 @@ func (t *triangle) doubleSize() {
   t.size *= 2 // return しない
 }
 
-func main() {
-  t := triangle{3}
-  t.doubleSize() // ポインタを参照して tが更新される
+t := triangle{3}
+t.doubleSize() // ポインタを参照して tが更新される
 
-  fmt.Println("size:", t.size) // size: 6
-  fmt.Println("perimeter:", t.perimeter()) // perimeter: 18
-}
+fmt.Println("size:", t.size) // size: 6
+fmt.Println("perimeter:", t.perimeter()) // perimeter: 18
 ```
 
 :::message
@@ -162,3 +161,77 @@ func main() {
 `(&t).doubleSize()` 本来はこう書かないといけないが、
 `t.doubleSize()` こう書いても同じ意味になる。
 :::
+
+:::message alert
+下記については詳細を省略。
+
+- メソッド値 : メソッドを値として扱える。なので、変数にメソッドを格納して、それを別の場所で実行できたりする。
+- メソッド式 : おおよそメソッド値と同じようなこと。違いは、レシーバでなく型を渡しているだけなので、メソッド式にはレシーバを第一引数に渡す必要がある。
+
+:::
+
+## 構造体の埋め込み
+
+```go
+type triangle struct {
+  size int
+}
+
+type coloredTriangle struct {
+  triangle // 構造体を埋め込む
+  color string
+}
+
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+t := coloredTriangle{triangle{3}, "blue"}
+
+fmt.Println("size:", t.size) // triangleのメソッドも使える
+
+fmt.Println("perimeter:", t.triangle.perimeter())
+fmt.Println("perimeter:", t.perimeter()) // ↑の書き方のシンタックスシュガー
+```
+
+また、**埋め込んだ構造体のメソッドをオーバーロード**することもできる。
+※ オーバーロード(多重定義) : 同じ名前の関数等を定義すること。
+
+その場合、下記のように、**埋め込んだ側・埋め込まれた側どちらのメソッドも使用することができる**。
+
+```go
+type triangle struct {
+  size int
+}
+
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+type coloredTriangle struct {
+  triangle
+  color string
+}
+
+func (t coloredTriangle) perimeter() int {
+  return t.size * 5
+}
+
+t := coloredTriangle{triangle{3}, "blue"}
+
+// coloredTriangleのメソッドを使う
+fmt.Println("perimeter:", t.perimeter()) // perimeter: 15
+
+// triangleのメソッドも使える
+fmt.Println("perimeter:", t.triangle.perimeter()) // perimeter: 9
+```
+
+:::message
+Go には**継承は無い**。
+↑ の**構造体の埋め込み**で行っているのは**継承ではなく、委譲**。
+:::
+
+### カプセル化
+
+パッケージ外からは public（頭文字が大文字）なメソッド・フィールドしか参照できないため、それによってカプセル化を行う。
+
