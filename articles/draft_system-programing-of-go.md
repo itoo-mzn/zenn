@@ -411,9 +411,41 @@ Go は同期・ブロッキング処理（シンプルだがパフォーマン�
 シェルとは、ユーザがコンピュータを使うときの接点。
 bash, zsh とかはコマンドシェル。
 
-11.2 シェルの利用形態
-　 11.3 POSIX、SUS、LSB、BusyBox
-　 11.4 環境変数
+## 11.2 シェルの利用形態
+
+Terminal や iTerm2 などは、端末エミュレータ。
+
+外部コマンド（`ls`など）を実行する方法は、シェル経由のコマンド実行と、親プロセスから子プロセスを直接起動するという 2 つの方式がある。
+Go の`os/exec`は後者しかサポートしていないが、下記のようにすれば 2 通りとも実行できる。
+
+```go:直接起動
+// exec.Commandでコマンドを指定
+cmd := exec.Command("ls", "-l")
+
+// コマンドの出力を取得
+output, err := cmd.Output()
+if err != nil {
+    log.Fatal(err)
+}
+
+// 出力を文字列として表示
+fmt.Printf("Command output:\n%s\n", output)
+```
+
+```go:シェル経由
+// シェル経由でコマンドを指定
+cmd := exec.Command("sh", "-c", "ls -l")
+
+// 以降は同上
+```
+
+## 11.3 POSIX、SUS、LSB、BusyBox
+
+POSIX（= SUS）は、OS の標準規格。搭載すべき CLI コマンドなどを定義している。これに準拠していると UNIX を名乗れる。
+LSB（Linux Standard Base）は、SUS の定義するサブセットに、GUI まわりのパッケージを追加した規格。
+POSIX や LSB が巨大な規格なため、それらの小さいサブセットとして BusyBox がある。軽量な Alpine は BusyBox をコアとして使っている。
+
+11.4 環境変数
 　 11.5 シェルがコマンドを起動するまで
 　 11.6 Unix 哲学とシェル
 　 11.7 まとめ
