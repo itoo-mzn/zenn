@@ -445,7 +445,9 @@ POSIX（= SUS）は、OS の標準規格。搭載すべき CLI コマンドな�
 LSB（Linux Standard Base）は、SUS の定義するサブセットに、GUI まわりのパッケージを追加した規格。
 POSIX や LSB が巨大な規格なため、それらの小さいサブセットとして BusyBox がある。軽量な Alpine は BusyBox をコアとして使っている。
 
-11.4 環境変数
+## 11.4 環境変数
+https://github.com/ito0804takuya/go-sytem-programing/commit/68b8030c5f29696a94f3fb314d44635c666f388b
+
 　 11.5 シェルがコマンドを起動するまで
 　 11.6 Unix 哲学とシェル
 　 11.7 まとめ
