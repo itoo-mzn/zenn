@@ -64,8 +64,6 @@ https://gopherdojo.org/
 
 https://zenn.dev/nobonobo/articles/e0af4e8afc6c38b42ae1
 
-https://qiita.com/zzzaaawwwaaa/items/9bc95826556beb4bb9c8
-
 https://qiita.com/tenntenn/items/0e33a4959250d1a55045
 
 https://zenn.dev/tenntenn/articles/676a32ab3d4aab
@@ -77,7 +75,6 @@ https://zenn.dev/foxtail88/articles/824c5e8e0c6d82
 
 https://zenn.dev/moko_poi/articles/a6e0d2e8e07e48
 
-https://qiita.com/zr_tex8r/items/964415e71db0680bfe4e
 
 # 実践学習
 
