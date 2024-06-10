@@ -448,7 +448,6 @@ POSIX や LSB が巨大な規格なため、それらの小さいサブセット
 ## 11.4 環境変数
 https://github.com/ito0804takuya/go-sytem-programing/commit/68b8030c5f29696a94f3fb314d44635c666f388b
 
-　 11.5 シェルがコマンドを起動するまで
 　 11.6 Unix 哲学とシェル
 　 11.7 まとめ
 
