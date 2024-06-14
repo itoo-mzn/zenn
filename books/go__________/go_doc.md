@@ -96,6 +96,9 @@ https://www.lambdanote.com/products/go-2
 https://zenn.dev/kawa1214/books/5888c6b3554ffa
 _TODO: やってみたい。_
 
+https://github.com/ymmt2005/grpc-tutorial
+_TODO: やってみたい。_
+
 # Tips
 
 https://qiita.com/tenntenn/items/0e33a4959250d1a55045

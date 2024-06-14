@@ -30,7 +30,9 @@ default:
 
 #### fallthrough
 
-処理を次の case に進める。基本、使わないのが良い。
+switch では、1 つの case が実行されると break され他の case は評価しない。
+（頻度は低いと思うが、）*他の case をまたぎたい*ときは、`fallthrough`を使い、処理を次の case に進める。
+基本、使わないのが良い。
 
 ```go
 switch num := 15; {
