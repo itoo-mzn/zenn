@@ -38,6 +38,28 @@ title: "Go_エラー"
 
 独自エラー変数で識別するだけでなく、エラーに詳細（独自の code 値など）を格納したり、独自めそっどを用意したい場合、独自のエラー構造体を定義する。
 
+## エラーに文脈をもたせる
+
+`fmt.Errorf`の`%w`を使うことで、既にあるエラーにラップした（1 枚上乗せした）エラーを作ることができる。
+
+また、そうやって上乗せされたエラーの根本（根本原因）を取得するには、`errors.Unwrap()`を使う。
+
+```go
+err := fmt.Errorf("bar: %w", errors.New("foo"))
+fmt.Println(err) // bar: foo
+fmt.Println(errors.Unwrap(err)) // foo
+```
+
+## エラーの値を判定する
+
+`errors.Is`で、第一引数のエラーが第二引数の値かどうかを判定できる。
+
+```go
+if errors.Is(err, os.ErrExist) {
+  // os.ErrExistだった場合のエラー処理
+}
+```
+
 # 例外処理
 
 panic と recover の組み合わせは、Go での特徴的な例外処理方法。
@@ -100,3 +122,5 @@ http://golang.org/doc/effective_go.html#errors
 ## まだ読んでないやつ
 
 https://zenn.dev/spiegel/books/error-handling-in-golang
+
+https://qiita.com/Maki-Daisuke/items/80cbc26ca43cca3de4e4
