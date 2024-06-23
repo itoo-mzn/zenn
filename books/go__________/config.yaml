@@ -6,5 +6,13 @@ price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
   - go_doc
+  - go_const_var # 変数、定数
+  - go_pointer
+  - go_type_primitive # bool, string, int
+  - go_type_composite # 配列、スライス、マップ
+  - go_struct_func_method_interface # 構造体、関数、メソッド、インターフェース
+  - go_control # 制御構文
+  - go_error # エラー、パニック
+  - go_other # その他
   - echo
   - gorm
