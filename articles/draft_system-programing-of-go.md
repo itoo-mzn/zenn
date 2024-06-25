@@ -508,7 +508,7 @@ Run()で実行。ProcessState で状態を把握できる。StdoutPipe()など�
 ## 12.6 プロセスに関する便利な Go 言語のライブラリ
 
 - 出力する文字に色を付けたいとき、ANSI エスケープシーケンスを使う。
-  OS ごとの互換性がないもので、`go-colorableのNewColorableStdout()`を使ってその環境差を吸収する。
+  OS ごとの互換性がないので、`go-colorableのNewColorableStdout()`を使ってその環境差を吸収する。
   また、その出力が擬似端末（おそらくターミナルのこと）に繋がっているのか、判断が必要。
   それは `go-isattyのIsTerminal()` で行うことができる。
 
