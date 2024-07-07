@@ -67,3 +67,11 @@ https://go.dev/doc/manage-install#installing-multiple
   export PATH=$PATH:$(go env GOPATH)/bin
   ```
 
+# time パッケージ
+
+- 時刻：time.Time
+- 時間：time.Duration（1 が 1 ナノ秒を表す。）
+
+- AddDate()で 1 ヶ月後と指定したとき、6/31 は存在しないので 5/31 の 1 ヶ月後が 7/1 になる。
+  日付計算には要注意。
+
