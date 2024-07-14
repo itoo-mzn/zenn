@@ -43,29 +43,59 @@ s3 := Sample{}    // Sample
 ## 構造体の埋め込み
 
 ```go
-type Person struct {
-  ID        int
-  FirstName string
-  LastName  string
+type triangle struct {
+  size int
 }
 
-type Employee struct {
-  Person // Personを埋め込む
-  ManagerID int
+type coloredTriangle struct {
+  triangle // 構造体を埋め込む
+  color string
 }
 
-employee := Employee{
-  // 初期化の際は、Personフィールド（構造体）を明示しないといけない
-  Person: Person{
-    FirstName: "john",
-  },
+func (t triangle) perimeter() int {
+  return t.size * 3
 }
-fmt.Println(employee) // {{0 john } 0}
 
-// 初期化でないので、Person経由でなくてOK
-employee.LastName = "doe"
-fmt.Println(employee) // {{0 john doe} 0}
+t := coloredTriangle{triangle{3}, "blue"}
+
+fmt.Println("size:", t.size) // triangleのメソッドも使える
+
+fmt.Println("perimeter:", t.triangle.perimeter())
+fmt.Println("perimeter:", t.perimeter()) // ↑の書き方のシンタックスシュガー
 ```
+
+:::message
+Go には**継承は無い**。
+**構造体の埋め込み**で行っているのは**継承ではなく、委譲**。
+:::
+
+また、**埋め込んだ構造体のメソッドをオーバーロード**することもできる。
+（※ オーバーロード(多重定義) : 同じ名前の関数等を定義すること。）
+その場合、下記のように、**埋め込んだ側・埋め込まれた側どちらのメソッドも使用することができる**。
+
+```go
+func (t triangle) perimeter() int {
+  return t.size * 3
+}
+
+func (t coloredTriangle) perimeter() int {
+  return t.size * 5
+}
+
+// coloredTriangleのメソッドを使う
+fmt.Println("perimeter:", t.perimeter()) // perimeter: 15
+
+// triangleのメソッドも使える
+fmt.Println("perimeter:", t.triangle.perimeter()) // perimeter: 9
+```
+
+## タグ
+
+構造体のフィールドに対してタグを付けることができる。
+
+- 同じ名前で扱うなら、複数のタグをまとめて記述できる。（例：`json xml: "name"`）
+
+- 自分でパッケージを作ってタグ対応する場合は reflect パッケージを使うことになる。
 
 ## 構造体 ↔JSON
 
@@ -267,67 +297,6 @@ func (t *triangle) doubleSize() { }
 - メソッド値 : メソッドを値として扱える。なので、変数にメソッドを格納して、それを別の場所で実行できたりする。
 - メソッド式 : おおよそメソッド値と同じようなこと。違いは、レシーバでなく型を渡しているだけなので、メソッド式にはレシーバを第一引数に渡す必要がある。
 
-:::
-
-## 構造体の埋め込み
-
-```go
-type triangle struct {
-  size int
-}
-
-type coloredTriangle struct {
-  triangle // 構造体を埋め込む
-  color string
-}
-
-func (t triangle) perimeter() int {
-  return t.size * 3
-}
-
-t := coloredTriangle{triangle{3}, "blue"}
-
-fmt.Println("size:", t.size) // triangleのメソッドも使える
-
-fmt.Println("perimeter:", t.triangle.perimeter())
-fmt.Println("perimeter:", t.perimeter()) // ↑の書き方のシンタックスシュガー
-```
-
-また、**埋め込んだ構造体のメソッドをオーバーロード**することもできる。
-※ オーバーロード(多重定義) : 同じ名前の関数等を定義すること。
-
-その場合、下記のように、**埋め込んだ側・埋め込まれた側どちらのメソッドも使用することができる**。
-
-```go
-type triangle struct {
-  size int
-}
-
-func (t triangle) perimeter() int {
-  return t.size * 3
-}
-
-type coloredTriangle struct {
-  triangle
-  color string
-}
-
-func (t coloredTriangle) perimeter() int {
-  return t.size * 5
-}
-
-t := coloredTriangle{triangle{3}, "blue"}
-
-// coloredTriangleのメソッドを使う
-fmt.Println("perimeter:", t.perimeter()) // perimeter: 15
-
-// triangleのメソッドも使える
-fmt.Println("perimeter:", t.triangle.perimeter()) // perimeter: 9
-```
-
-:::message
-Go には**継承は無い**。
-↑ の**構造体の埋め込み**で行っているのは**継承ではなく、委譲**。
 :::
 
 ### カプセル化
