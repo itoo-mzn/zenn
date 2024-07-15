@@ -1,0 +1,17 @@
+title: "ソフトウェア設計、アーキテクチャ"
+summary: "ソフトウェア設計、アーキテクチャについてまとめています。"
+topics: ["ソフトウェア設計", "アーキテクチャ"]
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - part
+  - 1_clean-code
+  - 2_paradigm
+  - 3_object-oriented
+  - 4_design-principles
+  - 5_design-pattern
+  - 6_arch-principles
+  - 7_arch-styles
+  - 8_arch-pattern
+  - 9_enterprise
