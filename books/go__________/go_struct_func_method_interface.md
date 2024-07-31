@@ -118,54 +118,6 @@ https://qiita.com/Maki-Daisuke/items/511b8989e528f7c70f80#%E7%BD%A0%EF%BC%93-emb
 
 - 自分でパッケージを作ってタグ対応する場合は reflect パッケージを使うことになる。
 
-## 構造体 ↔JSON
-
-- json.Marshal() : 構造体を json に変換
-- json.Unmarshal() : json を構造体に変換
-
-```go
-type Person struct {
-  ID        int
-  // jsonタグを使う
-  FirstName string `json:"name"`
-  LastName  string `json:"lastname,omitempty"`
-}
-
-type Employee struct {
-  Person
-  ManagerID int
-}
-
-employees := []Employee{
-  {
-    Person: Person{
-      LastName: "hoge", FirstName: "john",
-    },
-  },
-  {
-    Person: Person{
-      LastName: "fuga", FirstName: "bob",
-    },
-  },
-}
-
-data, _ := json.Marshal(employees) // 構造体をjsonに変換
-fmt.Printf("%s\n", data)
-// [
-//   {"ID":0,"name":"john","lastname":"hoge","ManagerID":0},
-//   {"ID":0,"name":"bob","lastname":"fuga","ManagerID":0}
-// ]
-
-
-var decorded []Employee
-json.Unmarshal(data, &decorded) // jsonを構造体に変換(戻す)
-fmt.Printf("%v", decorded)
-// [
-//   {{0 john hoge} 0}
-//   {{0 bob fuga} 0}
-// ]
-```
-
 :::message
 大きい構造体や大量の構造体を使う場合は、`sync.Pool`を使って、インスタンスを使いますとメモリ使用量を抑えることができる。
 （*ランタイム内部におけるメモリ確保*や、*OS に依頼するメモリの確保*は、Go でも遅い処理。）

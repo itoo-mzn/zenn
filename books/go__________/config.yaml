@@ -13,9 +13,11 @@ chapters:
   - go_struct_func_method_interface # 構造体、関数、メソッド、インターフェース
   - go_control # 制御構文
   - go_error # エラー、パニック
+  - go_package_module
   - go_log
   - go_file
   - go_cli_fmt_stdin_stdout
+  - go_other_format_data
   - go_other # その他
   - echo
   - gorm
