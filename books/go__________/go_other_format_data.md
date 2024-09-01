@@ -140,9 +140,10 @@ if err := w.Error(); err != nil {
 }
 ```
 
-## BOM付きCSVへの対処
+## BOM 付き CSV への対処
 
-↑の読み込み例のコードにて、`github.com/spkg/bom`を使ってBOMを除去できる。
+↑ の読み込み例のコードにて、`github.com/spkg/bom`を使って BOM を除去できる。
+
 ```go
 r := csv.NewReader(bom.NewReader(f))
 ```
@@ -155,10 +156,10 @@ r := csv.NewReader(bom.NewReader(f))
 BOM を元に、どのように符号化（エンコード）された Unicode かを判定する。
 
 例えば UTF-8 なら、＜ 0xEF 0xBB 0xBF ＞という 3 バイトが先頭に付く。
-ただし、BOM無しUTF-8もある。
+ただし、BOM 無し UTF-8 もある。
 
-WindowsはBOM付きでないとエラーになる。（最近は対応されている？みたい。）
-UTF-8のファイルをExcelで保存するとBOM付きになる。
+Windows は BOM 付きでないとエラーになる。（最近は対応されている？みたい。）
+UTF-8 のファイルを Excel で保存すると BOM 付きになる。
 
 ### Unicode
 
@@ -173,7 +174,9 @@ https://wa3.i-3-i.info/word11422.html
 :::
 
 ## CSV ↔ 構造体へのマッピング
+
 `github.com/gocarina/gocsv`を使う。
 
-<!-- # Excel -->
-<!-- 実用Go 8.3 まだ読んでない -->
+# Excel
+
+`xuri/excelize` や `tealeg/xlsx` が有名。
