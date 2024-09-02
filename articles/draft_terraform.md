@@ -203,3 +203,5 @@ module "sqs" {
   name   = "terraform-test-sqs" // module内ではこの値がname変数として使われる
 }
 ```
+
+## for_each
