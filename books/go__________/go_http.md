@@ -4,70 +4,100 @@ title: "Go_HTTP"
 
 # HTTP サーバー
 
-Go で HTTP サーバーを作成するには、HTTP 関連の型や関数を提供してくれる`net/http`パッケージを使う。
+HTTP 関連の型や関数を提供してくれる`net/http`パッケージを使うと、Go で HTTP サーバーを作成できる。
+（HTTP クライアントも。ただそれは割愛。）
 
-## <作成の流れ>
+`net/http`はゴルーチンやチャネルといった並行処理の恩恵を受けている。内部ではリクエストごとにクライアントとのコネクションを生成し、それらのコネクションごとに並行して処理できる仕組みになっている。
 
-1. **HTTP ハンドラ**を作成。
-2. ハンドラとエントリポイント（"/index"など）を結びつける。（**ルーティング**）
-3. HTTP サーバを起動。（ホスト名(IP)、ポート番号、ハンドラを指定。）
+## サーバー起動の流れ
+
+1. **HTTP ハンドラー**を作成。
+2. ハンドラーとエントリポイント（"/index"など）を結びつける。（**ルーティング**）
+3. HTTP サーバーを起動。（ホスト名(IP)、ポート番号、ハンドラを指定。）
 
 1 リクエストは 1 ゴールーチン（軽量スレッド）で動く。（並行に動く。）
 
 ```go
-// ハンドラ
-// 引数: (レスポンスを書き込む先, リクエスト)
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello") // 書き込み
+// ハンドラー
+func sampleHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello")
 }
 
 func main() {
   // ルーティング
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", sampleHandler)
   // サーバ起動
 	http.ListenAndServe(":8080", nil)
 }
 ```
 
-### http.Handler インターフェース
+:::message
+HTTP ハンドラーとは、リクエストに応じてレスポンスを返す関数。
+:::
 
-HTTP ハンドラはインターフェース（`http.Handler`）として定義されている。
-→`SereveHTTP(w ResponseWriter, r *Request)`というメソッドを持っていると、HTTP ハンドラ型となる。
+## 重要なオブジェクト
 
-### http.HandleFunc 型
+### Handler インターフェース
 
-`HandleFunc`は、引数に渡された関数に`http.Handler`インターフェース（`ServeHTTP(`）を実装させている。（つまり、http.Handler を製造している。）
-ハンドラは、`http.DefaultServeMux`に登録される。
+HTTP ハンドラーはインターフェース（`http.Handler`）として定義されている。
+→`SereveHTTP(w ResponseWriter, r *Request)`メソッドを実装していると、HTTP ハンドラーとして振る舞える。
+
+### HandleFunc 型
+
+`http.HandleFunc()`は、引数に渡された関数に`http.Handler`インターフェース（`ServeHTTP(`）を実装させている。
+（つまり、Handler 製造機。）
 
 なので、
 
 ```go
+func Health(w http.ResponseWriter, r *http.Request) {
+	// 略
+}
+
 http.Handle("/health", http.HandlerFunc(Health))
 ```
 
-は、Health 関数（`func Health(w http.ResponseWriter, r *http.Request) { ... }`）を HandlerFunc 型によって Handler インターフェースを満たすものへと進化させていて、
-それを第二引数にとって`http.Handle(pattern string, handler http.Handler)`を実行している。
+は、
 
-### http.DefaultServeMux
-
-`http.ServeMux`というのは、複数のハンドラをまとめるもので、パスによって使うハンドラを切り替える。
-http.Handle と http.HandleFunc は、デフォルトの ServeMux である`http.DefaultServeMux`を使っている。
+- `http.HandlerFunc(Health)`にて、HandlerFunc 型によって Health()をハンドラーへキャスト。
+- それを第二引数にとって`Handle(pattern string, handler http.Handler)`を実行し、ハンドラーを`http.DefaultServeMux`に登録している。
 
 :::message
-handler : 登録されるもの。（名詞）
-handle : 登録する。（動詞）
-:::
 
-### http.ListenAndServe
+```go:Handle() + HandlerFunc
+http.Handle("/health", http.HandlerFunc(Health))
+```
+
+は、HandleFunc()を使うと下記で書ける。
+
+```go:HandleFunc()
+http.HandleFunc("/health", Health)
+```
+
+`HandlerFunc型`と`HandleFunc()`が似ているのでややこしいが、英語の意味で捉えるといい。
+
+- handler : 登録されるもの。（名詞）
+- handle : 登録する。（動詞）
+  :::
+
+### DefaultServeMux
+
+`http.ServeMux`というのは、複数のハンドラをまとめるもので、パスによって使うハンドラーを切り替える。
+Handle() と HandleFunc() は、デフォルトの ServeMux である`http.DefaultServeMux`に登録するようになっている。
+
+### ListenAndServe()
 
 第一引数はホスト名とポート番号。（ホスト名省略時は localhost）
-第二引数は HTTP ハンドラ。nil の場合は、http.HandleFunc などで登録されたハンドラが使用される。
+第二引数は HTTP ハンドラー。nil の場合は、`DefaultServeMux`が使用される。
 
-### http.ResponseWriter
+## バリデーション
 
-### http.Error
+**必須属性のフィールドは、型をポインタで定義する**ことで、「初期値と同じ値（int なら`0`, string なら`""`）を正しい値としてセットしてリクエストしたのに必須バリデーションで落ちてしまう」ことを回避できる。
 
-### JSON を返す
+## リクエストの値の受け取り方
 
-encoding/json パッケージを使う。
-構造体やスライスを JSON（のオブジェクトや配列）にできる。
+- クエリパラメータ：
+  - http.Request の`FormValue()`を使う。（ただし、そのフィールドに複数の値をセットされていたとしても単一の値しか取得できない。）
+  - ParseForm()を実行した上で`Formフィールド`にアクセスする。
+- ファイル：http.Request の`FormFile()`を使う。
+- それ以外：おおよそ JSON で送られるので、json パッケージで Decode して受け取る。
