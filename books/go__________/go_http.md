@@ -40,7 +40,7 @@ HTTP ハンドラーとは、リクエストに応じてレスポンスを返す
 ### Handler インターフェース
 
 HTTP ハンドラーはインターフェース（`http.Handler`）として定義されている。
-→`SereveHTTP(w ResponseWriter, r *Request)`メソッドを実装していると、HTTP ハンドラーとして振る舞える。
+→`ServeHTTP(w ResponseWriter, r *Request)`メソッドを実装していると、HTTP ハンドラーとして振る舞える。
 
 ### HandleFunc 型
 
@@ -82,8 +82,13 @@ http.HandleFunc("/health", Health)
 
 ### DefaultServeMux
 
-`http.ServeMux`というのは、複数のハンドラをまとめるもので、パスによって使うハンドラーを切り替える。
+`http.ServeMux`というのは、複数のハンドラをまとめるもので、パスによって使うハンドラーを切り替えるルーター。
 Handle() と HandleFunc() は、デフォルトの ServeMux である`http.DefaultServeMux`に登録するようになっている。
+
+:::message
+Go標準のServeMuxは完全な前方一致のため、パスの一部をパラメーターとして処理できないため扱いづらい。（自前で処理しないといけない。）
+そのためサードパーティの`go-chi/chi`や`gorilla/mux`がよく使われる。また、Goのwebフレームワークには大体どれもルーターが付属している。
+:::
 
 ### ListenAndServe()
 
@@ -101,3 +106,14 @@ Handle() と HandleFunc() は、デフォルトの ServeMux である`http.Defau
   - ParseForm()を実行した上で`Formフィールド`にアクセスする。
 - ファイル：http.Request の`FormFile()`を使う。
 - それ以外：おおよそ JSON で送られるので、json パッケージで Decode して受け取る。
+
+## Middlewareパターン
+複数のハンドラーで共通した処理をしたい場合には、Handlerを受け取ってHandlerを返すMiddleware関数を作成し、それをHandle()に渡すことで実装できたりする。
+```go
+// http.Handle("/", http.HandlerFunc(sample))
+   http.Handle("/", MiddlewareLogging(http.HandlerFunc(sample)))
+```
+（Goでの実装は実用Go言語 10.5章を参照。EchoにMiddleware組み込みがあるので、読んだが詳しく記載するのはパスした。）
+
+# HTTPクライアント
+（実用Go言語 11章を参照。）
