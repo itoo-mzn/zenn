@@ -1,0 +1,418 @@
+---
+title: "Go_ゴルーチン、チャネル、コンテキスト"
+---
+
+# 並行と並列
+
+## 並行処理(Concurrency)
+
+同時にいくつかの**質の異なること**を扱うことを指す。
+（一人がファイルを読み込んでいて、一人がファイルに書き込んでいる イメージ。）
+
+## 並列処理(Parallelism)
+
+同時にいくつかの**質の同じこと**を扱うことを指す。
+（全員がファイルに書き込んでいる イメージ。）
+
+:::message
+Go で扱うのは**並行処理**(**Concurrency**)。
+それを実現するのが**ゴールーチン**。
+:::
+
+https://zenn.dev/hsaki/books/golang-concurrency/viewer
+
+# ゴールーチン と 並行処理(Concurrency)
+
+## ゴルーチンとは
+
+ゴールーチンは**軽量なスレッドのようなもの**。（※正確ではない）
+Linux や Unix のスレッドよりもコストが低い。（→ 軽い）
+
+:::message
+
+### プロセス、スレッド、ゴルーチン
+
+プロセス -< スレッド -< ゴルーチン　（`-<`：1 対多）
+:::
+:::message
+
+### CPU、メモリ、IO
+
+#### CPU タスク
+
+数値計算、画像・映像処理（編集、加工、変換など）、暗号処理、コンパイル、データ圧縮・解凍、機械学習、仮想通貨のマイニング。
+→CPU コア数分、並列処理を増やせば改善する。
+
+#### I/O タスク
+
+DB アクセス、ファイル操作、ネットワーク接続。
+→ 非同期 IO（golang ではゴルーチンで実現）、キャッシュ（コネクションプールなど？）を使うことで改善する。
+
+#### メモリタスク
+
+大きいデータの処理（大量のレコードや巨大な画像など）。
+→ ストリームに処理したり、メモリ消費を減らす処理の工夫をする、もしくはメモリを増強することで改善する。
+
+:::
+
+:::message alert
+軽量とはいえ、ゴルーチンの起動コストはゼロではない。
+:::
+
+**1 つのスレッドの上で複数のゴールーチンが動く**。（また、CPU では複数のスレッドが動いている。）
+
+複数のゴールーチンで、同時に複数のタスク（質の異なること）を行う。
+
+:::message
+main 関数も main ゴールーチン で動いている というイメージ。
+:::
+
+## 作り方
+
+使うには、`go`キーワードをつけて関数を呼び出すだけ。
+
+```go:ゴールーチンの作り方
+go f()
+```
+
+## 特徴
+
+- 個々のゴルーチンは**識別できない**。
+- ゴルーチンに**優先度や親子関係はない**。
+- 外部から終了させることはできない。
+- ゴルーチンが**終了したことを検知**するには、別の仕組みが必要。
+
+- ゴルーチンを使ってプログラミングする場合、他のゴルーチンと競合してカウントアップしてしまう等を防ぎたいとき、`sync/atomic`の`AddInt64()`などで安全にカウントアップできる。
+
+# チャネル
+
+チャネルは、*必ず 1 度だけ実行する*ことが保証されている**キュー**。
+
+複数の**ゴールーチン間で値を共有**したいとき、**片方からもう片方へチャネル（経路）を通して共有する**。
+
+チャネルはファーストクラスオブジェクト。（string とか int とか同じ）
+→ 変数への代入や、引数に渡すこと、返り値にすることができる。
+
+go.uber.org/goleak パッケージをテストに組み込むと、ゴルーチンリーク（プログラムの不備で、チャネルが受信 or 送信し続けること）しているかどうかを確認できる。
+
+## <基本>
+
+### 定義方法
+
+#### チャネルの作成
+
+`ch = make(chan int)`
+送受信できる値の型を定義する。
+
+#### 送信
+
+`ch<-100`
+
+:::message
+送信する値は別に使わず、送信されたことだけを知りたい場合には空の構造体のチャネルにする。`done := make(chan struct{})`
+送信するときはこう。`done <- struct{}{}`
+:::
+
+#### 受信
+
+- `n := <-ch` : 受信した値を変数に格納。
+- `<-ch` : 受信した値を破棄する。
+- `n, ok := <-ch` : チャネルの状態（まだアクティブ or クローズ済み）も変数に格納。
+- `for 受信した値 := range チャネル {}` : チャネルから受信するたびに実行する。チャネルが close すればループ終了。（`for range スライス {]`ということもできる。）
+
+  ```go
+  ic := make(chan int)
+
+  go func() {
+    ic <- 10
+    ic <- 20
+    // ここ以外でclose()してもダメ。（panicが発生する）
+    // チャネルを閉じる責務は、送信するゴルーチン側にある
+    close(ic)
+  }()
+
+  for v := range ic {
+    // チャネルicが受信するたびに実行
+    fmt.Println(v)
+  }
+  ```
+
+### ブロック
+
+チャネルが一杯のときに送信しようとしたとき や、チャネルが空のときに受信しようとしたとき にブロックする。
+（→ プログラムは、以降の処理に進めなくなる。）
+
+チャネルを`close()`すると、受信側のゴルーチンすべてに同時に通知される。
+
+## <select チャネル>
+
+select チャネルによって、複数のチャネルの**先に受信したほうのデータを使う**という処理が書ける。
+
+```go
+func main() {
+  ch1 := make(chan int)
+  ch2 := make(chan string)
+  go func() { ch1 <- 100 }()
+  go func() { ch2 <- "hi" }()
+
+  select {
+  case v1 := <-ch1:
+    fmt.Println("v1:", v1)
+  case v2 := <-ch2:
+    fmt.Println("v2:", v2)
+  }
+}
+```
+
+## <nil チャネル>
+
+チャネルのゼロ値は nil。
+nil のチャネルから受信しようとすると、永遠にブロックされる。
+
+```go
+func main() {
+  ch1 := make(chan int)
+  var ch2 chan string // ゼロ値 nil
+  go func() { ch1 <- 100 }()
+  go func() { ch2 <- "hi" }()
+
+  select {
+  case v1 := <-ch1:
+    fmt.Println("v1:", v1)
+  case v2 := <-ch2:
+    // ch2がnilである間は、この処理は実行されない
+    fmt.Println("v2:", v2)
+  }
+}
+```
+
+## <単方向チャネル>
+
+チャネルは双方向なので、送信用として作ったつもりでも誤って受信に使ってしまったりする可能性がある。
+
+単方向（受信 or 送信）チャネルによってそういった誤った使い方ができなくなるよう制限できる。
+
+```go
+func plusOne(recv <-chan int) int {
+  // recvは受信用なので、送信には使えない
+  v := <-recv + 1
+  return v
+}
+
+func main() {
+  ch := make(chan int)
+  go func(ch chan<- int) {
+    // chは送信用なので、受信には使えない
+    ch <- 100
+  }(ch)
+  fmt.Println(plusOne(ch))
+}
+```
+
+:::message
+
+#### 解説
+
+```go
+go func(ch chan<- int) {
+  // chは送信用なので、受信には使えない
+  ch <- 100
+}(ch)
+```
+
+このコードは、
+
+```go
+go 関数(ch)
+```
+
+を表しており、
+
+```go
+func(ch chan<- int) {
+  // chは送信用なので、受信には使えない
+  ch <- 100
+}
+```
+
+は無名関数である。
+
+つまり、最初に記載したコードは「無名関数を定義 + （引数に ch を渡して）即時実行」している。
+:::
+
+## 分岐した処理の待ち合わせ
+
+### ファンアウト・ファンイン
+
+- sync.waitgroup
+  wg.add(3)したあと処理を分岐させ、分岐先で wg.Done()を（合計 3 回）実行するようにし、wg.wait()で待つ。
+- errgroup.group
+  sync.waitgroup は単なるカウンターだが、それよりも複雑なことができる。
+  複数起動した eg.Go()内で、1 つでもエラーが起きると終了する。
+
+### Future/Promise
+
+実装パターンとして Future/Promise パターンというのもある。
+
+# コンテキスト（Context）
+
+context パッケージの役割は下記 2 点。
+
+1. ゴールーチンをまたいで**キャンセル**や**デッドライン**（時間制限）を伝搬させる。
+2. （リクエストやトランザクションスコープ内の）**メタデータ**を、関数やゴルーチン間で伝播させる。
+
+Go を使った HTTP サーバーにおいて、context パッケージの利用は必須。
+**クライアントとの通信状態は、`context.Context`型の値からしか知ることができない**ため。
+コンテキストは長期間データ保存する用途ではなく、セッションのようにある程度の寿命のデータを一時的に格納するもの。
+
+:::message
+Go の仕様上、xxx 型のオブジェクト（やインスタンス）という表現は無く、**xxx 型の値**という表現になる。
+:::
+
+多くのパッケージが`context.Context`型の値を受け取る前提で設計されている。
+**関数やメソッドを設計するときは、常に`context.Context`型の値を受け取るよう実装しておくべき**。
+
+コンテキストは木構造みたいになっていて、必ず root が存在し、新たなコンテキストはその上にラップしている。
+親のコンテキストから子のコンテキストの値を直接参照することはできない。この場合は共に参照できる変数を用意してそこを参照するようにする。
+
+## <キャンセルを通知する>
+
+### 任意のタイミングでキャンセル
+
+ある処理に失敗した場合に、`context.Context`型の値を共有するすべての操作をキャンセルしたいときがある。
+そういった場合は、**`context.WithCancel`メソッドを使って、キャンセル関数を用意・実行**する。
+
+```go:context.WithCancelメソッド
+func child(ctx context.Context) {
+  if err := ctx.Err(); err != nil {
+    fmt.Println("キャンセルされた")
+    return
+  }
+  fmt.Println("キャンセルされていない")
+}
+
+func main() {
+  ctx, cancel := context.WithCancel(context.Background()) // context.Background()はrootコンテキスト
+  child(ctx) // "キャンセルされていない"
+  cancel()
+  child(ctx) // "キャンセルされた"
+}
+```
+
+### デッドライン（時間制限）でキャンセル
+
+指定**時刻**を経過したらキャンセルする場合：`WithDeadline`を使う。
+指定**時間**を経過したらキャンセルする場合：`WithTimeout`を使う。
+
+## <キャンセル通知を受け取る>
+
+### キャンセル済みかどうかを知る
+
+**`context.Context.Err`メソッドでキャンセルの有無を確認**する。
+（↑ の context.WithCancel メソッドのサンプルコード内で使っている。）
+
+### キャンセルされるまで処理を続ける
+
+キャンセル通知（完了通知）があるまで処理を待機する場合は、**`<-ctx.Done()`で通知を待つ**。
+
+```go
+func main() {
+  ctx, cancel := context.WithCancel(context.Background())
+  go func() {
+    // キャンセルを受け取るまで無限ループする
+    for {
+      select {
+      case <-ctx.Done():
+        fmt.Println("キャンセルされた")
+        return
+      default:
+        fmt.Println("キャンセルされていない")
+      }
+      time.Sleep(300 * time.Millisecond)
+    }
+  }()
+  time.Sleep(time.Second)
+  cancel()
+  fmt.Println("終了")
+}
+
+// キャンセルされていない
+// キャンセルされていない
+// キャンセルされていない
+// 終了
+```
+
+## <Context にデータを含める>
+
+**`context.WithValue(context, キー, 値)`でデータをセット**。
+**`ctx.Value(キー)`でデータを取得**する。
+
+**キーには空の構造体`struct{}`を使う**のが一般的。
+（プリミティブな値はキーが衝突する恐れがあるので避けること。）
+
+```go
+// 独自型を用意
+type TraceID string
+
+const ZeroTraceID = ""
+
+// 単にstringだと、キーが衝突する恐れがある。
+// struct{}(空の構造体)だと、traceIDKey{}とすればキーになるのが良い。
+// （逆に、stringなど他の型だと、traceIDKey("キー1")とか、具体的な値にしないといけない。）
+type traceIDKey struct{}
+
+func GetTraceID(ctx context.Context) TraceID {
+  // ctx.Value(traceIDKey{}) で取得した値を、`.(TraceID)`でTraceID型に型アサーション
+  if v, ok := ctx.Value(traceIDKey{}).(TraceID); ok {
+    return v
+  }
+  return ZeroTraceID
+}
+
+func SetTraceID(ctx context.Context, tid TraceID) context.Context {
+  // contextにデータをセット
+  return context.WithValue(ctx, traceIDKey{}, tid)
+}
+
+func main() {
+  ctx := context.Background()
+  fmt.Printf("trace id = %q\n", GetTraceID(ctx)) // trace id = ""
+  ctx = SetTraceID(ctx, "test-id")
+  fmt.Printf("trace id = %q\n", GetTraceID(ctx)) // trace id = "test-id"
+}
+```
+
+:::message
+
+### 型アサーション
+
+`インターフェース.(型)`と書くことで、**特定の型への変換や型の確認**ができる。
+
+```go
+var i interface{} = 42
+result, ok := i.(int)
+fmt.Println(result, ok) // 42 true
+```
+
+:::
+
+## <context を扱うときの注意点>
+
+- 呼び出された側で context.Context 型の値を操作しても、**呼び出した側には伝搬されない**。
+
+- 構造体の中（フィールド）に context.Context 型の値を保持すると、それが対象とするスコープが曖昧になるため、アンチパターン。
+
+- context.Context 型の値は、**複数のゴルーチンから同時に使われても安全**。
+
+- context.Context 型の値に、含める or 含めないべきデータは下記。
+  - 関数への引数となる値は含めない。（= **関数のロジックに関わる値を含めてはいけない**。）
+  - リクエストに関するデータを含める。
+  - 認証・認可に関するデータは、（厳密にはロジックに関わることになるが）含めてもよい。
+
+:::message
+
+### 既存のコードが context.Context 型の値を引数に受け取っていない場合
+
+`context.TODO`を使うことで、膨大なコードの中でも徐々に context.Context 型の値を引数に受け取るように改修を進めることができる。
+`context.TODO`は、空の context.Context 型の値。
+:::

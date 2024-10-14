@@ -14,15 +14,17 @@ chapters:
   - go_control # 制御構文
   - go_error # エラー、パニック
   - go_package_module
-  - go_goroutine_channel # ゴルーチン、チャネル
+  - go_goroutine_channel_context # ゴルーチン、チャネル
   - go_test
   - go_log
   - go_file
   - go_cli_fmt_stdin_stdout
   - go_other_format_data
-  - go_context
   - go_http
   - go_db_sql
+    # - defined type
+    # - functional options pattern
+    # - イテレータ 1.23から
   - go_architecture # 設計に関すること
   - go_other # その他
   - echo
