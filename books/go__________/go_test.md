@@ -2,13 +2,6 @@
 title: "Go_テスト"
 ---
 
-## テスト実行コマンド
-```
-go test -v
-```
-すべての `*_test.go` ファイルが検索される
-
-
 # テスト
 
 テストコードで実行するのは単体テスト。
@@ -25,6 +18,8 @@ go test -v
 - -cpu : 実行する並列度を指定。複数のコアを使ったテストができる。
 - race : データの競合が起きないかテストする。基本的に、このオプションを付けたテスト**も**やっておいたほうがいい。
 - -cover : カバレッジを取得。
+- -shuffle=on : テストの実行順序による状態依存がないことを確認するために、実行順序をシャッフルする。
+- -count=1 : テストのキャッシュを使わない。
 
 ## testing パッケージ
 
@@ -46,12 +41,39 @@ func TestSample(t *testing.T) {
 }
 ```
 
+テスト全体の事前・事後処理を入れたい場合は、TestMain()に記述すればいい。
+
+```go
+func TestMain(m *testing.M) {
+	setup() // 事前
+	defer teardown() // 事後
+
+	m.Run()
+}
+```
+
 ## テーブル駆動テスト
 
 テスト関数の序盤にテストケースをまとめて書いておき、それらを実行するコードをその下に記述しておくスタイル。
 
 https://qiita.com/ryo_manba/items/242f629e0b3593879c6d
 https://zenn.dev/kimuson13/articles/go_table_driven_test
+
+## テストを並列実行
+
+`t.Parallel()`を使えば並列に実行できる。
+
+```go
+for _, tt := range tests {
+  tt := tt
+  t.Run(tt.name, func(t *testing.T) {
+    t.Parallel()
+    // テスト
+    // got := Add(tt.args.a, tt.args.b)
+    // ...
+  })
+}
+```
 
 ## テスタブルなコード
 
@@ -67,3 +89,15 @@ https://zenn.dev/kimuson13/articles/go_table_driven_test
 
 テストデータは`testdata`というディレクトリに入れる。
 （`testdata`はパッケージと認識されない。）
+
+## ヘルパー関数
+
+テスト用のヘルパー関数を作る場合、それはプロダクションコードには含ませないようにしたい。
+以下 2 つの方法がある。
+
+1. \_test.go というファイル名で作成する。
+   \_test.go という名前のファイルはビルドに含まれないというルールを利用。
+   ただし、他のパッケージから import できないので、複数パッケージ間で共用するヘルパー関数は 2 つ目の方法で対応する。
+2. テストヘルパー用のパッケージを作成する。
+   httptest パッケージのように、xxxtest パッケージを作成。
+   何等かの間違いでテストコード以外の他のパッケージから import されない限りは、ビルドに含まれない。
