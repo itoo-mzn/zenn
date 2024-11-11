@@ -127,6 +127,16 @@ go build main.go
 `go build` コマンドにて`GOOS`と`GOARCH`を指定すると、違う OS やアーキテクチャ向けのビルドができます。
 :::
 
+### go:embed
+
+go ファイル以外のファイルの中身を読み込んで、Go コードの中で利用できる。
+
+https://zenn.dev/rescuenow/articles/aeb7f2e8c110d0
+
+:::message alert
+`//go:embed`の記述は`//`と`go:embed`の間にスペース不要。スペースを入れると通常のコメント扱いになってしまう。
+:::
+
 ## <Module の場合>
 
 これまで記載したのはファイル単体を実行するときの話でしたが、Module として実行するときの話をします。
