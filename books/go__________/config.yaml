@@ -19,7 +19,7 @@ chapters:
   - go_log
   - go_file
   - go_cli_fmt_stdin_stdout
-  - go_other_format_data
+  - go_some_format_data
   - go_http
   - go_db_sql
     # - defined type
