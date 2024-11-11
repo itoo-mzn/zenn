@@ -7,7 +7,7 @@ price: 0 # 有料の場合200〜5000
 chapters:
   - part
   - 1_clean-code
-  - 2_paradigm
+  # - 2_paradigm
   - 3_object-oriented
   - 4_design-principles
   - 5_design-pattern
