@@ -208,6 +208,52 @@ https://zenn.dev/yuyu_hf/articles/c7ab8e435509d2
 ビルダーパターンよりかは冗長なコードを書かなくて済むが、
 別パッケージ使う場合、パッケージ名をいちいち書かないといけないのでコードが長くなる。
 
+## 高級関数
+
+関数を引数にとる関数や、返り値に関数を返すというテクニック。
+
+```go:関数を引数にとる関数
+func compute(a, b int, ope operation) int {
+  return ope(a, b)
+}
+
+// この型に合致すればcompute()に渡せる
+type operation func(a, b int) int
+
+func add(a, b int) int {
+	return a + b
+}
+
+func sub(a, b int) int {
+	return a - b
+}
+
+func main() {
+	a, b := 5, 3
+	sum := compute(a, b, add)
+	diff := compute(a, b, sub)
+	fmt.Println(sum, diff) // 8 2
+}
+```
+↑は、ようはhttp.HandleFunc()でやっていることと同じ。
+```go
+func sampleHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello")
+}
+
+http.HandleFunc("/", sampleHandler)
+```
+
+```go:関数を返す関数
+func tenTimes() func(i int) int {
+	return func(i int) int { return i * 10 }
+}
+
+func main() {
+	fmt.Println(tenTimes()(5))
+}
+```
+
 # メソッド
 
 `func (変数 レシーバ) メソッド名() 返却型 { ... }`
