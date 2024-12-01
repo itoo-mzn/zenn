@@ -28,6 +28,27 @@ default:
 }
 ```
 
+:::message alert
+
+### break
+
+switch 単体で使う場合は、break は使わないこと。
+
+ただし、for ループ内で switch を使い、break によってループを抜けたい場合は、for ループに label をつけてそれめがけて break する。
+
+```go
+loop:
+  for {
+    switch x {
+    case "A":
+       break loop // exits the loop
+    }
+  }
+```
+
+https://google.github.io/styleguide/go/decisions#switch-and-break
+:::
+
 #### fallthrough
 
 switch では、1 つの case が実行されると break され他の case は評価しない。
