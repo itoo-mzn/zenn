@@ -4,7 +4,26 @@ title: "Go_制御構文"
 
 # if 文
 
-if 文で定義した変数は、if 外で使えない。
+- if 文で定義した変数は、if ブロックの外で使えない。
+
+- if 内で return する場合は、else を書かないようにすること。
+
+  ```go
+  if s == nil {
+      return nil
+  }
+  // elseはいらない
+  ```
+
+- if では異常系をキャッチし、基本的に正常系は if 分岐に入らないこと。
+
+  ```go:NG例
+  if s != nil {
+      return s, true
+  }
+  // 異常系
+  return nil, false
+  ```
 
 # switch 文
 
