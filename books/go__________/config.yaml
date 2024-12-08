@@ -14,7 +14,8 @@ chapters:
   - go_control # 制御構文
   - go_error # エラー、パニック
   - go_package_module
-  - go_goroutine_channel_context # ゴルーチン、チャネル
+  - go_goroutine_channel # ゴルーチン、チャネル
+  - go_context
   - go_test
   - go_log
   - go_file
@@ -22,6 +23,7 @@ chapters:
   - go_some_format_data
   - go_http
   - go_db_sql
+  - go_generics
     # - defined type
     # - functional options pattern
     # - イテレータ 1.23から

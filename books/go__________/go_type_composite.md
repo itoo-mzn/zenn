@@ -315,3 +315,9 @@ make(map[string]int)
 
 - 追加 : `m["key"] = 30`
 - 削除 : `delete(m, "key")`
+
+:::message
+スライスやマップを直接返すより、型定義したほうがいいのかどうか、考えること。
+
+https://qiita.com/ksato9700/items/6228d4eb6d5b282f82f6#slice%E3%81%A8%E3%81%8Bmap%E3%81%A8%E3%81%8B%E7%9B%B4%E6%8E%A5%E8%BF%94%E3%81%95%E3%81%9A%E3%81%AB%E5%9E%8B%E5%AE%9A%E7%BE%A9%E3%81%97%E3%81%A1%E3%82%83%E3%81%8A%E3%81%86-convert-slicesmapsetc-into-custom-types
+:::

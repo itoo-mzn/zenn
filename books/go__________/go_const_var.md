@@ -52,6 +52,12 @@ const (
 DB に値を保存していたり、batch サーバーなど別のプロセスから参照される事がある場合、値がズレてしまいアウト。
 :::
 
+:::message
+ラベルを出力する用の String()メソッドを定義しておくと良い。
+
+https://qiita.com/ksato9700/items/6228d4eb6d5b282f82f6#%E6%95%B4%E6%95%B0%E5%AE%9A%E6%95%B0%E5%80%A4%E3%81%AB%E3%81%AFstring%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%82%92%E5%AE%9A%E7%BE%A9%E3%81%97%E3%81%A6%E3%81%8A%E3%81%93%E3%81%86-add-string-method-for-integers-const-values
+:::
+
 # 変数
 
 ## 宣言
