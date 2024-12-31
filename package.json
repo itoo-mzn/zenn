@@ -10,6 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "zenn-cli": "^0.1.157"
-  }
+    "zenn-cli": "^0.1.158"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itoo-mzn/zenn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itoo-mzn/zenn/issues"
+  },
+  "homepage": "https://github.com/itoo-mzn/zenn#readme"
 }
