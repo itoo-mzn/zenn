@@ -18,6 +18,11 @@ func 関数名[型パラメータ 型制約](普通の引数) 普通の返り値
 **関数の引数**か**メソッドのレシーバ**のみ使える。
 :::
 
+:::message
+不必要な抽象化は複雑さを生む。
+ジェネリクスを使う必要性があるのかどうか、慎重に判断すること。
+:::
+
 ### 型制約
 
 型パラメータに対して許可される操作やメソッドを制限するためのインターフェース。
@@ -65,6 +70,6 @@ func getKeys[K customConstraint, V any](m map[K]V) []K {
 type customConstraint interface {
 	// ~int かつ String()メソッドを実装している
 	~int
-  String() string
+	String() string
 }
 ```
