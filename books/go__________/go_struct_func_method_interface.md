@@ -208,6 +208,60 @@ https://zenn.dev/yuyu_hf/articles/c7ab8e435509d2
 ビルダーパターンよりかは冗長なコードを書かなくて済むが、
 別パッケージ使う場合、パッケージ名をいちいち書かないといけないのでコードが長くなる。
 
+:::details 実装例
+
+```go
+type options struct {
+	port    *int
+	timeout *time.Duration
+}
+
+type Option func(options *options) error
+
+func WithPort(port int) Option {
+	return func(options *options) error {
+		if port < 0 {
+			return errors.New("port should be positive")
+		}
+		options.port = &port
+		return nil
+	}
+}
+
+// WithTimeout()は省略
+
+func NewServer(addr string, opts ...Option) (*http.Server, error) {
+	var options options
+	for _, opt := range opts {
+		err = opt(&options)
+		// 省略
+	}
+
+	var port int
+	if options.port == nil {
+		port = 3000 // 指定ない場合はデフォルト値をセット
+	} else {
+		port = *options.port
+	}
+
+	var timeout time.Duration
+	if options.timeout == nil {
+		timeout = 10 * time.Second // 指定ない場合はデフォルト値をセット
+	} else {
+		timeout = *options.timeout
+	}
+
+	// port, timeoutを使って、サーバー起動
+	// 省略
+}
+```
+
+```go:main.go
+s, err := NewServer("localhost", WithPort(8080), WithTimeout(30 * time.Second))
+```
+
+:::
+
 ## 高級関数
 
 関数を引数にとる関数や、返り値に関数を返すというテクニック。
