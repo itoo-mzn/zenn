@@ -270,6 +270,15 @@ fmt.Println("slice2", slice2) // slice2 [B C D] : 要素が変更されていな
 
 https://zenn.dev/moko_poi/articles/a6e0d2e8e07e48#2.5-%E3%82%B9%E3%83%A9%E3%82%A4%E3%82%B9%E3%81%AE%E3%82%B3%E3%83%94%E3%83%BC%E3%82%92%E6%AD%A3%E3%81%97%E3%81%8F%E8%A1%8C%E3%81%86
 
+:::message
+コピー先のスライスは、コピー元のスライスと同じ長さを確保すること。
+```go
+src := [1, 2, 3]
+dst := make([]int, len(src)) // len(src)分を確保
+copy(dst, src)
+```
+:::
+
 ## スライスの拡張
 
 ```go

@@ -136,6 +136,14 @@ https://qiita.com/Maki-Daisuke/items/511b8989e528f7c70f80#%E7%BD%A0%EF%BC%93-emb
 - 保証するために実行時にチェック（nil チェックなど）する。
 - ファクトリ関数を用意して、そこで作られたもの以外の動作は保証しない。
 
+## 構造体同士の比較
+2つの構造体の値が等しいかどうか（データ構造を比較）は以下のどれかを使えば確認できる。
+- `reflect.DeepEqual`
+- `go-cmp`
+- `testifyのassert.Equal`
+
+比較処理は重いので本番コードでは使わず、テストコード内だけで使うのが良い。
+
 # 関数
 
 ## Named return value
