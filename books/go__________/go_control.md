@@ -47,27 +47,6 @@ default:
 }
 ```
 
-:::message alert
-
-### break
-
-switch 単体で使う場合は、break は使わないこと。
-
-ただし、for ループ内で switch を使い、break によってループを抜けたい場合は、for ループに label をつけてそれめがけて break する。
-
-```go
-loop:
-  for {
-    switch x {
-    case "A":
-       break loop // exits the loop
-    }
-  }
-```
-
-https://google.github.io/styleguide/go/decisions#switch-and-break
-:::
-
 #### fallthrough
 
 switch では、1 つの case が実行されると break され他の case は評価しない。
@@ -195,11 +174,33 @@ for {
 }
 ```
 
+### break
+
+breakで抜けるのは、一番内側の **for**, **switch**, **select** 文のみ。
+
+:::message
+switch 単体で使う場合は、break は使わないこと。
+
+ただし、for ループ内で switch を使い、break によってループを抜けたい場合は、for ループに label をつけてそれめがけて break する。
+
+```go
+loop:
+  for {
+    switch x {
+    case "A":
+       break loop // exits the loop
+    }
+  }
+```
+
+https://google.github.io/styleguide/go/decisions#switch-and-break
+:::
+
 # defer 関数
 
 遅延実行する。（スタックに積む。LIFO）
 
-ただし、その実行タイミングは、defer を書いたスコープが終了するとき。
+ただし、その**実行タイミングは、defer を書いたスコープが終了するとき**。
 つまり、下記のコードの`hoge()内のdefer`は、`main()の"end"出力`より先に実行される。
 
 また、**その時点での評価**（コード）をスタックに積むため、
@@ -240,4 +241,34 @@ func main() {
 
 :::message alert
 defer()でエラー err を返す場合は、その前のエラーを上書いてしまっていないか要注意！
+:::
+
+:::message alert
+ループ内でdeferを使うと危険。
+
+```go
+for path := range ch {
+    file, _ := os.Open(path)
+    defer file.Close()
+
+    // なんらかの処理
+}
+```
+上のコードでプール内で（panicなどで）returnしなかった場合、それまでのループ回数分のファイルがクローズされずメモリリークになる恐れがある。
+
+deferを使う場合はループ内では直接使わず、（↓のreadfile()のように）関数に切り出して、毎回deferが実行されるようにする。
+```go
+for path := range ch {
+    readfile(path)
+
+    // なんらかの処理
+}
+
+func readfile(path string) {
+    file, _ := os.Open(path)
+    defer file.Close()
+    return
+}
+```
+
 :::
