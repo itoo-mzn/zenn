@@ -93,13 +93,13 @@ fmt.Println(twoD)
 
 #### 空のスライス を作る場合
 
-```go
+```go:空のスライス
 s := []string{} // 長さ0のスライス
 ```
 
 よりも
 
-```go
+```go:nilのスライス
 var s []string // nilのスライス
 ```
 
@@ -272,11 +272,13 @@ https://zenn.dev/moko_poi/articles/a6e0d2e8e07e48#2.5-%E3%82%B9%E3%83%A9%E3%82%A
 
 :::message
 コピー先のスライスは、コピー元のスライスと同じ長さを確保すること。
+
 ```go
 src := [1, 2, 3]
 dst := make([]int, len(src)) // len(src)分を確保
 copy(dst, src)
 ```
+
 :::
 
 ## スライスの拡張

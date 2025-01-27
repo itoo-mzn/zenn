@@ -81,6 +81,33 @@ fmt.Println(errors.Unwrap(err)) // foo
 
 uber-go/multier を使う。
 
+##### 主処理でのエラーと defer 内でのエラーを切り分ける
+
+```go
+func getByID(db *sql.DB, id int) (customer Customer, err error) {
+	// ...（DB接続）
+	defer func() {
+		// rows.Scan()にエラーなく、rows.Close()でエラー　→　後者を返す
+		// rows.Scan()にエラーあり、rows.Close()でエラーなし　→　前者を返す
+		// rows.Scan()にエラーあり、rows.Close()でもエラーあり　→　後者はログに残すのみで、前者を返す
+		closeErr := rows.Close()
+		if err != nil {
+			if closeErr != nil {
+				log.Printf("failed to close rows: %v", closeErr)
+			}
+			return
+		}
+		err = closeErr
+	}()
+
+	err = rows.Scan(&customer)
+	if err != nil {
+		return nil, err
+	}
+	// ...（いろいろな処理）
+}
+```
+
 # 例外処理
 
 panic と recover の組み合わせは、Go での特徴的な例外処理方法。
